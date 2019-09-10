@@ -126,7 +126,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
   }
 
   addMarker(point, BMap, data) {
-    const myIcon = new BMap.Icon('public/plugins/grafana-baidumap-panel/images/pins6-poi.png', new BMap.Size(30, 30));
+    const myIcon = new BMap.Icon('public/plugins/grafana-baidumap-panel/images/bike.png', new BMap.Size(30, 30));
     const marker = new BMap.Marker(point, {icon: myIcon});
 
     this.markers.push(marker);
@@ -142,7 +142,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
     scontent += '<div class="infobox-header"><div class="infobox-header-icon"><img src="public/plugins/grafana-baidumap-panel/images/pins6.png"></div>';
     scontent += '<div class="infobox-header-name"><p>' + data.devEUI + '</p></div>';
     scontent += '<div class="infobox-header-type" style="min-width:250px"><p>' + data.type + '</p></div></div>';
-    scontent += '<div class="infobox-footer">在线时间：' + data.timeLabel + '</div>';
+    scontent += '<div class="infobox-footer">' + data.text + '</div>';
     scontent += '<div class="infobox-footer-right"></div></div><div class="arrow"></div></div></a>';
 
     const infoWindow = new BMap.InfoWindow(scontent); // 创建信息窗口对象
