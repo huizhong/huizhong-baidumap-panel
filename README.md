@@ -27,6 +27,8 @@ now() as time,
 '设备编号xxx' as devEUI,
 '设备类型xxx' as type
 
+选填参数 fport，如果填33的话对应线条，填5的话，对应图力图
+
 ### 图标替换
 images/pins6-poi.png 地图页图标
 images/pins6.png 详情页图标
