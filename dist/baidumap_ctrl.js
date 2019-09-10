@@ -269,9 +269,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                             markerArray.push({ point: translatedElements[_i].point, data: translatedElements[_i].gps });
                           }
                         }
-                        print('markerArray', markerArray);
-                        print('lineArray', lineArray);
-                        print('heatArray', heatArray);
+                        console.log('markerArray', markerArray);
+                        console.log('lineArray', lineArray);
+                        console.log('heatArray', heatArray);
 
                         if (heatArray.length > 0) {
                           var setGradient = function setGradient() {

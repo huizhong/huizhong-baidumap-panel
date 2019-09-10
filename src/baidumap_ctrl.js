@@ -206,9 +206,9 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                   markerArray.push({point: translatedElements[i].point, data: translatedElements[i].gps});
                 }
               }
-              print('markerArray', markerArray);
-              print('lineArray', lineArray);
-              print('heatArray', heatArray);
+              console.log('markerArray', markerArray);
+              console.log('lineArray', lineArray);
+              console.log('heatArray', heatArray);
 
               if (heatArray.length > 0) {
                 // 热力图
