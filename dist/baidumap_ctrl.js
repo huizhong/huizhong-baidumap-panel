@@ -210,11 +210,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
             var marker = new BMap.Marker(point, { icon: myIcon });
 
             this.markers.push(marker);
-            if (this.markers.length == this.data.length) {
-              var markerClusterer = new BMapLib.MarkerClusterer(this.map, {
-                markers: this.markers
-              });
-            }
+
             // this.map.setViewport(pointArray);
             marker.enableDragging();
             var scontent = '';
@@ -270,9 +266,12 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                           } else if (fport == '33') {
                             lineArray.push(translatedElements[_i].point);
                           } else {
-                            markerArray.push({ point: translatedElements[_i].points, data: translatedElements[_i].gps });
+                            markerArray.push({ point: translatedElements[_i].point, data: translatedElements[_i].gps });
                           }
                         }
+                        print('markerArray', markerArray);
+                        print('lineArray', lineArray);
+                        print('heatArray', heatArray);
 
                         if (heatArray.length > 0) {
                           var setGradient = function setGradient() {
@@ -333,6 +332,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                           for (var _i2 = 0; _i2 < markerArray.length; _i2++) {
                             that.addMarker(markerArray[_i2].point, BMap, markerArray[_i2].data);
                           }
+                          new BMapLib.MarkerClusterer(this.map, {
+                            markers: this.markers
+                          });
                         }
                       }
                     } else {
