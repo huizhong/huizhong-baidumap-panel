@@ -206,9 +206,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
         }, {
           key: 'addMarker',
           value: function addMarker(point, BMap, data) {
-            var myIcon = new BMap.Icon('public/plugins/grafana-baidumap-panel/images/bike.png', new window.BMap.Size(36, 42), {
-              imageSize: new window.BMap.Size(36, 42),
-              anchor: new window.BMap.Size(18, 42)
+            var myIcon = new BMap.Icon('public/plugins/grafana-baidumap-panel/images/bike.png', new window.BMap.Size(18, 21), {
+              imageSize: new window.BMap.Size(18, 21),
+              anchor: new window.BMap.Size(9, 21)
             });
 
             var marker = new BMap.Marker(point, { icon: myIcon });

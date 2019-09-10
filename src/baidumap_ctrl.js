@@ -126,9 +126,9 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
   }
 
   addMarker(point, BMap, data) {
-    const myIcon = new BMap.Icon('public/plugins/grafana-baidumap-panel/images/bike.png', new window.BMap.Size(36, 42), {
-      imageSize: new window.BMap.Size(36, 42),
-      anchor: new window.BMap.Size(18, 42)
+    const myIcon = new BMap.Icon('public/plugins/grafana-baidumap-panel/images/bike.png', new window.BMap.Size(18, 21), {
+      imageSize: new window.BMap.Size(18, 21),
+      anchor: new window.BMap.Size(9, 21)
     });
 
     const marker = new BMap.Marker(point, {icon: myIcon});
