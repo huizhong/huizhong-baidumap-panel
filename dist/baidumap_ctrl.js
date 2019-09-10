@@ -79,16 +79,16 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
       }();
 
       panelDefaults = {
-        ak: "QKCqsdHBbGxBnNbvUwWdUEBjonk7jUj6",
+        ak: 'QKCqsdHBbGxBnNbvUwWdUEBjonk7jUj6',
         maxDataPoints: 1,
-        theme: "normal",
+        theme: 'normal',
         lat: 39.915,
         lng: 116.404,
         initialZoom: 11,
-        valueName: "current",
-        locationData: "table",
-        icon: "Label",
-        esMetric: "Count",
+        valueName: 'current',
+        locationData: 'table',
+        icon: 'Label',
+        esMetric: 'Count',
         decimals: 0,
         navigation: true,
         scale: true,
@@ -115,7 +115,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
           _this.events.on('data-received', _this.onDataReceived.bind(_this));
           _this.events.on('panel-teardown', _this.onPanelTeardown.bind(_this));
           _this.events.on('data-snapshot-load', _this.onDataSnapshotLoad.bind(_this));
-          //this.loadLocationDataFromFile();
+          // this.loadLocationDataFromFile();
           return _this;
         }
 
@@ -145,12 +145,12 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
               return;
             }
 
-            if (this.panel.locationData === "jsonp endpoint") {} else if (this.panel.locationData === "json endpoint") {
+            if (this.panel.locationData === 'jsonp endpoint') {} else if (this.panel.locationData === 'json endpoint') {
               if (!this.panel.jsonUrl) return;
-            } else if (this.panel.locationData === "table") {
+            } else if (this.panel.locationData === 'table') {
               // .. Do nothing
 
-            } else if (this.panel.locationData !== "geohash" && this.panel.locationData !== "json result") {}
+            } else if (this.panel.locationData !== 'geohash' && this.panel.locationData !== 'json result') {}
           }
         }, {
           key: 'reloadLocations',
@@ -177,19 +177,19 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
             }
 
             var data = [];
-            if (this.panel.locationData === "geohash") {
+            if (this.panel.locationData === 'geohash') {
               this.dataFormatter.setGeohashValues(dataList, data);
-            } else if (this.panel.locationData === "table") {
+            } else if (this.panel.locationData === 'table') {
               var tableData = dataList.map(DataFormatter.tableHandler.bind(this));
               this.dataFormatter.setTableValues(tableData, data);
-            } else if (this.panel.locationData === "json result") {
+            } else if (this.panel.locationData === 'json result') {
               var _tableData = dataList.map(DataFormatter.tableHandlers.bind(this));
               this.dataFormatter.setTableValues(_tableData, data);
             } else {
               var _tableData2 = dataList.map(DataFormatter.tableHandler.bind(this));
               this.dataFormatter.setTableValues(_tableData2, data);
             }
-            //const datas = this.filterEmptyAndZeroValues(data);
+            // const datas = this.filterEmptyAndZeroValues(data);
 
             var datas = data;
             if (_typeof(this.data) === 'object') this.data.splice(0, this.data.length);
@@ -206,7 +206,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
         }, {
           key: 'addMarker',
           value: function addMarker(point, BMap, data) {
-            var myIcon = new BMap.Icon("public/plugins/grafana-baidumap-panel/images/pins6-poi.png", new BMap.Size(30, 30));
+            var myIcon = new BMap.Icon('public/plugins/grafana-baidumap-panel/images/pins6-poi.png', new BMap.Size(30, 30));
             var marker = new BMap.Marker(point, { icon: myIcon });
 
             this.markers.push(marker);
@@ -215,25 +215,25 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 markers: this.markers
               });
             }
-            //this.map.setViewport(pointArray);
+            // this.map.setViewport(pointArray);
             marker.enableDragging();
-            var scontent = "";
+            var scontent = '';
             scontent += '<a href=""><div class="infobox" id="infobox"><div class="infobox-content" style="display:block">';
             scontent += '<div class="infobox-header"><div class="infobox-header-icon"><img src="public/plugins/grafana-baidumap-panel/images/pins6.png"></div>';
             scontent += '<div class="infobox-header-name"><p>' + data.devEUI + '</p></div>';
             scontent += '<div class="infobox-header-type" style="min-width:250px"><p>' + data.type + '</p></div></div>';
-            scontent += '<div class="infobox-footer">在线时间：10分钟前</div>';
+            scontent += '<div class="infobox-footer">在线时间：data.timeLabel</div>';
             scontent += '<div class="infobox-footer-right"></div></div><div class="arrow"></div></div></a>';
 
             var infoWindow = new BMap.InfoWindow(scontent); // 创建信息窗口对象
-            marker.addEventListener("click", function () {
-              this.map.openInfoWindow(infoWindow, point); //开启信息窗口
+            marker.addEventListener('click', function () {
+              this.map.openInfoWindow(infoWindow, point); // 开启信息窗口
             });
 
             this.map.addOverlay(marker);
-            marker.addEventListener("dragend", function (e) {
+            marker.addEventListener('dragend', function (e) {
               point = new BMap.Point(e.point.lng, e.point.lat);
-              alert("当前位置：" + e.point.lng + ", " + e.point.lat);
+              alert('当前位置：' + e.point.lng + ', ' + e.point.lat);
             });
           }
         }, {
@@ -246,10 +246,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
             this.map.clearOverlays();
             console.log(list);
             if (list) {
-              var rawLength;
-              var translatedElements;
-              var i;
-
               (function () {
                 var translateOne = function translateOne(index, gps, BMap) {
                   function translateCallback(returnedData) {
@@ -265,26 +261,30 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         translatedElements.sort(function (a, b) {
                           return a.index - b.index;
                         });
-                        for (var i = 0; i < translatedElements.length; i++) {
-                          lineArray.push(translatedElements[i].point);
-                          var heatPoint = { lng: translatedElements[i].point.lng, lat: translatedElements[i].point.lat, count: translatedElements[i].rssi };
+                        for (var _i = 0; _i < translatedElements.length; _i++) {
+                          lineArray.push(translatedElements[_i].point);
+                          var heatPoint = {
+                            lng: translatedElements[_i].point.lng,
+                            lat: translatedElements[_i].point.lat,
+                            count: translatedElements[_i].rssi
+                          };
                           heatArray.push(heatPoint);
                         }
 
-                        if (fport == "5") {
+                        if (fport == '5') {
                           var setGradient = function setGradient() {
                             var gradient = {};
-                            var colors = document.querySelectorAll("input[type='color']");
+                            var colors = document.querySelectorAll('input[type=\'color\']');
                             colors = [].slice.call(colors, 0);
                             colors.forEach(function (ele) {
-                              gradient[ele.getAttribute("data-key")] = ele.value;
+                              gradient[ele.getAttribute('data-key')] = ele.value;
                             });
                             heatmapOverlay.setOptions({ gradient: gradient });
                           };
 
                           var isSupportCanvas = function isSupportCanvas() {
-                            var elem = document.createElement("canvas");
-                            return !!(elem.getContext && elem.getContext("2d"));
+                            var elem = document.createElement('canvas');
+                            return !!(elem.getContext && elem.getContext('2d'));
                           };
 
                           var ZoomControl = function ZoomControl() {
@@ -293,9 +293,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                             this.defaultOffset = new BMap.Size(10, 10);
                           };
 
-                          //热力图
+                          // 热力图
                           if (!isSupportCanvas()) {
-                            alert("热力图目前只支持有canvas支持的浏览器,您所使用的浏览器不能使用热力图功能~");
+                            alert('热力图目前只支持有canvas支持的浏览器,您所使用的浏览器不能使用热力图功能~');
                           }
                           var heatmapOverlay = new BMapLib.HeatmapOverlay({ radius: 20 });
                           that.map.addOverlay(heatmapOverlay);
@@ -303,7 +303,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
 
                           ZoomControl.prototype = new BMap.Control();
                           ZoomControl.prototype.initialize = function (map) {
-                            var div = document.createElement("div");
+                            var div = document.createElement('div');
                             var content = '<div id="heatmap_mark"><div><span class="heatmap_mark_title">颜色对应RSSI信号强度</span> <span class="heatmap_mark_text" style="float:right;padding-top:5px" id="heatmap_mark_density">dBm</span></div><div class="linear_color"></div><span class="heatmap_blue heatmap_mark_text heatmap_color_span">-60以下</span><span class="heatmap_green heatmap_mark_text heatmap_color_span">-60至-80</span><span class="heatmap_yellow heatmap_mark_text heatmap_color_span">-80至-100</span><span class="heatmap_red heatmap_mark_text heatmap_color_span">-100至-120</span><span class="heatmap_result_red heatmap_mark_text heatmap_color_span">-120以上</span></div>';
                             div.innerHTML = content;
 
@@ -312,29 +312,32 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                           };
 
                           var myZoomCtrl = new ZoomControl();
+                          // eslint-disable-next-line eqeqeq
                           that.map.addControl(myZoomCtrl);
-                        } else if (fport == "33") {
+                          // eslint-disable-next-line eqeqeq
+                        } else if (fport == '33') {
                           var polyline = new BMap.Polyline(lineArray, {
                             enableEditing: false,
                             enableClicking: true,
-                            strokeWeight: "4",
+                            strokeWeight: '4',
                             strokeOpacity: 0.5,
-                            strokeColor: "blue"
+                            strokeColor: 'blue'
                           });
                           that.map.addOverlay(polyline);
                         } else {
-                          for (var _i in markerArray) {
-                            that.addMarker(markerArray[_i].point, BMap, markerArray[_i].data);
+                          for (var _i2 in markerArray) {
+                            that.addMarker(markerArray[_i2].point, BMap, markerArray[_i2].data);
                           }
                         }
                       }
                     } else {
-                      console.log("转换出错: " + returnedData.status);
+                      console.log('转换出错: ' + returnedData.status);
                     }
                   }
+
                   // 转换坐标
                   var point = new BMap.Point(gps.lng, gps.lat);
-                  convertor.translate(new Array(point), 1, 5, translateCallback);
+                  convertor.translate(new Array(point), 5, 5, translateCallback); // 不转换
                 };
 
                 var fport = _this2.data[0].fport;
@@ -343,11 +346,10 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 var markerArray = [];
                 var convertor = new BMap.Convertor();
 
-                rawLength = 0;
-                translatedElements = [];
+                var rawLength = 0;
+                var translatedElements = [];
 
-
-                for (i = 0; i < list.length; i++) {
+                for (var i = 0; i < list.length; i++) {
                   setTimeout(function (index) {
                     return function () {
                       if (list[index].lng > 0 && list[index].lat > 0) {
@@ -404,7 +406,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
           key: 'setAK',
           value: function setAK() {
             var x = document.body;
-            var s = document.getElementsByTagName("script");
+            var s = document.getElementsByTagName('script');
             var len = s.length;
             x.removeChild(s[len - 1]);
             delete this.map;
