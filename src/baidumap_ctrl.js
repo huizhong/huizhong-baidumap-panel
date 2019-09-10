@@ -130,11 +130,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
     const marker = new BMap.Marker(point, {icon: myIcon});
 
     this.markers.push(marker);
-    if (this.markers.length == this.data.length) {
-      const markerClusterer = new BMapLib.MarkerClusterer(this.map, {
-        markers: this.markers
-      });
-    }
+
     // this.map.setViewport(pointArray);
     marker.enableDragging();
     let scontent = '';
@@ -207,7 +203,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 } else if (fport == '33') {
                   lineArray.push(translatedElements[i].point);
                 } else {
-                  markerArray.push({point: translatedElements[i].points, data: translatedElements[i].gps});
+                  markerArray.push({point: translatedElements[i].point, data: translatedElements[i].gps});
                 }
               }
 
@@ -268,10 +264,13 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 });
                 that.map.addOverlay(polyline);
               }
-              if (markerArray.length > 0){
+              if (markerArray.length > 0) {
                 for (let i = 0; i < markerArray.length; i++) {
                   that.addMarker(markerArray[i].point, BMap, markerArray[i].data);
                 }
+                new BMapLib.MarkerClusterer(this.map, {
+                  markers: this.markers
+                });
               }
             }
           } else {
