@@ -259,7 +259,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                           return a.index - b.index;
                         });
                         for (var _i = 0; _i < translatedElements.length; _i++) {
-                          var fport = this.data[0].fport;
+                          var fport = translatedElements[_i].gps.fport;
                           if (fport == '5') {
                             var heatPoint = {
                               lng: translatedElements[_i].point.lng,

@@ -196,7 +196,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 return a.index - b.index;
               });
               for (let i = 0; i < translatedElements.length; i++) {
-                const fport = this.data[0].fport;
+                const fport = translatedElements[i].gps.fport;
                 if (fport == '5') {
                   const heatPoint = {
                     lng: translatedElements[i].point.lng,
