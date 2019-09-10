@@ -14,3 +14,19 @@ npm install
 ```bush
 grunt
 ```
+
+### 添加数据示例代码
+
+数据源mysql，Location Data：json result
+
+select
+now() as time, 
+116.487823 as lat,
+39.991956 as lng,
+-10 as rssi,
+'设备编号xxx' as devEUI,
+'设备类型xxx' as type
+
+### 图标替换
+images/pins6-poi.png 地图页图标
+images/pins6.png 详情页图标
