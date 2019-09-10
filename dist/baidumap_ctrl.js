@@ -239,8 +239,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
         }, {
           key: 'addNode',
           value: function addNode(BMap) {
-            var _this2 = this;
-
             var that = this;
             var list = this.data;
             this.map.clearOverlays();
@@ -253,25 +251,30 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                       translatedElements.push({
                         index: index,
                         point: returnedData.points[0],
-                        rssi: gps.rssi
+                        gps: gps
                       });
-                      markerArray.push({ point: returnedData.points[0], data: gps });
 
                       if (translatedElements.length == rawLength) {
                         translatedElements.sort(function (a, b) {
                           return a.index - b.index;
                         });
                         for (var _i = 0; _i < translatedElements.length; _i++) {
-                          lineArray.push(translatedElements[_i].point);
-                          var heatPoint = {
-                            lng: translatedElements[_i].point.lng,
-                            lat: translatedElements[_i].point.lat,
-                            count: translatedElements[_i].rssi
-                          };
-                          heatArray.push(heatPoint);
+                          var fport = this.data[0].fport;
+                          if (fport == '5') {
+                            var heatPoint = {
+                              lng: translatedElements[_i].point.lng,
+                              lat: translatedElements[_i].point.lat,
+                              count: translatedElements[_i].gps.rssi
+                            };
+                            heatArray.push(heatPoint);
+                          } else if (fport == '33') {
+                            lineArray.push(translatedElements[_i].point);
+                          } else {
+                            markerArray.push({ point: translatedElements[_i].points, data: translatedElements[_i].gps });
+                          }
                         }
 
-                        if (fport == '5') {
+                        if (heatArray.length > 0) {
                           var setGradient = function setGradient() {
                             var gradient = {};
                             var colors = document.querySelectorAll('input[type=\'color\']');
@@ -315,7 +318,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                           // eslint-disable-next-line eqeqeq
                           that.map.addControl(myZoomCtrl);
                           // eslint-disable-next-line eqeqeq
-                        } else if (fport == '33') {
+                        }
+                        if (lineArray.length > 0) {
                           var polyline = new BMap.Polyline(lineArray, {
                             enableEditing: false,
                             enableClicking: true,
@@ -324,8 +328,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                             strokeColor: 'blue'
                           });
                           that.map.addOverlay(polyline);
-                        } else {
-                          for (var _i2 in markerArray) {
+                        }
+                        if (markerArray.length > 0) {
+                          for (var _i2 = 0; _i2 < markerArray.length; _i2++) {
                             that.addMarker(markerArray[_i2].point, BMap, markerArray[_i2].data);
                           }
                         }
@@ -340,7 +345,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                   convertor.translate(new Array(point), 5, 5, translateCallback); // 不转换
                 };
 
-                var fport = _this2.data[0].fport;
                 var lineArray = [];
                 var heatArray = [];
                 var markerArray = [];
@@ -365,10 +369,10 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
         }, {
           key: 'filterEmptyAndZeroValues',
           value: function filterEmptyAndZeroValues(data) {
-            var _this3 = this;
+            var _this2 = this;
 
             return _.filter(data, function (o) {
-              return !(_this3.panel.hideEmpty && _.isNil(o.value)) && !(_this3.panel.hideZero && o.value === 0);
+              return !(_this2.panel.hideEmpty && _.isNil(o.value)) && !(_this2.panel.hideZero && o.value === 0);
             });
           }
         }, {

@@ -1,4 +1,4 @@
-/* eslint-disable eqeqeq */
+/* eslint-disable eqeqeq,id-length,no-inner-declarations */
 /* eslint import/no-extraneous-dependencies: 0 */
 import {MetricsPanelCtrl} from 'app/plugins/sdk';
 import TimeSeries from 'app/core/time_series2';
@@ -163,7 +163,6 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
     this.map.clearOverlays();
     console.log(list);
     if (list) {
-      const fport = this.data[0].fport;
       const lineArray = [];
       const heatArray = [];
       const markerArray = [];
@@ -189,25 +188,30 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
             translatedElements.push({
               index: index,
               point: returnedData.points[0],
-              rssi: gps.rssi
+              gps: gps
             });
-            markerArray.push({point: returnedData.points[0], data: gps});
 
             if (translatedElements.length == rawLength) {
               translatedElements.sort(function (a, b) {
                 return a.index - b.index;
               });
               for (let i = 0; i < translatedElements.length; i++) {
-                lineArray.push(translatedElements[i].point);
-                const heatPoint = {
-                  lng: translatedElements[i].point.lng,
-                  lat: translatedElements[i].point.lat,
-                  count: translatedElements[i].rssi
-                };
-                heatArray.push(heatPoint);
+                const fport = this.data[0].fport;
+                if (fport == '5') {
+                  const heatPoint = {
+                    lng: translatedElements[i].point.lng,
+                    lat: translatedElements[i].point.lat,
+                    count: translatedElements[i].gps.rssi
+                  };
+                  heatArray.push(heatPoint);
+                } else if (fport == '33') {
+                  lineArray.push(translatedElements[i].point);
+                } else {
+                  markerArray.push({point: translatedElements[i].points, data: translatedElements[i].gps});
+                }
               }
 
-              if (fport == '5') {
+              if (heatArray.length > 0) {
                 // 热力图
                 if (!isSupportCanvas()) {
                   alert('热力图目前只支持有canvas支持的浏览器,您所使用的浏览器不能使用热力图功能~');
@@ -217,7 +221,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 heatmapOverlay.setDataSet({data: heatArray, max: 100});
 
                 function setGradient() {
-                  let gradient = {};
+                  const gradient = {};
                   let colors = document.querySelectorAll('input[type=\'color\']');
                   colors = [].slice.call(colors, 0);
                   colors.forEach(function (ele) {
@@ -228,7 +232,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
 
                 // 判断浏览区是否支持canvas
                 function isSupportCanvas() {
-                  let elem = document.createElement('canvas');
+                  const elem = document.createElement('canvas');
                   return !!(elem.getContext && elem.getContext('2d'));
                 }
 
@@ -253,7 +257,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 // eslint-disable-next-line eqeqeq
                 that.map.addControl(myZoomCtrl);
                 // eslint-disable-next-line eqeqeq
-              } else if (fport == '33') {
+              }
+              if (lineArray.length > 0) {
                 const polyline = new BMap.Polyline(lineArray, {
                   enableEditing: false,
                   enableClicking: true,
@@ -262,8 +267,9 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                   strokeColor: 'blue'
                 });
                 that.map.addOverlay(polyline);
-              } else {
-                for (const i in markerArray) {
+              }
+              if (markerArray.length > 0){
+                for (let i = 0; i < markerArray.length; i++) {
                   that.addMarker(markerArray[i].point, BMap, markerArray[i].data);
                 }
               }
