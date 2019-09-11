@@ -385,6 +385,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             }
                             if (layerArray.length > 0) {
                                 const canvasLayer = new BMap.CanvasLayer({
+                                    paneName: 'mapPane',
                                     zIndex: 1,
                                     update: updateLayer
                                 });
@@ -415,6 +416,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         }
                                     }
                                 }
+
                                 that.map.addOverlay(canvasLayer);
                             }
                         }
