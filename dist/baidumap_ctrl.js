@@ -368,9 +368,10 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                           that.map.addControl(myZoomCtrl);
                           // eslint-disable-next-line eqeqeq
                         }
-                        if (lineMap.length > 0) {
-                          for (var _i2 = 0; _i2 < lineMap.length; _i2++) {
-                            var polyline = new BMap.Polyline(lineMap[_i2], {
+                        var lineCount = Object.keys(lineMap).length;
+                        if (lineCount > 0) {
+                          for (var _i2 = 0; _i2 < lineCount; _i2++) {
+                            var polyline = new BMap.Polyline(Object.values(lineMap)[_i2], {
                               enableEditing: false,
                               enableClicking: true,
                               strokeWeight: '4',
