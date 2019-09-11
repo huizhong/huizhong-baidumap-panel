@@ -276,9 +276,10 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 that.map.addControl(myZoomCtrl);
                 // eslint-disable-next-line eqeqeq
               }
-              if (lineMap.length > 0) {
-                for (let i = 0; i < lineMap.length; i++) {
-                  const polyline = new BMap.Polyline(lineMap[i], {
+              const lineCount = Object.keys(lineMap).length;
+              if (lineCount > 0) {
+                for (let i = 0; i < lineCount; i++) {
+                  const polyline = new BMap.Polyline(Object.values(lineMap)[i], {
                     enableEditing: false,
                     enableClicking: true,
                     strokeWeight: '4',
