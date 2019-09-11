@@ -216,11 +216,14 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                   };
                   heatArray.push(heatPoint);
                 } else if (poiType === 'line') {
-                  const pointItem = Object.assign({}, translatedElements[i].point, {'poiType': poiType});
+                  const pointItem = translatedElements[i].point;
                   if (poiIndexKey in lineMap) {
-                    lineMap[poiIndexKey].push(pointItem);
+                    lineMap[poiIndexKey].points.push(pointItem);
                   } else {
-                    lineMap[poiIndexKey] = [pointItem];
+                    lineMap[poiIndexKey] = {
+                      poiType: poiType,
+                      points: [pointItem]
+                    };
                   }
                 } else {
                   markerArray.push({point: translatedElements[i].point, data: translatedElements[i].gps});
@@ -280,11 +283,11 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
               const lineCount = Object.keys(lineMap).length;
               if (lineCount > 0) {
                 for (let i = 0; i < lineCount; i++) {
-                  const points = Object.values(lineMap)[i];
-                  if (points[0].poiType === 'polygon') {
-                    points.push(points[0]);
+                  const lines = Object.values(lineMap)[i];
+                  if (lines.poiType === 'polygon') {
+                    lines.points.push(lines.points[0]);
                   }
-                  const polyline = new BMap.Polyline(points, {
+                  const polyline = new BMap.Polyline(lines.points, {
                     enableEditing: false,
                     enableClicking: true,
                     strokeWeight: '4',

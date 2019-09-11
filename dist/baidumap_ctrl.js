@@ -310,11 +310,14 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                             };
                             heatArray.push(heatPoint);
                           } else if (poiType === 'line') {
-                            var pointItem = Object.assign({}, translatedElements[_i].point, { 'poiType': poiType });
+                            var pointItem = translatedElements[_i].point;
                             if (poiIndexKey in lineMap) {
-                              lineMap[poiIndexKey].push(pointItem);
+                              lineMap[poiIndexKey].points.push(pointItem);
                             } else {
-                              lineMap[poiIndexKey] = [pointItem];
+                              lineMap[poiIndexKey] = {
+                                poiType: poiType,
+                                points: [pointItem]
+                              };
                             }
                           } else {
                             markerArray.push({ point: translatedElements[_i].point, data: translatedElements[_i].gps });
@@ -372,11 +375,11 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         var lineCount = Object.keys(lineMap).length;
                         if (lineCount > 0) {
                           for (var _i2 = 0; _i2 < lineCount; _i2++) {
-                            var points = Object.values(lineMap)[_i2];
-                            if (points[0].poiType === 'polygon') {
-                              points.push(points[0]);
+                            var lines = Object.values(lineMap)[_i2];
+                            if (lines.poiType === 'polygon') {
+                              lines.points.push(lines.points[0]);
                             }
-                            var polyline = new BMap.Polyline(points, {
+                            var polyline = new BMap.Polyline(lines.points, {
                               enableEditing: false,
                               enableClicking: true,
                               strokeWeight: '4',
