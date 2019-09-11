@@ -506,7 +506,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
 
                                                     var canvasLayer = new BMap.CanvasLayer({
                                                         paneName: 'vertexPane',
-                                                        zIndex: 1,
+                                                        zIndex: -999,
                                                         update: updateLayer
                                                     });
 

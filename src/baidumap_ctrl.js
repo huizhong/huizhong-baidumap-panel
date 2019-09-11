@@ -386,7 +386,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             if (layerArray.length > 0) {
                                 const canvasLayer = new BMap.CanvasLayer({
                                     paneName: 'vertexPane',
-                                    zIndex: 1,
+                                    zIndex: -999,
                                     update: updateLayer
                                 });
 
