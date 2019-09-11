@@ -26,7 +26,7 @@ now() as time,
 '设备编号xxx' as devEUI,
 '设备类型xxx' as type
 
-选填参数 poiType，如果填'line'的话对应线条，填'heat'的话，对应图力图
+选填参数 poiType，如果填'line'的话对应线条，如果填'polygon'的话对应多边形（自动连接尾首），填'heat'的话，对应图力图
 支持批量点。字段为 pos: "lng1|lat1;lng2|lat2;lng3|lat3"
 
 ### 图标替换
