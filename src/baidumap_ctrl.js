@@ -175,17 +175,15 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         setTimeout((function (poiIndex) {
           return function () {
             if (poiList[poiIndex].pos && poiList[poiIndex].pos.length > 0) {
-              const gpsList = poiList[poiIndex].split(';');
+              const gpsList = poiList[poiIndex].pos.split(';');
               for (let gpsIndex = 0; gpsIndex < gpsList.length; gpsIndex++) {
                 const gpsStr = gpsList[gpsIndex];
                 const [lng, lat] = gpsStr.split('|');
                 const gpsItem = Object.assign({}, poiList[poiIndex]);
-                gpsItem.lng = lng;
-                gpsItem.lat = lat;
+                gpsItem.lng = parseFloat(lng);
+                gpsItem.lat = parseFloat(lat);
                 translateOne(poiIndex, gpsIndex, gpsItem, BMap);
               }
-            } else if (poiList[poiIndex].lng > 0 && poiList[poiIndex].lat > 0) {
-              translateOne(poiIndex, 0, poiList[poiIndex], BMap);
             }
           };
         }(i)), i * 10);

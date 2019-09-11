@@ -21,8 +21,7 @@ grunt
 
 select
 now() as time, 
-116.487823 as lat,
-39.991956 as lng,
+'116.487823|39.991956' as pos,
 -10 as rssi,
 '设备编号xxx' as devEUI,
 '设备类型xxx' as type

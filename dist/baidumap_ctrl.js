@@ -411,7 +411,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                   setTimeout(function (poiIndex) {
                     return function () {
                       if (poiList[poiIndex].pos && poiList[poiIndex].pos.length > 0) {
-                        var gpsList = poiList[poiIndex].split(';');
+                        var gpsList = poiList[poiIndex].pos.split(';');
                         for (var gpsIndex = 0; gpsIndex < gpsList.length; gpsIndex++) {
                           var gpsStr = gpsList[gpsIndex];
 
@@ -421,12 +421,10 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                               lat = _gpsStr$split2[1];
 
                           var gpsItem = Object.assign({}, poiList[poiIndex]);
-                          gpsItem.lng = lng;
-                          gpsItem.lat = lat;
+                          gpsItem.lng = parseFloat(lng);
+                          gpsItem.lat = parseFloat(lat);
                           translateOne(poiIndex, gpsIndex, gpsItem, BMap);
                         }
-                      } else if (poiList[poiIndex].lng > 0 && poiList[poiIndex].lat > 0) {
-                        translateOne(poiIndex, 0, poiList[poiIndex], BMap);
                       }
                     };
                   }(i), i * 10);
