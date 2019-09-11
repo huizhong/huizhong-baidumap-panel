@@ -487,13 +487,17 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         convertor.translate(sourcePointList, sourceGpsId, 5, translateCallback);
                                     } else {
                                         // 不转换 直接返回
-                                        translateCallback({
-                                            status: 0,
-                                            points: [{
-                                                lng: gps.lng,
-                                                lat: gps.lat
-                                            }]
-                                        });
+                                        setTimeout(function () {
+                                            return function () {
+                                                translateCallback({
+                                                    status: 0,
+                                                    points: [{
+                                                        lng: gps.lng,
+                                                        lat: gps.lat
+                                                    }]
+                                                });
+                                            };
+                                        }(), 10);
                                     }
                                 };
 
