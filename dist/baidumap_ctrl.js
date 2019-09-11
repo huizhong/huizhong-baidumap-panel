@@ -3,7 +3,7 @@
 System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn', 'lodash', './map_renderer', './data_formatter', './libs/baidumap.js', 'jquery'], function (_export, _context) {
   "use strict";
 
-  var MetricsPanelCtrl, TimeSeries, kbn, _, mapRenderer, DataFormatter, MP, $, _typeof, _createClass, panelDefaults, BaidumapCtrl;
+  var MetricsPanelCtrl, TimeSeries, kbn, _, mapRenderer, DataFormatter, MP, $, _slicedToArray, _typeof, _createClass, panelDefaults, BaidumapCtrl;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -54,6 +54,44 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
       $ = _jquery.default;
     }],
     execute: function () {
+      _slicedToArray = function () {
+        function sliceIterator(arr, i) {
+          var _arr = [];
+          var _n = true;
+          var _d = false;
+          var _e = undefined;
+
+          try {
+            for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+              _arr.push(_s.value);
+
+              if (i && _arr.length === i) break;
+            }
+          } catch (err) {
+            _d = true;
+            _e = err;
+          } finally {
+            try {
+              if (!_n && _i["return"]) _i["return"]();
+            } finally {
+              if (_d) throw _e;
+            }
+          }
+
+          return _arr;
+        }
+
+        return function (arr, i) {
+          if (Array.isArray(arr)) {
+            return arr;
+          } else if (Symbol.iterator in Object(arr)) {
+            return sliceIterator(arr, i);
+          } else {
+            throw new TypeError("Invalid attempt to destructure non-iterable instance");
+          }
+        };
+      }();
+
       _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
         return typeof obj;
       } : function (obj) {
@@ -82,9 +120,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
         ak: 'QKCqsdHBbGxBnNbvUwWdUEBjonk7jUj6',
         maxDataPoints: 1,
         theme: 'normal',
-        lat: 39.915,
-        lng: 116.404,
-        initialZoom: 11,
+        lat: 39.968539,
+        lng: 116.497856,
+        initialZoom: 14,
         valueName: 'current',
         locationData: 'table',
         icon: 'Label',
@@ -240,41 +278,49 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
           key: 'addNode',
           value: function addNode(BMap) {
             var that = this;
-            var list = this.data;
+            var poiList = this.data;
             this.map.clearOverlays();
-            console.log(list);
-            if (list) {
+            console.log(poiList);
+            if (poiList) {
               (function () {
-                var translateOne = function translateOne(index, gps, BMap) {
+                var translateOne = function translateOne(poiIndex, gpsIndex, gps, BMap) {
+                  rawLength += 1;
+
                   function translateCallback(returnedData) {
                     if (returnedData.status == 0) {
                       translatedElements.push({
-                        index: index,
+                        poiIndex: poiIndex,
+                        gpsIndex: gpsIndex,
                         point: returnedData.points[0],
                         gps: gps
                       });
 
                       if (translatedElements.length == rawLength) {
                         translatedElements.sort(function (a, b) {
-                          return a.index - b.index;
+                          return (a.poiIndex - b.poiIndex) * 1000000 + (a.gpsIndex - b.gpsIndex);
                         });
                         for (var _i = 0; _i < translatedElements.length; _i++) {
-                          var fport = translatedElements[_i].gps.fport;
-                          if (fport == '5') {
+                          var poiType = translatedElements[_i].gps.poiType;
+                          var _poiIndex = translatedElements[_i].gps.poiIndex;
+                          if (poiType === 'heat') {
                             var heatPoint = {
                               lng: translatedElements[_i].point.lng,
                               lat: translatedElements[_i].point.lat,
                               count: translatedElements[_i].gps.rssi
                             };
                             heatArray.push(heatPoint);
-                          } else if (fport == '33') {
-                            lineArray.push(translatedElements[_i].point);
+                          } else if (poiType === 'line') {
+                            if (_poiIndex in lineMap) {
+                              lineMap[_poiIndex].push(translatedElements[_i].point);
+                            } else {
+                              lineMap[_poiIndex] = [translatedElements[_i].point];
+                            }
                           } else {
                             markerArray.push({ point: translatedElements[_i].point, data: translatedElements[_i].gps });
                           }
                         }
                         console.log('markerArray', markerArray);
-                        console.log('lineArray', lineArray);
+                        console.log('lineMap', lineMap);
                         console.log('heatArray', heatArray);
 
                         if (heatArray.length > 0) {
@@ -322,19 +368,21 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                           that.map.addControl(myZoomCtrl);
                           // eslint-disable-next-line eqeqeq
                         }
-                        if (lineArray.length > 0) {
-                          var polyline = new BMap.Polyline(lineArray, {
-                            enableEditing: false,
-                            enableClicking: true,
-                            strokeWeight: '4',
-                            strokeOpacity: 0.5,
-                            strokeColor: 'blue'
-                          });
-                          that.map.addOverlay(polyline);
+                        if (lineMap.length > 0) {
+                          for (var _i2 = 0; _i2 < lineMap.length; _i2++) {
+                            var polyline = new BMap.Polyline(lineMap[_i2], {
+                              enableEditing: false,
+                              enableClicking: true,
+                              strokeWeight: '4',
+                              strokeOpacity: 0.5,
+                              strokeColor: 'blue'
+                            });
+                            that.map.addOverlay(polyline);
+                          }
                         }
                         if (markerArray.length > 0) {
-                          for (var _i2 = 0; _i2 < markerArray.length; _i2++) {
-                            that.addMarker(markerArray[_i2].point, BMap, markerArray[_i2].data);
+                          for (var _i3 = 0; _i3 < markerArray.length; _i3++) {
+                            that.addMarker(markerArray[_i3].point, BMap, markerArray[_i3].data);
                           }
                           new BMapLib.MarkerClusterer(this.map, {
                             markers: this.markers
@@ -351,7 +399,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                   convertor.translate(new Array(point), 5, 5, translateCallback); // 不转换
                 };
 
-                var lineArray = [];
+                var lineMap = [];
                 var heatArray = [];
                 var markerArray = [];
                 var convertor = new BMap.Convertor();
@@ -359,12 +407,26 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 var rawLength = 0;
                 var translatedElements = [];
 
-                for (var i = 0; i < list.length; i++) {
-                  setTimeout(function (index) {
+                for (var i = 0; i < poiList.length; i++) {
+                  setTimeout(function (poiIndex) {
                     return function () {
-                      if (list[index].lng > 0 && list[index].lat > 0) {
-                        rawLength++;
-                        translateOne(index, list[index], BMap);
+                      if (poiList[poiIndex].pos && poiList[poiIndex].pos.length > 0) {
+                        var gpsList = poiList[poiIndex].split(';');
+                        for (var gpsIndex = 0; gpsIndex < gpsList.length; gpsIndex++) {
+                          var gpsStr = gpsList[gpsIndex];
+
+                          var _gpsStr$split = gpsStr.split('|'),
+                              _gpsStr$split2 = _slicedToArray(_gpsStr$split, 2),
+                              lng = _gpsStr$split2[0],
+                              lat = _gpsStr$split2[1];
+
+                          var gpsItem = Object.assign({}, poiList[poiIndex]);
+                          gpsItem.lng = lng;
+                          gpsItem.lat = lat;
+                          translateOne(poiIndex, gpsIndex, gpsItem, BMap);
+                        }
+                      } else if (poiList[poiIndex].lng > 0 && poiList[poiIndex].lat > 0) {
+                        translateOne(poiIndex, 0, poiList[poiIndex], BMap);
                       }
                     };
                   }(i), i * 10);

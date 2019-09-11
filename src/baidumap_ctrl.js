@@ -1,4 +1,4 @@
-/* eslint-disable eqeqeq,id-length,no-inner-declarations */
+/* eslint-disable eqeqeq,id-length,no-inner-declarations,no-plusplus */
 /* eslint import/no-extraneous-dependencies: 0 */
 import {MetricsPanelCtrl} from 'app/plugins/sdk';
 import TimeSeries from 'app/core/time_series2';
@@ -14,9 +14,9 @@ const panelDefaults = {
   ak: 'QKCqsdHBbGxBnNbvUwWdUEBjonk7jUj6',
   maxDataPoints: 1,
   theme: 'normal',
-  lat: 39.915,
-  lng: 116.404,
-  initialZoom: 11,
+  lat: 39.968539,
+  lng: 116.497856,
+  initialZoom: 14,
   valueName: 'current',
   locationData: 'table',
   icon: 'Label',
@@ -159,11 +159,11 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
 
   addNode(BMap) {
     const that = this;
-    const list = this.data;
+    const poiList = this.data;
     this.map.clearOverlays();
-    console.log(list);
-    if (list) {
-      const lineArray = [];
+    console.log(poiList);
+    if (poiList) {
+      const lineMap = [];
       const heatArray = [];
       const markerArray = [];
       const convertor = new BMap.Convertor();
@@ -171,47 +171,64 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
       let rawLength = 0;
       const translatedElements = [];
 
-      for (let i = 0; i < list.length; i++) {
-        setTimeout((function (index) {
+      for (let i = 0; i < poiList.length; i++) {
+        setTimeout((function (poiIndex) {
           return function () {
-            if (list[index].lng > 0 && list[index].lat > 0) {
-              rawLength++;
-              translateOne(index, list[index], BMap);
+            if (poiList[poiIndex].pos && poiList[poiIndex].pos.length > 0) {
+              const gpsList = poiList[poiIndex].split(';');
+              for (let gpsIndex = 0; gpsIndex < gpsList.length; gpsIndex++) {
+                const gpsStr = gpsList[gpsIndex];
+                const [lng, lat] = gpsStr.split('|');
+                const gpsItem = Object.assign({}, poiList[poiIndex]);
+                gpsItem.lng = lng;
+                gpsItem.lat = lat;
+                translateOne(poiIndex, gpsIndex, gpsItem, BMap);
+              }
+            } else if (poiList[poiIndex].lng > 0 && poiList[poiIndex].lat > 0) {
+              translateOne(poiIndex, 0, poiList[poiIndex], BMap);
             }
           };
         }(i)), i * 10);
       }
 
-      function translateOne(index, gps, BMap) {
+      function translateOne(poiIndex, gpsIndex, gps, BMap) {
+        rawLength += 1;
+
         function translateCallback(returnedData) {
           if (returnedData.status == 0) {
             translatedElements.push({
-              index: index,
+              poiIndex: poiIndex,
+              gpsIndex: gpsIndex,
               point: returnedData.points[0],
-              gps: gps
+              gps: gps,
             });
 
             if (translatedElements.length == rawLength) {
               translatedElements.sort(function (a, b) {
-                return a.index - b.index;
+                return ((a.poiIndex - b.poiIndex) * 1000000) + (a.gpsIndex - b.gpsIndex);
               });
               for (let i = 0; i < translatedElements.length; i++) {
-                const fport = translatedElements[i].gps.fport;
-                if (fport == '5') {
+                const poiType = translatedElements[i].gps.poiType;
+                const poiIndex = translatedElements[i].gps.poiIndex;
+                if (poiType === 'heat') {
                   const heatPoint = {
                     lng: translatedElements[i].point.lng,
                     lat: translatedElements[i].point.lat,
                     count: translatedElements[i].gps.rssi
                   };
                   heatArray.push(heatPoint);
-                } else if (fport == '33') {
-                  lineArray.push(translatedElements[i].point);
+                } else if (poiType === 'line') {
+                  if (poiIndex in lineMap) {
+                    lineMap[poiIndex].push(translatedElements[i].point);
+                  } else {
+                    lineMap[poiIndex] = [translatedElements[i].point];
+                  }
                 } else {
                   markerArray.push({point: translatedElements[i].point, data: translatedElements[i].gps});
                 }
               }
               console.log('markerArray', markerArray);
-              console.log('lineArray', lineArray);
+              console.log('lineMap', lineMap);
               console.log('heatArray', heatArray);
 
               if (heatArray.length > 0) {
@@ -261,15 +278,17 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 that.map.addControl(myZoomCtrl);
                 // eslint-disable-next-line eqeqeq
               }
-              if (lineArray.length > 0) {
-                const polyline = new BMap.Polyline(lineArray, {
-                  enableEditing: false,
-                  enableClicking: true,
-                  strokeWeight: '4',
-                  strokeOpacity: 0.5,
-                  strokeColor: 'blue'
-                });
-                that.map.addOverlay(polyline);
+              if (lineMap.length > 0) {
+                for (let i = 0; i < lineMap.length; i++) {
+                  const polyline = new BMap.Polyline(lineMap[i], {
+                    enableEditing: false,
+                    enableClicking: true,
+                    strokeWeight: '4',
+                    strokeOpacity: 0.5,
+                    strokeColor: 'blue'
+                  });
+                  that.map.addOverlay(polyline);
+                }
               }
               if (markerArray.length > 0) {
                 for (let i = 0; i < markerArray.length; i++) {
