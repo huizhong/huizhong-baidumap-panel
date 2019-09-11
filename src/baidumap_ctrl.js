@@ -389,20 +389,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     sourceGpsId = 3;
                 }
                 // if (sourceGpsId !== 5) {
-                    convertor.translate(sourcePointList, sourceGpsId, 5, translateCallback);
-                // } else { // 不转换 直接返回
-                //     setTimeout((function () {
-                //         return function () {
-                //             translateCallback({
-                //                 status: 0,
-                //                 points: [{
-                //                     lng: gps.lng,
-                //                     lat: gps.lat
-                //                 }]
-                //             });
-                //         };
-                //     }()), 10);
-                }
+                convertor.translate(sourcePointList, sourceGpsId, 5, translateCallback);
             }
         }
     }
