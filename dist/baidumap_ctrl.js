@@ -486,8 +486,11 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                     if (sourceGpsId !== 5) {
                                         convertor.translate(sourcePointList, sourceGpsId, 5, translateCallback);
                                     } else {
-                                        translateCallback(sourcePointList);
-                                        // 不转换
+                                        // 不转换 直接返回
+                                        translateCallback({
+                                            status: 0,
+                                            points: sourcePointList
+                                        });
                                     }
                                 };
 
