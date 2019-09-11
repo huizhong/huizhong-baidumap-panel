@@ -301,7 +301,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         });
                         for (var _i = 0; _i < translatedElements.length; _i++) {
                           var poiType = translatedElements[_i].gps.poiType;
-                          var poiIndexKey = 'key_' + translatedElements[_i].gps.poiIndex;
+                          var poiIndexKey = 'key_' + translatedElements[_i].poiIndex;
                           if (poiType === 'heat') {
                             var heatPoint = {
                               lng: translatedElements[_i].point.lng,

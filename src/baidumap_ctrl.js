@@ -209,7 +209,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
               });
               for (let i = 0; i < translatedElements.length; i++) {
                 const poiType = translatedElements[i].gps.poiType;
-                const poiIndexKey = 'key_' + translatedElements[i].gps.poiIndex;
+                const poiIndexKey = 'key_' + translatedElements[i].poiIndex;
                 if (poiType === 'heat') {
                   const heatPoint = {
                     lng: translatedElements[i].point.lng,
