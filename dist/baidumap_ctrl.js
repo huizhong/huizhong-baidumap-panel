@@ -505,6 +505,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     };
 
                                                     var canvasLayer = new BMap.CanvasLayer({
+                                                        paneName: 'mapPane',
                                                         zIndex: 1,
                                                         update: updateLayer
                                                     });
