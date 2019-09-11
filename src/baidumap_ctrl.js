@@ -390,9 +390,11 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 }
                 if (sourceGpsId !== 5) {
                     convertor.translate(sourcePointList, sourceGpsId, 5, translateCallback);
-                } else {
-                    translateCallback(sourcePointList);
-                    // 不转换
+                } else { // 不转换 直接返回
+                    translateCallback({
+                        status: 0,
+                        points: sourcePointList
+                    });
                 }
             }
         }
