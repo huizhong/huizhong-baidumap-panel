@@ -79,7 +79,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
     }
 
     // 获取色块对应的矩形相对于地图的像素值
-    function getDotRect(_this, lng, lat) {
+    function getDotRect(mp, lng, lat) {
         var squareSize = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 20;
         var isCenterPoint = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
 
@@ -88,8 +88,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
         var lngDelta = squareSize / (standardLen * xScale);
         var latDelta = squareSize / standardLen;
 
-        var pixel = _this.map.pointToPixel(isCenterPoint ? new window.BMap.Point(lng + lngDelta / 2, lat + latDelta / 2) : new window.BMap.Point(lng, lat));
-        var pixel2 = _this.map.pointToPixel(isCenterPoint ? new window.BMap.Point(lng - lngDelta / 2, lat - latDelta / 2) : new window.BMap.Point(lng + lngDelta, lat + latDelta));
+        var pixel = mp.pointToPixel(isCenterPoint ? new window.BMap.Point(lng + lngDelta / 2, lat + latDelta / 2) : new window.BMap.Point(lng, lat));
+        var pixel2 = mp.pointToPixel(isCenterPoint ? new window.BMap.Point(lng - lngDelta / 2, lat - latDelta / 2) : new window.BMap.Point(lng + lngDelta, lat + latDelta));
         return {
             x: pixel.x,
             y: pixel.y,
@@ -205,19 +205,19 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 function BaidumapCtrl($scope, $injector, contextSrv) {
                     _classCallCheck(this, BaidumapCtrl);
 
-                    var _this2 = _possibleConstructorReturn(this, (BaidumapCtrl.__proto__ || Object.getPrototypeOf(BaidumapCtrl)).call(this, $scope, $injector));
+                    var _this = _possibleConstructorReturn(this, (BaidumapCtrl.__proto__ || Object.getPrototypeOf(BaidumapCtrl)).call(this, $scope, $injector));
 
-                    _this2.setMapProvider(contextSrv);
-                    _.defaults(_this2.panel, panelDefaults);
+                    _this.setMapProvider(contextSrv);
+                    _.defaults(_this.panel, panelDefaults);
 
-                    _this2.dataFormatter = new DataFormatter(_this2, kbn);
-                    _this2.markers = [];
-                    _this2.events.on('init-edit-mode', _this2.onInitEditMode.bind(_this2));
-                    _this2.events.on('data-received', _this2.onDataReceived.bind(_this2));
-                    _this2.events.on('panel-teardown', _this2.onPanelTeardown.bind(_this2));
-                    _this2.events.on('data-snapshot-load', _this2.onDataSnapshotLoad.bind(_this2));
+                    _this.dataFormatter = new DataFormatter(_this, kbn);
+                    _this.markers = [];
+                    _this.events.on('init-edit-mode', _this.onInitEditMode.bind(_this));
+                    _this.events.on('data-received', _this.onDataReceived.bind(_this));
+                    _this.events.on('panel-teardown', _this.onPanelTeardown.bind(_this));
+                    _this.events.on('data-snapshot-load', _this.onDataSnapshotLoad.bind(_this));
                     // this.loadLocationDataFromFile();
-                    return _this2;
+                    return _this;
                 }
 
                 _createClass(BaidumapCtrl, [{
@@ -567,10 +567,10 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 }, {
                     key: 'filterEmptyAndZeroValues',
                     value: function filterEmptyAndZeroValues(data) {
-                        var _this3 = this;
+                        var _this2 = this;
 
                         return _.filter(data, function (o) {
-                            return !(_this3.panel.hideEmpty && _.isNil(o.value)) && !(_this3.panel.hideZero && o.value === 0);
+                            return !(_this2.panel.hideEmpty && _.isNil(o.value)) && !(_this2.panel.hideZero && o.value === 0);
                         });
                     }
                 }, {

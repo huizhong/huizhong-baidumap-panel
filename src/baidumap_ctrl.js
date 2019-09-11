@@ -73,14 +73,14 @@ function getColor(orginBili, alpha) {
 }
 
 // 获取色块对应的矩形相对于地图的像素值
-function getDotRect(_this, lng, lat, squareSize = 20, isCenterPoint = true) {
+function getDotRect(mp, lng, lat, squareSize = 20, isCenterPoint = true) {
     const standardLen = 111700;
     const xScale = Math.cos(lat * Math.PI / 180);
     const lngDelta = squareSize / (standardLen * xScale);
     const latDelta = squareSize / (standardLen);
 
-    const pixel = _this.map.pointToPixel(isCenterPoint ? new window.BMap.Point(lng + lngDelta / 2, lat + latDelta / 2) : new window.BMap.Point(lng, lat));
-    const pixel2 = _this.map.pointToPixel(isCenterPoint ? new window.BMap.Point(lng - lngDelta / 2, lat - latDelta / 2) : new window.BMap.Point(lng + lngDelta, lat + latDelta));
+    const pixel = mp.pointToPixel(isCenterPoint ? new window.BMap.Point(lng + lngDelta / 2, lat + latDelta / 2) : new window.BMap.Point(lng, lat));
+    const pixel2 = mp.pointToPixel(isCenterPoint ? new window.BMap.Point(lng - lngDelta / 2, lat - latDelta / 2) : new window.BMap.Point(lng + lngDelta, lat + latDelta));
     return {
         x: pixel.x,
         y: pixel.y,
