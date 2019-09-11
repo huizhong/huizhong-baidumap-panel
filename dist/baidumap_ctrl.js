@@ -244,9 +244,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
         }, {
           key: 'addMarker',
           value: function addMarker(point, BMap, data) {
-            var myIcon = new BMap.Icon('public/plugins/grafana-baidumap-panel/images/bike.png', new window.BMap.Size(18, 21), {
-              imageSize: new window.BMap.Size(18, 21),
-              anchor: new window.BMap.Size(9, 21)
+            var myIcon = new BMap.Icon('public/plugins/grafana-baidumap-panel/images/bike.png', new window.BMap.Size(24, 28), {
+              imageSize: new window.BMap.Size(24, 28),
+              anchor: new window.BMap.Size(12, 28)
             });
 
             var marker = new BMap.Marker(point, { icon: myIcon });
@@ -310,10 +310,11 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                             };
                             heatArray.push(heatPoint);
                           } else if (poiType === 'line') {
+                            var pointItem = Object.assign({}, translatedElements[_i].point, { 'poiType': poiType });
                             if (poiIndexKey in lineMap) {
-                              lineMap[poiIndexKey].push(translatedElements[_i].point);
+                              lineMap[poiIndexKey].push(pointItem);
                             } else {
-                              lineMap[poiIndexKey] = [translatedElements[_i].point];
+                              lineMap[poiIndexKey] = [pointItem];
                             }
                           } else {
                             markerArray.push({ point: translatedElements[_i].point, data: translatedElements[_i].gps });
@@ -371,7 +372,11 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         var lineCount = Object.keys(lineMap).length;
                         if (lineCount > 0) {
                           for (var _i2 = 0; _i2 < lineCount; _i2++) {
-                            var polyline = new BMap.Polyline(Object.values(lineMap)[_i2], {
+                            var points = Object.values(lineMap)[_i2];
+                            if (points[0].poiType === 'polygon') {
+                              points.push(points[0]);
+                            }
+                            var polyline = new BMap.Polyline(points, {
                               enableEditing: false,
                               enableClicking: true,
                               strokeWeight: '4',
