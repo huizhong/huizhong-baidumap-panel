@@ -29,6 +29,19 @@ const panelDefaults = {
   hideZero: false,
   mapType: true
 };
+
+
+function getPoiExt(poiConfig, configName) {
+  const configItems = poiConfig.ext.split(',');
+  for (let i = 0; i < configItems.length; i++) {
+    const configPair = configItems[i].split(':');
+    if (configPair[0] === configName) {
+      return configPair[1];
+    }
+  }
+  return '';
+}
+
 export default class BaidumapCtrl extends MetricsPanelCtrl {
   constructor($scope, $injector, contextSrv) {
     super($scope, $injector);
@@ -140,9 +153,9 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
     let scontent = '';
     scontent += '<a href=""><div class="infobox" id="infobox"><div class="infobox-content" style="display:block">';
     scontent += '<div class="infobox-header"><div class="infobox-header-icon"><img src="public/plugins/grafana-baidumap-panel/images/pins6.png"></div>';
-    scontent += '<div class="infobox-header-name"><p>' + data.devEUI + '</p></div>';
-    scontent += '<div class="infobox-header-type" style="min-width:250px"><p>' + data.type + '</p></div></div>';
-    scontent += '<div class="infobox-footer">' + data.text + '</div>';
+    scontent += '<div class="infobox-header-name"><p>' + getPoiExt(data, 'name') + '</p></div>';
+    scontent += '<div class="infobox-header-type" style="min-width:250px"><p>' + getPoiExt(data, 'type') + '</p></div></div>';
+    scontent += '<div class="infobox-footer">' + getPoiExt(data, 'desc') + '</div>';
     scontent += '<div class="infobox-footer-right"></div></div><div class="arrow"></div></div></a>';
 
     const infoWindow = new BMap.InfoWindow(scontent); // 创建信息窗口对象
@@ -169,7 +182,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
       const convertor = new BMap.Convertor();
 
       let rawLength = 0;
-      const translatedElements = [];
+      const translatedItems = [];
 
       for (let i = 0; i < poiList.length; i++) {
         setTimeout((function (poiIndex) {
@@ -189,34 +202,36 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         }(i)), i * 10);
       }
 
+
       function translateOne(poiIndex, gpsIndex, gps, BMap) {
         rawLength += 1;
 
         function translateCallback(returnedData) {
           if (returnedData.status == 0) {
-            translatedElements.push({
+            translatedItems.push({
               poiIndex: poiIndex,
               gpsIndex: gpsIndex,
               point: returnedData.points[0],
               gps: gps,
             });
 
-            if (translatedElements.length == rawLength) {
-              translatedElements.sort(function (a, b) {
+            if (translatedItems.length == rawLength) {
+              translatedItems.sort(function (a, b) {
                 return ((a.poiIndex - b.poiIndex) * 1000000) + (a.gpsIndex - b.gpsIndex);
               });
-              for (let i = 0; i < translatedElements.length; i++) {
-                const poiType = translatedElements[i].gps.poiType;
-                const poiIndexKey = 'key_' + translatedElements[i].poiIndex;
+              for (let i = 0; i < translatedItems.length; i++) {
+                const translatedItem = translatedItems[i];
+                const poiType = translatedItem.gps.type;
+                const poiIndexKey = 'key_' + translatedItem.poiIndex;
                 if (poiType === 'heat') {
                   const heatPoint = {
-                    lng: translatedElements[i].point.lng,
-                    lat: translatedElements[i].point.lat,
-                    count: translatedElements[i].gps.rssi
+                    lng: translatedItem.point.lng,
+                    lat: translatedItem.point.lat,
+                    count: getPoiExt(translatedItem.gps, 'count')
                   };
                   heatArray.push(heatPoint);
                 } else if (poiType === 'line' || poiType === 'polygon') {
-                  const pointItem = translatedElements[i].point;
+                  const pointItem = translatedItem.point;
                   if (poiIndexKey in lineMap) {
                     lineMap[poiIndexKey].points.push(pointItem);
                   } else {
@@ -226,7 +241,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     };
                   }
                 } else {
-                  markerArray.push({point: translatedElements[i].point, data: translatedElements[i].gps});
+                  markerArray.push({point: translatedItem.point, data: translatedItem.gps});
                 }
               }
               console.log('markerArray', markerArray);
@@ -238,6 +253,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 if (!isSupportCanvas()) {
                   alert('热力图目前只支持有canvas支持的浏览器,您所使用的浏览器不能使用热力图功能~');
                 }
+                // http://xcx1024.com/ArtInfo/271881.html
                 const heatmapOverlay = new BMapLib.HeatmapOverlay({radius: 20});
                 that.map.addOverlay(heatmapOverlay);
                 heatmapOverlay.setDataSet({data: heatArray, max: 100});
@@ -266,13 +282,13 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
 
                 ZoomControl.prototype = new BMap.Control();
                 ZoomControl.prototype.initialize = function (map) {
-                  let div = document.createElement('div');
-                  let content = '<div id="heatmap_mark"><div><span class="heatmap_mark_title">颜色对应RSSI信号强度</span> <span class="heatmap_mark_text" style="float:right;padding-top:5px" id="heatmap_mark_density">dBm</span></div><div class="linear_color"></div><span class="heatmap_blue heatmap_mark_text heatmap_color_span">-60以下</span><span class="heatmap_green heatmap_mark_text heatmap_color_span">-60至-80</span><span class="heatmap_yellow heatmap_mark_text heatmap_color_span">-80至-100</span><span class="heatmap_red heatmap_mark_text heatmap_color_span">-100至-120</span><span class="heatmap_result_red heatmap_mark_text heatmap_color_span">-120以上</span></div>';
-                  div.innerHTML = content;
-
-                  that.map.getContainer()
-                    .appendChild(div);
-                  return div;
+                  // let div = document.createElement('div');
+                  // let content = '<div id="heatmap_mark"><div><span class="heatmap_mark_title">颜色对应RSSI信号强度</span> <span class="heatmap_mark_text" style="float:right;padding-top:5px" id="heatmap_mark_density">dBm</span></div><div class="linear_color"></div><span class="heatmap_blue heatmap_mark_text heatmap_color_span">-60以下</span><span class="heatmap_green heatmap_mark_text heatmap_color_span">-60至-80</span><span class="heatmap_yellow heatmap_mark_text heatmap_color_span">-80至-100</span><span class="heatmap_red heatmap_mark_text heatmap_color_span">-100至-120</span><span class="heatmap_result_red heatmap_mark_text heatmap_color_span">-120以上</span></div>';
+                  // div.innerHTML = content;
+                  //
+                  // that.map.getContainer()
+                  //   .appendChild(div);
+                  // return div;
                 };
 
                 const myZoomCtrl = new ZoomControl();
