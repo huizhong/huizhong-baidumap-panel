@@ -309,7 +309,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                               count: translatedElements[_i].gps.rssi
                             };
                             heatArray.push(heatPoint);
-                          } else if (poiType === 'line') {
+                          } else if (poiType === 'line' || poiType === 'polygon') {
                             var pointItem = translatedElements[_i].point;
                             if (poiIndexKey in lineMap) {
                               lineMap[poiIndexKey].points.push(pointItem);

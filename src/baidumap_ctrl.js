@@ -215,7 +215,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     count: translatedElements[i].gps.rssi
                   };
                   heatArray.push(heatPoint);
-                } else if (poiType === 'line') {
+                } else if (poiType === 'line' || poiType === 'polygon') {
                   const pointItem = translatedElements[i].point;
                   if (poiIndexKey in lineMap) {
                     lineMap[poiIndexKey].points.push(pointItem);
