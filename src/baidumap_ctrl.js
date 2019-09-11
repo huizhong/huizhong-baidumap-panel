@@ -209,7 +209,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
               });
               for (let i = 0; i < translatedElements.length; i++) {
                 const poiType = translatedElements[i].gps.poiType;
-                const poiIndex = translatedElements[i].gps.poiIndex;
+                const poiIndexKey = 'key_' + translatedElements[i].gps.poiIndex;
                 if (poiType === 'heat') {
                   const heatPoint = {
                     lng: translatedElements[i].point.lng,
@@ -218,10 +218,10 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                   };
                   heatArray.push(heatPoint);
                 } else if (poiType === 'line') {
-                  if (poiIndex in lineMap) {
-                    lineMap[poiIndex].push(translatedElements[i].point);
+                  if (poiIndexKey in lineMap) {
+                    lineMap[poiIndexKey].push(translatedElements[i].point);
                   } else {
-                    lineMap[poiIndex] = [translatedElements[i].point];
+                    lineMap[poiIndexKey] = [translatedElements[i].point];
                   }
                 } else {
                   markerArray.push({point: translatedElements[i].point, data: translatedElements[i].gps});
@@ -294,8 +294,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 for (let i = 0; i < markerArray.length; i++) {
                   that.addMarker(markerArray[i].point, BMap, markerArray[i].data);
                 }
-                new BMapLib.MarkerClusterer(this.map, {
-                  markers: this.markers
+                new BMapLib.MarkerClusterer(that.map, {
+                  markers: that.markers
                 });
               }
             }

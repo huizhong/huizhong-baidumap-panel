@@ -301,7 +301,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         });
                         for (var _i = 0; _i < translatedElements.length; _i++) {
                           var poiType = translatedElements[_i].gps.poiType;
-                          var _poiIndex = translatedElements[_i].gps.poiIndex;
+                          var poiIndexKey = 'key_' + translatedElements[_i].gps.poiIndex;
                           if (poiType === 'heat') {
                             var heatPoint = {
                               lng: translatedElements[_i].point.lng,
@@ -310,10 +310,10 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                             };
                             heatArray.push(heatPoint);
                           } else if (poiType === 'line') {
-                            if (_poiIndex in lineMap) {
-                              lineMap[_poiIndex].push(translatedElements[_i].point);
+                            if (poiIndexKey in lineMap) {
+                              lineMap[poiIndexKey].push(translatedElements[_i].point);
                             } else {
-                              lineMap[_poiIndex] = [translatedElements[_i].point];
+                              lineMap[poiIndexKey] = [translatedElements[_i].point];
                             }
                           } else {
                             markerArray.push({ point: translatedElements[_i].point, data: translatedElements[_i].gps });
@@ -384,8 +384,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                           for (var _i3 = 0; _i3 < markerArray.length; _i3++) {
                             that.addMarker(markerArray[_i3].point, BMap, markerArray[_i3].data);
                           }
-                          new BMapLib.MarkerClusterer(this.map, {
-                            markers: this.markers
+                          new BMapLib.MarkerClusterer(that.map, {
+                            markers: that.markers
                           });
                         }
                       }
