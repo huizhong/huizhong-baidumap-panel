@@ -43,6 +43,21 @@ now() as time,
 '116.487777|39.992133' as pos,
 '{"count":50}' as ext
 
+union
+
+select
+now() as time, 
+'block' as type,
+'116.487777|39.992133;116.484538|39.991283' as pos,
+'{"color":30,"size":20}' as ext
+union
+
+select
+now() as time, 
+'pie' as type,
+'116.487777|39.992133;116.490502|39.988408' as pos,
+'{"color":70,"size":40}' as ext
+
 
 点集pos格式为: "lng1|lat1;lng2|lat2;lng3|lat3"
 标记类型poiType，如果填'line'的话对应线条，如果填'polygon'的话对应多边形（自动连接尾首），填'heat'的话，对应图力图

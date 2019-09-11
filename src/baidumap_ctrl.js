@@ -18,7 +18,7 @@ const panelDefaults = {
     lng: 116.497856,
     initialZoom: 14,
     valueName: 'current',
-    locationData: 'table',
+    locationData: 'json result',
     gpsType: '百度坐标系',
     esMetric: 'Count',
     decimals: 0,
@@ -227,6 +227,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
             const lineMap = [];
             const heatArray = [];
             const markerArray = [];
+            const layerArray = [];
             const convertor = new BMap.Convertor();
 
             let rawLength = 0;
@@ -266,8 +267,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             translatedItems.sort(function (a, b) {
                                 return ((a.poiIndex - b.poiIndex) * 1000000) + (a.gpsIndex - b.gpsIndex);
                             });
-                            for (let i = 0; i < translatedItems.length; i++) {
-                                const translatedItem = translatedItems[i];
+                            for (let translateIndex = 0; translateIndex < translatedItems.length; translateIndex++) {
+                                const translatedItem = translatedItems[translateIndex];
                                 const poiType = translatedItem.gps.type;
                                 const poiIndexKey = 'key_' + translatedItem.poiIndex;
                                 if (poiType === 'heat') {
@@ -289,6 +290,15 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                             points: [pointItem]
                                         };
                                     }
+                                } else if (poiType === 'pie' || poiType === 'block') {
+                                    const layerItem = {
+                                        lng: translatedItem.point.lng,
+                                        lat: translatedItem.point.lat,
+                                        color: getPoiExt(translatedItem.gps, 'color', 100),
+                                        size: getPoiExt(translatedItem.gps, 'size', 20),
+                                        type: poiType
+                                    };
+                                    layerArray.push(layerItem);
                                 } else {
                                     markerArray.push({point: translatedItem.point, data: translatedItem.gps});
                                 }
@@ -296,6 +306,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             console.log('markerArray', markerArray);
                             console.log('lineMap', lineMap);
                             console.log('heatArray', heatArray);
+                            console.log('layerArray', layerArray);
 
                             if (heatArray.length > 0) {
                                 // 热力图
@@ -372,6 +383,40 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                     markers: that.markers
                                 });
                             }
+                            if (layerArray.length > 0) {
+                                const canvasLayer = new BMap.CanvasLayer({
+                                    zIndex: 1,
+                                    update: updateLayer
+                                });
+
+                                function updateLayer() {
+                                    const ctx = this.canvas.getContext('2d');
+
+                                    if (!ctx) {
+                                        return;
+                                    }
+                                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                                    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                                    ctx.beginPath();
+                                    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                                    for (let layerIndex = 0; layerIndex < layerArray.length; layerIndex++) {
+                                        const layerItem = layerArray[layerIndex];
+                                        ctx.fillStyle = getColor(layerItem.color, 0.5);
+                                        const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
+                                            parseFloat(layerItem.lat), layerItem.size);
+                                        console.log(posRect);
+
+                                        if (layerItem.type === 'pie') {
+                                            ctx.ellipse(posRect.x, posRect.y, -posRect.w, posRect.h, 0, 0, 2 * Math.PI);
+                                            ctx.fill();
+                                            ctx.beginPath();
+                                        } else {
+                                            ctx.fillRect(posRect.x, posRect.y, posRect.w, posRect.h);
+                                        }
+                                    }
+                                }
+                                that.map.addOverlay(canvasLayer);
+                            }
                         }
                     } else {
                         console.log('转换出错: ' + returnedData.status);
@@ -388,7 +433,6 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 } else if (sourceGps === 'GCJ02') {
                     sourceGpsId = 3;
                 }
-                // if (sourceGpsId !== 5) {
                 convertor.translate(sourcePointList, sourceGpsId, 5, translateCallback);
             }
         }

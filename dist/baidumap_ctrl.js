@@ -187,7 +187,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 lng: 116.497856,
                 initialZoom: 14,
                 valueName: 'current',
-                locationData: 'table',
+                locationData: 'json result',
                 gpsType: '百度坐标系',
                 esMetric: 'Count',
                 decimals: 0,
@@ -362,8 +362,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 translatedItems.sort(function (a, b) {
                                                     return (a.poiIndex - b.poiIndex) * 1000000 + (a.gpsIndex - b.gpsIndex);
                                                 });
-                                                for (var _i = 0; _i < translatedItems.length; _i++) {
-                                                    var translatedItem = translatedItems[_i];
+                                                for (var translateIndex = 0; translateIndex < translatedItems.length; translateIndex++) {
+                                                    var translatedItem = translatedItems[translateIndex];
                                                     var poiType = translatedItem.gps.type;
                                                     var poiIndexKey = 'key_' + translatedItem.poiIndex;
                                                     if (poiType === 'heat') {
@@ -385,6 +385,15 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                                 points: [pointItem]
                                                             };
                                                         }
+                                                    } else if (poiType === 'pie' || poiType === 'block') {
+                                                        var layerItem = {
+                                                            lng: translatedItem.point.lng,
+                                                            lat: translatedItem.point.lat,
+                                                            color: getPoiExt(translatedItem.gps, 'color', 100),
+                                                            size: getPoiExt(translatedItem.gps, 'size', 20),
+                                                            type: poiType
+                                                        };
+                                                        layerArray.push(layerItem);
                                                     } else {
                                                         markerArray.push({ point: translatedItem.point, data: translatedItem.gps });
                                                     }
@@ -392,6 +401,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 console.log('markerArray', markerArray);
                                                 console.log('lineMap', lineMap);
                                                 console.log('heatArray', heatArray);
+                                                console.log('layerArray', layerArray);
 
                                                 if (heatArray.length > 0) {
                                                     var setGradient = function setGradient() {
@@ -442,8 +452,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 }
                                                 var lineCount = Object.keys(lineMap).length;
                                                 if (lineCount > 0) {
-                                                    for (var _i2 = 0; _i2 < lineCount; _i2++) {
-                                                        var lines = Object.values(lineMap)[_i2];
+                                                    for (var _i = 0; _i < lineCount; _i++) {
+                                                        var lines = Object.values(lineMap)[_i];
                                                         var strokeColor = lines.strokeColor;
                                                         var strokeWeight = lines.strokeWeight;
                                                         if (lines.poiType === 'polygon') {
@@ -460,12 +470,46 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     }
                                                 }
                                                 if (markerArray.length > 0) {
-                                                    for (var _i3 = 0; _i3 < markerArray.length; _i3++) {
-                                                        that.addMarker(markerArray[_i3].point, BMap, markerArray[_i3].data);
+                                                    for (var _i2 = 0; _i2 < markerArray.length; _i2++) {
+                                                        that.addMarker(markerArray[_i2].point, BMap, markerArray[_i2].data);
                                                     }
                                                     new BMapLib.MarkerClusterer(that.map, {
                                                         markers: that.markers
                                                     });
+                                                }
+                                                if (layerArray.length > 0) {
+                                                    var updateLayer = function updateLayer() {
+                                                        var ctx = this.canvas.getContext('2d');
+
+                                                        if (!ctx) {
+                                                            return;
+                                                        }
+                                                        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                                                        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                                                        ctx.beginPath();
+                                                        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                                                        for (var layerIndex = 0; layerIndex < layerArray.length; layerIndex++) {
+                                                            var _layerItem = layerArray[layerIndex];
+                                                            ctx.fillStyle = getColor(_layerItem.color, 0.5);
+                                                            var posRect = getDotRect(that.map, parseFloat(_layerItem.lng), parseFloat(_layerItem.lat), _layerItem.size);
+                                                            console.log(posRect);
+
+                                                            if (_layerItem.type === 'pie') {
+                                                                ctx.ellipse(posRect.x, posRect.y, -posRect.w, posRect.h, 0, 0, 2 * Math.PI);
+                                                                ctx.fill();
+                                                                ctx.beginPath();
+                                                            } else {
+                                                                ctx.fillRect(posRect.x, posRect.y, posRect.w, posRect.h);
+                                                            }
+                                                        }
+                                                    };
+
+                                                    var canvasLayer = new BMap.CanvasLayer({
+                                                        zIndex: 1,
+                                                        update: updateLayer
+                                                    });
+
+                                                    that.map.addOverlay(canvasLayer);
                                                 }
                                             }
                                         } else {
@@ -483,13 +527,13 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                     } else if (sourceGps === 'GCJ02') {
                                         sourceGpsId = 3;
                                     }
-                                    // if (sourceGpsId !== 5) {
                                     convertor.translate(sourcePointList, sourceGpsId, 5, translateCallback);
                                 };
 
                                 var lineMap = [];
                                 var heatArray = [];
                                 var markerArray = [];
+                                var layerArray = [];
                                 var convertor = new BMap.Convertor();
 
                                 var rawLength = 0;
