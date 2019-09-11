@@ -489,7 +489,10 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         // 不转换 直接返回
                                         translateCallback({
                                             status: 0,
-                                            points: sourcePointList
+                                            points: [{
+                                                lng: gps.lng,
+                                                lat: gps.lat
+                                            }]
                                         });
                                     }
                                 };
