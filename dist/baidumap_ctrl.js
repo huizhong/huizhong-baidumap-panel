@@ -36,14 +36,15 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
   }
 
   function getPoiExt(poiConfig, configName) {
-    var configItems = poiConfig.ext.split(',');
-    for (var i = 0; i < configItems.length; i++) {
-      var configPair = configItems[i].split(':');
-      if (configPair[0] === configName) {
-        return configPair[1];
+    var defaultValue = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+
+    if ('ext' in poiConfig) {
+      var extJson = JSON.parse(poiConfig.ext);
+      if (configName in extJson) {
+        return extJson[configName];
       }
     }
-    return '';
+    return defaultValue;
   }
 
   return {
@@ -255,7 +256,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
         }, {
           key: 'addMarker',
           value: function addMarker(point, BMap, data) {
-            var myIcon = new BMap.Icon('public/plugins/grafana-baidumap-panel/images/bike.png', new window.BMap.Size(24, 28), {
+            var myIcon = new BMap.Icon(getPoiExt(data, 'icon', 'public/plugins/grafana-baidumap-panel/images/bike.png'), new window.BMap.Size(24, 28), {
               imageSize: new window.BMap.Size(24, 28),
               anchor: new window.BMap.Size(12, 28)
             });
@@ -268,7 +269,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
             marker.enableDragging();
             var scontent = '';
             scontent += '<a href=""><div class="infobox" id="infobox"><div class="infobox-content" style="display:block">';
-            scontent += '<div class="infobox-header"><div class="infobox-header-icon"><img src="public/plugins/grafana-baidumap-panel/images/pins6.png"></div>';
+            scontent += '<div class="infobox-header"><div class="infobox-header-icon"><img src="' + getPoiExt(data, 'detail-icon', 'public/plugins/grafana-baidumap-panel/images/bike.png') + '"></div>';
             scontent += '<div class="infobox-header-name"><p>' + getPoiExt(data, 'name') + '</p></div>';
             scontent += '<div class="infobox-header-type" style="min-width:250px"><p>' + getPoiExt(data, 'type') + '</p></div></div>';
             scontent += '<div class="infobox-footer">' + getPoiExt(data, 'desc') + '</div>';
@@ -318,7 +319,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                             var heatPoint = {
                               lng: translatedItem.point.lng,
                               lat: translatedItem.point.lat,
-                              count: getPoiExt(translatedItem.gps, 'count')
+                              count: getPoiExt(translatedItem.gps, 'count', 1)
                             };
                             heatArray.push(heatPoint);
                           } else if (poiType === 'line' || poiType === 'polygon') {
@@ -328,6 +329,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                             } else {
                               lineMap[poiIndexKey] = {
                                 poiType: poiType,
+                                strokeColor: getPoiExt(translatedItem.gps, 'strokeColor', 'blue'),
+                                strokeWeight: getPoiExt(translatedItem.gps, 'strokeWeight', '4'),
                                 points: [pointItem]
                               };
                             }
@@ -390,15 +393,17 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         if (lineCount > 0) {
                           for (var _i2 = 0; _i2 < lineCount; _i2++) {
                             var lines = Object.values(lineMap)[_i2];
+                            var strokeColor = lines.strokeColor;
+                            var strokeWeight = lines.strokeWeight;
                             if (lines.poiType === 'polygon') {
                               lines.points.push(lines.points[0]);
                             }
                             var polyline = new BMap.Polyline(lines.points, {
                               enableEditing: false,
                               enableClicking: true,
-                              strokeWeight: '4',
+                              strokeWeight: strokeWeight,
                               strokeOpacity: 0.5,
-                              strokeColor: 'blue'
+                              strokeColor: strokeColor
                             });
                             that.map.addOverlay(polyline);
                           }

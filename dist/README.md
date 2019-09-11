@@ -25,7 +25,7 @@ select
 now() as time, 
 'point' as type,
 '116.487777|39.992133' as pos,
-'name:设备编号xxx, type:设备类型xxx, desc:设备描述xxx' as ext
+'name:设备编号xxx,type:设备类型xxx,desc:设备描述xxx' as ext
 
 union
 
@@ -33,7 +33,7 @@ select
 now() as time, 
 'polygon' as type,
 '116.485023|39.995332;116.484538|39.991283;116.483927|39.985900;116.490502|39.988408;116.490646|39.991946;116.485400|39.995442' as pos,
-'' as ext
+'strokeWeight:10,strokeColor:red' as ext
 
 union
 
@@ -41,7 +41,7 @@ select
 now() as time, 
 'heat' as type,
 '116.487777|39.992133' as pos,
-'count:10' as ext
+'count:50' as ext
 
 
 点集pos格式为: "lng1|lat1;lng2|lat2;lng3|lat3"

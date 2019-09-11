@@ -31,15 +31,14 @@ const panelDefaults = {
 };
 
 
-function getPoiExt(poiConfig, configName) {
-  const configItems = poiConfig.ext.split(',');
-  for (let i = 0; i < configItems.length; i++) {
-    const configPair = configItems[i].split(':');
-    if (configPair[0] === configName) {
-      return configPair[1];
+function getPoiExt(poiConfig, configName, defaultValue = '') {
+  if ('ext' in poiConfig) {
+    const extJson = JSON.parse(poiConfig.ext);
+    if (configName in extJson) {
+      return extJson[configName];
     }
   }
-  return '';
+  return defaultValue;
 }
 
 export default class BaidumapCtrl extends MetricsPanelCtrl {
@@ -139,7 +138,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
   }
 
   addMarker(point, BMap, data) {
-    const myIcon = new BMap.Icon('public/plugins/grafana-baidumap-panel/images/bike.png', new window.BMap.Size(24, 28), {
+    const myIcon = new BMap.Icon(getPoiExt(data, 'icon', 'public/plugins/grafana-baidumap-panel/images/bike.png'), new window.BMap.Size(24, 28), {
       imageSize: new window.BMap.Size(24, 28),
       anchor: new window.BMap.Size(12, 28)
     });
@@ -152,7 +151,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
     marker.enableDragging();
     let scontent = '';
     scontent += '<a href=""><div class="infobox" id="infobox"><div class="infobox-content" style="display:block">';
-    scontent += '<div class="infobox-header"><div class="infobox-header-icon"><img src="public/plugins/grafana-baidumap-panel/images/pins6.png"></div>';
+    scontent += '<div class="infobox-header"><div class="infobox-header-icon"><img src="' + getPoiExt(data, 'detail-icon', 'public/plugins/grafana-baidumap-panel/images/bike.png') + '"></div>';
     scontent += '<div class="infobox-header-name"><p>' + getPoiExt(data, 'name') + '</p></div>';
     scontent += '<div class="infobox-header-type" style="min-width:250px"><p>' + getPoiExt(data, 'type') + '</p></div></div>';
     scontent += '<div class="infobox-footer">' + getPoiExt(data, 'desc') + '</div>';
@@ -227,7 +226,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                   const heatPoint = {
                     lng: translatedItem.point.lng,
                     lat: translatedItem.point.lat,
-                    count: getPoiExt(translatedItem.gps, 'count')
+                    count: getPoiExt(translatedItem.gps, 'count', 1)
                   };
                   heatArray.push(heatPoint);
                 } else if (poiType === 'line' || poiType === 'polygon') {
@@ -237,6 +236,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                   } else {
                     lineMap[poiIndexKey] = {
                       poiType: poiType,
+                      strokeColor: getPoiExt(translatedItem.gps, 'strokeColor', 'blue'),
+                      strokeWeight: getPoiExt(translatedItem.gps, 'strokeWeight', '4'),
                       points: [pointItem]
                     };
                   }
@@ -300,15 +301,17 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
               if (lineCount > 0) {
                 for (let i = 0; i < lineCount; i++) {
                   const lines = Object.values(lineMap)[i];
+                  const strokeColor = lines.strokeColor;
+                  const strokeWeight = lines.strokeWeight;
                   if (lines.poiType === 'polygon') {
                     lines.points.push(lines.points[0]);
                   }
                   const polyline = new BMap.Polyline(lines.points, {
                     enableEditing: false,
                     enableClicking: true,
-                    strokeWeight: '4',
+                    strokeWeight: strokeWeight,
                     strokeOpacity: 0.5,
-                    strokeColor: 'blue'
+                    strokeColor: strokeColor
                   });
                   that.map.addOverlay(polyline);
                 }
