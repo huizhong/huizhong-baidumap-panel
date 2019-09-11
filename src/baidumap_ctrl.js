@@ -393,7 +393,10 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 } else { // 不转换 直接返回
                     translateCallback({
                         status: 0,
-                        points: sourcePointList
+                        points: [{
+                            lng: gps.lng,
+                            lat: gps.lat
+                        }]
                     });
                 }
             }
