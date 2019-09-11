@@ -381,7 +381,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 // 转换坐标
                 const point = new BMap.Point(gps.lng, gps.lat);
                 const sourcePointList = new Array(point);
-                const sourceGps = this.panel.gpsType;
+                const sourceGps = that.panel.gpsType;
                 let sourceGpsId = 5;
                 if (sourceGps === 'WGS84') {
                     sourceGpsId = 1;

@@ -476,7 +476,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                     // 转换坐标
                                     var point = new BMap.Point(gps.lng, gps.lat);
                                     var sourcePointList = new Array(point);
-                                    var sourceGps = this.panel.gpsType;
+                                    var sourceGps = that.panel.gpsType;
                                     var sourceGpsId = 5;
                                     if (sourceGps === 'WGS84') {
                                         sourceGpsId = 1;
