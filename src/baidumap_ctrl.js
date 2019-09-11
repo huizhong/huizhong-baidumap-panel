@@ -79,8 +79,8 @@ function getDotRect(mp, lng, lat, squareSize = 20, isCenterPoint = true) {
     const lngDelta = squareSize / (standardLen * xScale);
     const latDelta = squareSize / (standardLen);
 
-    const pixel = mp.pointToPixel(isCenterPoint ? new window.BMap.Point(lng + lngDelta / 2, lat + latDelta / 2) : new window.BMap.Point(lng, lat));
-    const pixel2 = mp.pointToPixel(isCenterPoint ? new window.BMap.Point(lng - lngDelta / 2, lat - latDelta / 2) : new window.BMap.Point(lng + lngDelta, lat + latDelta));
+    const pixel = mp.pointToPixel(isCenterPoint ? new window.BMap.Point(lng - lngDelta / 2, lat - latDelta / 2) : new window.BMap.Point(lng, lat));
+    const pixel2 = mp.pointToPixel(isCenterPoint ? new window.BMap.Point(lng + lngDelta / 2, lat + latDelta / 2) : new window.BMap.Point(lng + lngDelta, lat + latDelta));
     return {
         x: pixel.x,
         y: pixel.y,
@@ -402,12 +402,12 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                     for (let layerIndex = 0; layerIndex < layerArray.length; layerIndex++) {
                                         const layerItem = layerArray[layerIndex];
                                         ctx.fillStyle = getColor(layerItem.color, 0.5);
+                                        const isPie = layerItem.type === 'pie';
                                         const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
-                                            parseFloat(layerItem.lat), layerItem.size);
+                                            parseFloat(layerItem.lat), layerItem.size, !isPie);
                                         console.log(posRect);
-
-                                        if (layerItem.type === 'pie') {
-                                            ctx.ellipse(posRect.x, posRect.y, -posRect.w, posRect.h, 0, 0, 2 * Math.PI);
+                                        if (isPie) {
+                                            ctx.ellipse(posRect.x, posRect.y, posRect.w, -posRect.h, 0, 0, 2 * Math.PI);
                                             ctx.fill();
                                             ctx.beginPath();
                                         } else {

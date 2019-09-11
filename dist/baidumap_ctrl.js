@@ -88,8 +88,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
         var lngDelta = squareSize / (standardLen * xScale);
         var latDelta = squareSize / standardLen;
 
-        var pixel = mp.pointToPixel(isCenterPoint ? new window.BMap.Point(lng + lngDelta / 2, lat + latDelta / 2) : new window.BMap.Point(lng, lat));
-        var pixel2 = mp.pointToPixel(isCenterPoint ? new window.BMap.Point(lng - lngDelta / 2, lat - latDelta / 2) : new window.BMap.Point(lng + lngDelta, lat + latDelta));
+        var pixel = mp.pointToPixel(isCenterPoint ? new window.BMap.Point(lng - lngDelta / 2, lat - latDelta / 2) : new window.BMap.Point(lng, lat));
+        var pixel2 = mp.pointToPixel(isCenterPoint ? new window.BMap.Point(lng + lngDelta / 2, lat + latDelta / 2) : new window.BMap.Point(lng + lngDelta, lat + latDelta));
         return {
             x: pixel.x,
             y: pixel.y,
@@ -491,11 +491,11 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                         for (var layerIndex = 0; layerIndex < layerArray.length; layerIndex++) {
                                                             var _layerItem = layerArray[layerIndex];
                                                             ctx.fillStyle = getColor(_layerItem.color, 0.5);
-                                                            var posRect = getDotRect(that.map, parseFloat(_layerItem.lng), parseFloat(_layerItem.lat), _layerItem.size);
+                                                            var isPie = _layerItem.type === 'pie';
+                                                            var posRect = getDotRect(that.map, parseFloat(_layerItem.lng), parseFloat(_layerItem.lat), _layerItem.size, !isPie);
                                                             console.log(posRect);
-
-                                                            if (_layerItem.type === 'pie') {
-                                                                ctx.ellipse(posRect.x, posRect.y, -posRect.w, posRect.h, 0, 0, 2 * Math.PI);
+                                                            if (isPie) {
+                                                                ctx.ellipse(posRect.x, posRect.y, posRect.w, -posRect.h, 0, 0, 2 * Math.PI);
                                                                 ctx.fill();
                                                                 ctx.beginPath();
                                                             } else {
