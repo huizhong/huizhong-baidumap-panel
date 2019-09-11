@@ -2,7 +2,7 @@ export function MP(ak) {
   return new Promise((resolve, reject) => {
     let script = document.createElement("script");
     script.type = "text/javascript";
-    script.src = "http://api.map.baidu.com/api?v=2.0&ak=" + ak + "&callback=init";
+    script.src = "http://api.map.baidu.com/api?v=3.0&ak=" + ak + "&callback=init";
     script.onerror = reject;
     document.head.appendChild(script);
 
@@ -21,9 +21,9 @@ export function MP(ak) {
       heatmap.type = "text/javascript";
       heatmap.src = "http://api.map.baidu.com/library/Heatmap/2.0/src/Heatmap_min.js";
       document.head.appendChild(heatmap);
-      
+
       resolve(BMap);
     }, 500);
   });
-  
+
 }
