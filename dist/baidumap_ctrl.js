@@ -482,9 +482,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     for (var _i2 = 0; _i2 < markerArray.length; _i2++) {
                                                         that.addMarker(markerArray[_i2].point, BMap, markerArray[_i2].data);
                                                     }
-                                                    new BMapLib.MarkerClusterer(that.map, {
-                                                        markers: that.markers
-                                                    });
+                                                    // new BMapLib.MarkerClusterer(that.map, {
+                                                    //     markers: that.markers
+                                                    // });
                                                 }
                                                 if (layerArray.length > 0) {
                                                     var updateLayer = function updateLayer() {
@@ -502,7 +502,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                             ctx.fillStyle = getColor(_layerItem.color, 0.5);
                                                             var isPie = _layerItem.type === 'pie';
                                                             var posRect = getDotRect(that.map, parseFloat(_layerItem.lng), parseFloat(_layerItem.lat), _layerItem.size, !isPie);
-                                                            console.log(posRect);
+                                                            // console.log(posRect);
                                                             if (isPie) {
                                                                 ctx.ellipse(posRect.x, posRect.y, posRect.w, -posRect.h, 0, 0, 2 * Math.PI);
                                                                 ctx.fill();
