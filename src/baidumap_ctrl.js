@@ -7,8 +7,6 @@ import kbn from 'app/core/utils/kbn';
 import _ from 'lodash';
 import mapRenderer from './map_renderer';
 import DataFormatter from './data_formatter';
-import {MP} from './libs/baidumap.js';
-import $ from 'jquery';
 
 const panelDefaults = {
     ak: 'QKCqsdHBbGxBnNbvUwWdUEBjonk7jUj6',
@@ -187,13 +185,26 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
     }
 
     addMarker(point, BMap, data) {
-        const myIcon = new BMap.Icon(getPoiExt(data, 'icon', 'public/plugins/grafana-baidumap-panel/images/bike.png'), new window.BMap.Size(24, 28), {
-            imageSize: new window.BMap.Size(24, 28),
-            anchor: new window.BMap.Size(12, 28)
-        });
-
-        const marker = new BMap.Marker(point, {icon: myIcon});
-
+        // public/plugins/grafana-baidumap-panel/images/bike.png
+        const markerOption = {};
+        const iconUrl = getPoiExt(data, 'icon', '');
+        if (Number.isInteger(iconUrl)) {
+            markerOption.icon = new BMap.Icon('http://api.map.baidu.com/img/markers.png', new BMap.Size(23, 25), {
+                offset: new BMap.Size(10, 25), // 指定定位位置
+                imageOffset: new BMap.Size(0, 25 * (10 - (iconUrl % 10)) - 10 * 25) // 设置图片偏移
+            });
+        } else if (iconUrl.length > 0) {
+            markerOption.icon = new BMap.Icon(iconUrl, new window.BMap.Size(24, 28), {
+                imageSize: new window.BMap.Size(24, 28),
+                anchor: new window.BMap.Size(12, 28)
+            });
+        }
+        const marker = new BMap.Marker(point, markerOption);
+        const pointLabel = getPoiExt(data, 'label');
+        if (pointLabel.length > 0) {
+            const label = new BMap.Label(pointLabel, {offset: new BMap.Size(20, -10)});
+            marker.setLabel(label);
+        }
         this.markers.push(marker);
 
         // this.map.setViewport(pointArray);

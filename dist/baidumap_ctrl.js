@@ -1,9 +1,9 @@
 'use strict';
 
-System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn', 'lodash', './map_renderer', './data_formatter', './libs/baidumap.js', 'jquery'], function (_export, _context) {
+System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn', 'lodash', './map_renderer', './data_formatter'], function (_export, _context) {
     "use strict";
 
-    var MetricsPanelCtrl, TimeSeries, kbn, _, mapRenderer, DataFormatter, MP, $, _slicedToArray, _typeof, _createClass, panelDefaults, BaidumapCtrl;
+    var MetricsPanelCtrl, TimeSeries, kbn, _, mapRenderer, DataFormatter, _slicedToArray, _typeof, _createClass, panelDefaults, BaidumapCtrl;
 
     function _classCallCheck(instance, Constructor) {
         if (!(instance instanceof Constructor)) {
@@ -111,10 +111,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
             mapRenderer = _map_renderer.default;
         }, function (_data_formatter) {
             DataFormatter = _data_formatter.default;
-        }, function (_libsBaidumapJs) {
-            MP = _libsBaidumapJs.MP;
-        }, function (_jquery) {
-            $ = _jquery.default;
         }],
         execute: function () {
             _slicedToArray = function () {
@@ -307,13 +303,26 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 }, {
                     key: 'addMarker',
                     value: function addMarker(point, BMap, data) {
-                        var myIcon = new BMap.Icon(getPoiExt(data, 'icon', 'public/plugins/grafana-baidumap-panel/images/bike.png'), new window.BMap.Size(24, 28), {
-                            imageSize: new window.BMap.Size(24, 28),
-                            anchor: new window.BMap.Size(12, 28)
-                        });
-
-                        var marker = new BMap.Marker(point, { icon: myIcon });
-
+                        // public/plugins/grafana-baidumap-panel/images/bike.png
+                        var markerOption = {};
+                        var iconUrl = getPoiExt(data, 'icon', '');
+                        if (Number.isInteger(iconUrl)) {
+                            markerOption.icon = new BMap.Icon('http://api.map.baidu.com/img/markers.png', new BMap.Size(23, 25), {
+                                offset: new BMap.Size(10, 25), // 指定定位位置
+                                imageOffset: new BMap.Size(0, 25 * (10 - iconUrl % 10) - 10 * 25) // 设置图片偏移
+                            });
+                        } else if (iconUrl.length > 0) {
+                            markerOption.icon = new BMap.Icon(iconUrl, new window.BMap.Size(24, 28), {
+                                imageSize: new window.BMap.Size(24, 28),
+                                anchor: new window.BMap.Size(12, 28)
+                            });
+                        }
+                        var marker = new BMap.Marker(point, markerOption);
+                        var pointLabel = getPoiExt(data, 'label');
+                        if (pointLabel.length > 0) {
+                            var label = new BMap.Label(pointLabel, { offset: new BMap.Size(20, -10) });
+                            marker.setLabel(label);
+                        }
                         this.markers.push(marker);
 
                         // this.map.setViewport(pointArray);

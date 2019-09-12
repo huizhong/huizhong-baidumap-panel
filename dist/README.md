@@ -31,6 +31,21 @@ union
 
 select
 now() as time, 
+'point' as type,
+'116.484538|39.991283' as pos,
+'{"name":"设备编号xxx","type":"设备类型xxx","desc":"设备描述xxx","icon":3,"label":"自定义图标0~9""}' as ext
+
+union
+select
+now() as time, 
+'point' as type,
+'116.490502|39.988408' as pos,
+'{"name":"设备编号xxx","type":"设备类型xxx","desc":"设备描述xxx","icon":"public/plugins/grafana-baidumap-panel/images/bike.png"}' as ext
+
+union
+
+select
+now() as time, 
 'polygon' as type,
 '116.485023|39.995332;116.484538|39.991283;116.483927|39.985900;116.490502|39.988408;116.490646|39.991946;116.485400|39.995442' as pos,
 '{"strokeWeight":10,"strokeColor":"red"}' as ext
