@@ -192,7 +192,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 hideEmpty: false,
                 overviewMap: false,
                 hideZero: false,
-                mapType: true
+                mapType: true,
+                clusterPoint: false
             };
 
             BaidumapCtrl = function (_MetricsPanelCtrl) {
@@ -482,9 +483,11 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     for (var _i2 = 0; _i2 < markerArray.length; _i2++) {
                                                         that.addMarker(markerArray[_i2].point, BMap, markerArray[_i2].data);
                                                     }
-                                                    // new BMapLib.MarkerClusterer(that.map, {
-                                                    //     markers: that.markers
-                                                    // });
+                                                    if (that.panel.clusterPoint) {
+                                                        new BMapLib.MarkerClusterer(that.map, {
+                                                            markers: that.markers
+                                                        });
+                                                    }
                                                 }
                                                 if (layerArray.length > 0) {
                                                     var updateLayer = function updateLayer() {

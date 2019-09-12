@@ -25,7 +25,8 @@ const panelDefaults = {
     hideEmpty: false,
     overviewMap: false,
     hideZero: false,
-    mapType: true
+    mapType: true,
+    clusterPoint: false
 };
 
 
@@ -390,9 +391,11 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 for (let i = 0; i < markerArray.length; i++) {
                                     that.addMarker(markerArray[i].point, BMap, markerArray[i].data);
                                 }
-                                // new BMapLib.MarkerClusterer(that.map, {
-                                //     markers: that.markers
-                                // });
+                                if (that.panel.clusterPoint) {
+                                    new BMapLib.MarkerClusterer(that.map, {
+                                        markers: that.markers
+                                    });
+                                }
                             }
                             if (layerArray.length > 0) {
                                 const canvasLayer = new BMap.CanvasLayer({
