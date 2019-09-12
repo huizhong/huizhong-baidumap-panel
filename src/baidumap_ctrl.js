@@ -390,9 +390,9 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 for (let i = 0; i < markerArray.length; i++) {
                                     that.addMarker(markerArray[i].point, BMap, markerArray[i].data);
                                 }
-                                new BMapLib.MarkerClusterer(that.map, {
-                                    markers: that.markers
-                                });
+                                // new BMapLib.MarkerClusterer(that.map, {
+                                //     markers: that.markers
+                                // });
                             }
                             if (layerArray.length > 0) {
                                 const canvasLayer = new BMap.CanvasLayer({
@@ -417,7 +417,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         const isPie = layerItem.type === 'pie';
                                         const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
                                             parseFloat(layerItem.lat), layerItem.size, !isPie);
-                                        console.log(posRect);
+                                        // console.log(posRect);
                                         if (isPie) {
                                             ctx.ellipse(posRect.x, posRect.y, posRect.w, -posRect.h, 0, 0, 2 * Math.PI);
                                             ctx.fill();
