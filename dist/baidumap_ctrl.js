@@ -481,7 +481,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                                     autoViewport: true
                                                                 }
                                                             });
-                                                            driving.search(points[0], points[-1], { waypoints: points.slice(1, -2) }); // waypoints表示途经点
+                                                            driving.search(points[0], points.slice(-1)[0], { waypoints: points.slice(1, -2) }); // waypoints表示途经点
                                                         } else {
                                                             if (lines.poiType === 'polygon') {
                                                                 lines.points.push(lines.points[0]);
