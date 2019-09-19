@@ -182,10 +182,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 hideZero: false,
                 mapType: true,
                 clusterPoint: false,
-                pieColor: 100,
-                blockColor: 100,
-                pieSize: 10,
-                blockSize: 10,
                 globalConfig: '',
                 typeName: 'type',
                 posName: 'pos',
@@ -219,7 +215,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         var defaultValue = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '';
 
                         var extName = this.panel.extName;
-                        if (extName in poiConfig && poiConfig[extName].length > 0) {
+                        if (poiConfig && extName in poiConfig && poiConfig[extName].length > 0) {
                             var extJson = JSON.parse(poiConfig[extName]);
                             if (configName in extJson) {
                                 return extJson[configName];
@@ -322,7 +318,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                     value: function addMarker(point, BMap, data) {
                         // public/plugins/grafana-baidumap-panel/images/bike.png
                         var poiType = 'marker';
-                        var markerOption = {};
+                        var markerOption = this.getPoiExt(poiType, data, 'option', {});
                         var iconUrl = this.getPoiExt(poiType, data, 'icon', '');
                         if (Number.isInteger(iconUrl)) {
                             markerOption.icon = new BMap.Icon('http://api.map.baidu.com/img/markers.png', new BMap.Size(23, 25), {
@@ -336,7 +332,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                             });
                         }
                         var marker = new BMap.Marker(point, markerOption);
-                        var pointLabel = this.getPoiExt(poiType, data, 'label');
+                        var pointLabel = this.getPoiExt(poiType, data, 'label', '');
                         if (pointLabel.length > 0) {
                             var label = new BMap.Label(pointLabel, { offset: new BMap.Size(20, -10) });
                             marker.setLabel(label);
@@ -344,7 +340,12 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         this.markers.push(marker);
 
                         // this.map.setViewport(pointArray);
-                        marker.enableDragging();
+                        if (this.getPoiExt(poiType, data, 'enableDragging', false)) {
+                            marker.enableDragging();
+                        }
+                        if (this.getPoiExt(poiType, data, 'animation', false)) {
+                            marker.setAnimation(BMAP_ANIMATION_BOUNCE); //跳动的动画
+                        }
                         var scontent = '';
                         scontent += '<a href=""><div class="infobox" id="infobox"><div class="infobox-content" style="display:block">';
                         scontent += '<div class="infobox-header"><div class="infobox-header-icon"><img src="' + this.getPoiExt(poiType, data, 'detail-icon', 'public/plugins/grafana-baidumap-panel/images/bike.png') + '"></div>';
@@ -405,10 +406,10 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                         if (poiIndexKey in lineMap) {
                                                             lineMap[poiIndexKey].points.push(pointItem);
                                                         } else {
+                                                            var option = Object.assign({}, that.getPoiExt(poiType, translatedItem.gps, 'option', {}));
                                                             lineMap[poiIndexKey] = {
                                                                 poiType: poiType,
-                                                                strokeColor: that.getPoiExt(poiType, translatedItem.gps, 'strokeColor', 'blue'),
-                                                                strokeWeight: that.getPoiExt(poiType, translatedItem.gps, 'strokeWeight', '4'),
+                                                                option: option,
                                                                 points: [pointItem]
                                                             };
                                                         }
@@ -416,8 +417,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                         var layerItem = {
                                                             lng: translatedItem.point.lng,
                                                             lat: translatedItem.point.lat,
-                                                            color: that.getPoiExt(poiType, translatedItem.gps, 'color', poiType === 'pie' ? that.panel.pieColor : that.panel.blockColor),
-                                                            size: that.getPoiExt(poiType, translatedItem.gps, 'size', poiType === 'pie' ? that.panel.pieSize : that.panel.blockSize),
+                                                            color: that.getPoiExt(poiType, translatedItem.gps, 'color', 20),
+                                                            size: that.getPoiExt(poiType, translatedItem.gps, 'size', 20),
                                                             type: poiType
                                                         };
                                                         layerArray.push(layerItem);
@@ -431,25 +432,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 console.log('layerArray', layerArray);
 
                                                 if (heatArray.length > 0) {
-                                                    var setGradient = function setGradient() {
-                                                        var gradient = {};
-                                                        var colors = document.querySelectorAll('input[type=\'color\']');
-                                                        colors = [].slice.call(colors, 0);
-                                                        colors.forEach(function (ele) {
-                                                            gradient[ele.getAttribute('data-key')] = ele.value;
-                                                        });
-                                                        heatmapOverlay.setOptions({ gradient: gradient });
-                                                    };
-
                                                     var isSupportCanvas = function isSupportCanvas() {
                                                         var elem = document.createElement('canvas');
                                                         return !!(elem.getContext && elem.getContext('2d'));
-                                                    };
-
-                                                    var ZoomControl = function ZoomControl() {
-                                                        // 默认停靠位置和偏移量
-                                                        this.defaultAnchor = BMAP_ANCHOR_BOTTOM_RIGHT;
-                                                        this.defaultOffset = new BMap.Size(10, 10);
                                                     };
 
                                                     // 热力图
@@ -457,42 +442,31 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                         alert('热力图目前只支持有canvas支持的浏览器,您所使用的浏览器不能使用热力图功能~');
                                                     }
                                                     // http://xcx1024.com/ArtInfo/271881.html
-                                                    var heatmapOverlay = new BMapLib.HeatmapOverlay({ radius: 20 });
+                                                    var heatmapOverlay = new BMapLib.HeatmapOverlay(Object.assign({
+                                                        radius: 20
+                                                    }, that.getPoiExt('heat', null, 'option', {})));
                                                     that.map.addOverlay(heatmapOverlay);
-                                                    heatmapOverlay.setDataSet({ data: heatArray, max: 100 });
+                                                    heatmapOverlay.setDataSet({
+                                                        data: heatArray,
+                                                        max: that.getPoiExt('heat', null, 'max', 100)
+                                                    });
 
-                                                    ZoomControl.prototype = new BMap.Control();
-                                                    ZoomControl.prototype.initialize = function (map) {
-                                                        // let div = document.createElement('div');
-                                                        // let content = '<div id="heatmap_mark"><div><span class="heatmap_mark_title">颜色对应RSSI信号强度</span> <span class="heatmap_mark_text" style="float:right;padding-top:5px" id="heatmap_mark_density">dBm</span></div><div class="linear_color"></div><span class="heatmap_blue heatmap_mark_text heatmap_color_span">-60以下</span><span class="heatmap_green heatmap_mark_text heatmap_color_span">-60至-80</span><span class="heatmap_yellow heatmap_mark_text heatmap_color_span">-80至-100</span><span class="heatmap_red heatmap_mark_text heatmap_color_span">-100至-120</span><span class="heatmap_result_red heatmap_mark_text heatmap_color_span">-120以上</span></div>';
-                                                        // div.innerHTML = content;
-                                                        //
-                                                        // that.map.getContainer()
-                                                        //   .appendChild(div);
-                                                        // return div;
-                                                    };
-
-                                                    var myZoomCtrl = new ZoomControl();
-                                                    // eslint-disable-next-line eqeqeq
-                                                    that.map.addControl(myZoomCtrl);
-                                                    // eslint-disable-next-line eqeqeq
+                                                    // 判断浏览区是否支持canvas
                                                 }
                                                 var lineCount = Object.keys(lineMap).length;
                                                 if (lineCount > 0) {
                                                     for (var _i = 0; _i < lineCount; _i++) {
                                                         var lines = Object.values(lineMap)[_i];
-                                                        var strokeColor = lines.strokeColor;
-                                                        var strokeWeight = lines.strokeWeight;
                                                         if (lines.poiType === 'polygon') {
                                                             lines.points.push(lines.points[0]);
                                                         }
-                                                        var polyline = new BMap.Polyline(lines.points, {
+                                                        var polyline = new BMap.Polyline(lines.points, Object.assign({
                                                             enableEditing: false,
                                                             enableClicking: true,
-                                                            strokeWeight: strokeWeight,
+                                                            strokeWeight: 4,
                                                             strokeOpacity: 0.5,
-                                                            strokeColor: strokeColor
-                                                        });
+                                                            strokeColor: 'blue'
+                                                        }, lines.option));
                                                         that.map.addOverlay(polyline);
                                                     }
                                                 }
@@ -519,8 +493,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                                                         for (var layerIndex = 0; layerIndex < layerArray.length; layerIndex++) {
                                                             var _layerItem = layerArray[layerIndex];
-                                                            ctx.fillStyle = getColor(_layerItem.color, 0.5);
-                                                            var isPie = _layerItem[that.panel.typeName] === 'pie';
+                                                            var _poiType = _layerItem[that.panel.typeName];
+                                                            ctx.fillStyle = getColor(_layerItem.color, that.getPoiExt(_poiType, null, 'alpha', 0.5));
+                                                            var isPie = _poiType === 'pie';
                                                             var posRect = getDotRect(that.map, parseFloat(_layerItem.lng), parseFloat(_layerItem.lat), _layerItem.size, !isPie);
                                                             // console.log(posRect);
                                                             if (isPie) {

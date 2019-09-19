@@ -23,7 +23,7 @@ grunt
 
 select
 now() as time, 
-'point' as type,
+'marker' as type,
 '116.487777|39.992133' as pos,
 '{"name":"设备编号xxx","type":"设备类型xxx","desc":"设备描述xxx"}' as ext
 
@@ -31,14 +31,14 @@ union
 
 select
 now() as time, 
-'point' as type,
+'marker' as type,
 '116.484538|39.991283' as pos,
 '{"name":"设备编号xxx","type":"设备类型xxx","desc":"设备描述xxx","icon":3,"label":"自定义图标0~9""}' as ext
 
 union
 select
 now() as time, 
-'point' as type,
+'marker' as type,
 '116.490502|39.988408' as pos,
 '{"name":"设备编号xxx","type":"设备类型xxx","desc":"设备描述xxx","icon":"public/plugins/grafana-baidumap-panel/images/bike.png"}' as ext
 
@@ -48,7 +48,7 @@ select
 now() as time, 
 'polygon' as type,
 '116.485023|39.995332;116.484538|39.991283;116.483927|39.985900;116.490502|39.988408;116.490646|39.991946;116.485400|39.995442' as pos,
-'{"strokeWeight":10,"strokeColor":"red"}' as ext
+'{"option":{"strokeWeight":10,"strokeColor":"red"}}' as ext
 
 union
 
@@ -79,6 +79,36 @@ now() as time,
 不同类型有不同的配置如示例
 ext的键值对，按逗号分隔，再按冒号区分键值。
 pie和block的color（0~100）是从绿到红的渐变色，size对应圆的半径和方块的边长，单位是米。
+上述类型可以配置默认属性，不同元素默认配置示例：
+```json
+{
+    "marker":{
+        "label":"xxx",
+        "enableDragging": true,
+        "animation": true
+     },
+    "block":{
+        "size":100
+    },
+    "pie": {
+        "alpha": 0.8
+    },
+    "heat": {
+        "count": 3,
+        "max": 120,
+        "option":{
+            "radius": 15
+        }
+    },
+    "polygon": {
+        "option":{
+            "strokeWeight":5,
+            "strokeColor":"blue",
+            "enableEditing": true
+        }
+    }
+}
+```
 
 ### 图标替换
 images/bike.png 地图页图标
