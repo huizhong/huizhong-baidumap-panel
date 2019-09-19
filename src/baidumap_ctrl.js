@@ -100,8 +100,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
 
     getPoiOption(poiType, poiConfig, defaultValue = '') {
         const configName = 'option';
+        const typeOption = this.getPoiExt(poiType, null, configName, defaultValue);
         const poiOption = this.getPoiExt(poiType, poiConfig, configName, defaultValue);
-        const typeOption = this.getPoiExt(poiType, poiConfig, configName, defaultValue);
         return Object.assign({}, typeOption, poiOption);
     }
 

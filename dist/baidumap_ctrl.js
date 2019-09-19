@@ -215,8 +215,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         var defaultValue = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
 
                         var configName = 'option';
+                        var typeOption = this.getPoiExt(poiType, null, configName, defaultValue);
                         var poiOption = this.getPoiExt(poiType, poiConfig, configName, defaultValue);
-                        var typeOption = this.getPoiExt(poiType, poiConfig, configName, defaultValue);
                         return Object.assign({}, typeOption, poiOption);
                     }
                 }, {

@@ -20,6 +20,7 @@ grunt
 数据源mysql，Location Data：json result
 
 示例
+```SQL
 
 select
 now() as time, 
@@ -40,7 +41,7 @@ select
 now() as time, 
 'marker' as type,
 '116.490502|39.988408' as pos,
-'{"name":"设备编号xxx","type":"设备类型xxx","desc":"设备描述xxx","icon":"public/plugins/grafana-baidumap-panel/images/bike.png"}' as ext
+'{"name":"设备编号xxx","type":"设备类型xxx","desc":"设备描述xxx","icon":"public/plugins/grafana-baidumap-panel/images/bike.png","animation":true}' as ext
 
 union
 
@@ -73,6 +74,8 @@ now() as time,
 '116.487777|39.992133;116.490502|39.988408' as pos,
 '{"color":70,"size":40}' as ext
 
+```
+
 
 点集pos格式为: "lng1|lat1;lng2|lat2;lng3|lat3"
 标记类型poiType，如果填'line'的话对应线条，如果填'polygon'的话对应多边形（自动连接尾首），填'heat'的话，对应图力图
@@ -84,8 +87,7 @@ pie和block的color（0~100）是从绿到红的渐变色，size对应圆的半�
 {
     "marker":{
         "label":"xxx",
-        "enableDragging": true,
-        "animation": true
+        "enableDragging": true
      },
     "block":{
         "size":100
