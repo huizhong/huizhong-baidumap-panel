@@ -182,9 +182,14 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 hideZero: false,
                 mapType: true,
                 clusterPoint: false,
+                pieColor: 100,
+                blockColor: 100,
                 pieSize: 10,
                 blockSize: 10,
-                globalConfig: ''
+                globalConfig: '',
+                typeName: 'type',
+                posName: 'pos',
+                extName: 'ext'
             };
 
             BaidumapCtrl = function (_MetricsPanelCtrl) {
@@ -213,8 +218,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                     value: function getPoiExt(poiType, poiConfig, configName) {
                         var defaultValue = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '';
 
-                        if ('ext' in poiConfig && poiConfig.ext.length > 0) {
-                            var extJson = JSON.parse(poiConfig.ext);
+                        var extName = this.panel.extName;
+                        if (extName in poiConfig && poiConfig[extName].length > 0) {
+                            var extJson = JSON.parse(poiConfig[extName]);
                             if (configName in extJson) {
                                 return extJson[configName];
                             }
@@ -385,7 +391,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 });
                                                 for (var translateIndex = 0; translateIndex < translatedItems.length; translateIndex++) {
                                                     var translatedItem = translatedItems[translateIndex];
-                                                    var poiType = translatedItem.gps.type;
+                                                    var poiType = translatedItem.gps[that.typeName];
                                                     var poiIndexKey = 'key_' + translatedItem.poiIndex;
                                                     if (poiType === 'heat') {
                                                         var heatPoint = {
@@ -410,8 +416,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                         var layerItem = {
                                                             lng: translatedItem.point.lng,
                                                             lat: translatedItem.point.lat,
-                                                            color: that.getPoiExt(poiType, translatedItem.gps, 'color', 100),
-                                                            size: that.getPoiExt(poiType, translatedItem.gps, 'size', 20),
+                                                            color: that.getPoiExt(poiType, translatedItem.gps, 'color', poiType === 'pie' ? that.panel.pieColor : that.panel.blockColor),
+                                                            size: that.getPoiExt(poiType, translatedItem.gps, 'size', poiType === 'pie' ? that.panel.pieSize : that.panel.blockSize),
                                                             type: poiType
                                                         };
                                                         layerArray.push(layerItem);
@@ -514,7 +520,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                         for (var layerIndex = 0; layerIndex < layerArray.length; layerIndex++) {
                                                             var _layerItem = layerArray[layerIndex];
                                                             ctx.fillStyle = getColor(_layerItem.color, 0.5);
-                                                            var isPie = _layerItem.type === 'pie';
+                                                            var isPie = _layerItem[that.typeName] === 'pie';
                                                             var posRect = getDotRect(that.map, parseFloat(_layerItem.lng), parseFloat(_layerItem.lat), _layerItem.size, !isPie);
                                                             // console.log(posRect);
                                                             if (isPie) {
@@ -566,8 +572,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                 for (var i = 0; i < poiList.length; i++) {
                                     setTimeout(function (poiIndex) {
                                         return function () {
-                                            if (poiList[poiIndex].pos && poiList[poiIndex].pos.length > 0) {
-                                                var gpsList = poiList[poiIndex].pos.split(';');
+                                            if (poiList[poiIndex][that.posName] && poiList[poiIndex][that.posName].length > 0) {
+                                                var gpsList = poiList[poiIndex][that.posName].split(';');
                                                 for (var gpsIndex = 0; gpsIndex < gpsList.length; gpsIndex++) {
                                                     var gpsStr = gpsList[gpsIndex];
 

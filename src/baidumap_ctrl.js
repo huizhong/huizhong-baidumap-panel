@@ -27,9 +27,14 @@ const panelDefaults = {
     hideZero: false,
     mapType: true,
     clusterPoint: false,
+    pieColor: 100,
+    blockColor: 100,
     pieSize: 10,
     blockSize: 10,
     globalConfig: '',
+    typeName: 'type',
+    posName: 'pos',
+    extName: 'ext'
 };
 
 
@@ -98,8 +103,9 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
     }
 
     getPoiExt(poiType, poiConfig, configName, defaultValue = '') {
-        if ('ext' in poiConfig && poiConfig.ext.length > 0) {
-            const extJson = JSON.parse(poiConfig.ext);
+        const extName = this.panel.extName;
+        if (extName in poiConfig && poiConfig[extName].length > 0) {
+            const extJson = JSON.parse(poiConfig[extName]);
             if (configName in extJson) {
                 return extJson[configName];
             }
@@ -112,7 +118,6 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         }
         return defaultValue;
     }
-
 
     setMapProvider(contextSrv) {
 //    this.tileServer = contextSrv.user.lightTheme ? 'CartoDB Positron' : 'CartoDB Dark';
@@ -259,8 +264,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
             for (let i = 0; i < poiList.length; i++) {
                 setTimeout((function (poiIndex) {
                     return function () {
-                        if (poiList[poiIndex].pos && poiList[poiIndex].pos.length > 0) {
-                            const gpsList = poiList[poiIndex].pos.split(';');
+                        if (poiList[poiIndex][that.posName] && poiList[poiIndex][that.posName].length > 0) {
+                            const gpsList = poiList[poiIndex][that.posName].split(';');
                             for (let gpsIndex = 0; gpsIndex < gpsList.length; gpsIndex++) {
                                 const gpsStr = gpsList[gpsIndex];
                                 const [lng, lat] = gpsStr.split('|');
@@ -292,7 +297,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             });
                             for (let translateIndex = 0; translateIndex < translatedItems.length; translateIndex++) {
                                 const translatedItem = translatedItems[translateIndex];
-                                const poiType = translatedItem.gps.type;
+                                const poiType = translatedItem.gps[that.typeName];
                                 const poiIndexKey = 'key_' + translatedItem.poiIndex;
                                 if (poiType === 'heat') {
                                     const heatPoint = {
@@ -317,8 +322,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                     const layerItem = {
                                         lng: translatedItem.point.lng,
                                         lat: translatedItem.point.lat,
-                                        color: that.getPoiExt(poiType, translatedItem.gps, 'color', 100),
-                                        size: that.getPoiExt(poiType, translatedItem.gps, 'size', 20),
+                                        color: that.getPoiExt(poiType, translatedItem.gps, 'color', poiType === 'pie' ? that.panel.pieColor : that.panel.blockColor),
+                                        size: that.getPoiExt(poiType, translatedItem.gps, 'size', poiType === 'pie' ? that.panel.pieSize : that.panel.blockSize),
                                         type: poiType
                                     };
                                     layerArray.push(layerItem);
@@ -428,7 +433,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                     for (let layerIndex = 0; layerIndex < layerArray.length; layerIndex++) {
                                         const layerItem = layerArray[layerIndex];
                                         ctx.fillStyle = getColor(layerItem.color, 0.5);
-                                        const isPie = layerItem.type === 'pie';
+                                        const isPie = layerItem[that.typeName] === 'pie';
                                         const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
                                             parseFloat(layerItem.lat), layerItem.size, !isPie);
                                         // console.log(posRect);
