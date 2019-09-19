@@ -314,7 +314,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         count: that.getPoiExt(poiType, translatedItem.gps, 'count', 1)
                                     };
                                     heatArray.push(heatPoint);
-                                } else if (poiType === 'line' || poiType === 'polygon') {
+                                } else if (poiType === 'line' || poiType === 'polygon' || poiType === 'route') {
                                     const pointItem = translatedItem.point;
                                     if (poiIndexKey in lineMap) {
                                         lineMap[poiIndexKey].points.push(pointItem);
@@ -376,21 +376,38 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             if (lineCount > 0) {
                                 for (let i = 0; i < lineCount; i++) {
                                     const lines = Object.values(lineMap)[i];
-                                    if (lines.poiType === 'polygon') {
-                                        lines.points.push(lines.points[0]);
+                                    if (lines.points.length < 2) {
+                                        // eslint-disable-next-line no-continue
+                                        continue;
                                     }
-                                    const polyline = new BMap.Polyline(lines.points, Object.assign(
-                                        {
-                                            enableEditing: false,
-                                            enableClicking: true,
-                                            strokeWeight: 4,
-                                            strokeOpacity: 0.5,
-                                            strokeColor: 'blue'
-                                        },
-                                        lines.option
-                                        )
-                                    );
-                                    that.map.addOverlay(polyline);
+                                    if (lines.poiType === 'route') {
+                                        const points = lines.points.map(v => new BMap.Point(v.lng, v.lat));
+                                        const driving = new BMap.DrivingRoute(that.map, {
+                                            renderOptions: {
+                                                map: that.map,
+                                                autoViewport: true
+                                            }
+                                        });
+                                        driving.search(points[0], points[-1], {waypoints: points.slice(1, -2)}); // waypoints表示途经点
+                                    } else {
+                                        if (lines.poiType === 'polygon') {
+                                            lines.points.push(lines.points[0]);
+                                        }
+                                        const polyline = new BMap.Polyline(lines.points, Object.assign(
+                                            {
+                                                enableEditing: false,
+                                                enableClicking: true,
+                                                strokeWeight: 4,
+                                                strokeOpacity: 0.5,
+                                                strokeColor: 'blue'
+                                            },
+                                            lines.option
+                                            )
+                                        );
+                                        that.map.addOverlay(polyline);
+
+                                    }
+
                                 }
                             }
                             if (markerArray.length > 0) {

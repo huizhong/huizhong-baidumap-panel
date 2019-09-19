@@ -411,7 +411,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                             count: that.getPoiExt(poiType, translatedItem.gps, 'count', 1)
                                                         };
                                                         heatArray.push(heatPoint);
-                                                    } else if (poiType === 'line' || poiType === 'polygon') {
+                                                    } else if (poiType === 'line' || poiType === 'polygon' || poiType === 'route') {
                                                         var pointItem = translatedItem.point;
                                                         if (poiIndexKey in lineMap) {
                                                             lineMap[poiIndexKey].points.push(pointItem);
@@ -467,17 +467,34 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 if (lineCount > 0) {
                                                     for (var _i = 0; _i < lineCount; _i++) {
                                                         var lines = Object.values(lineMap)[_i];
-                                                        if (lines.poiType === 'polygon') {
-                                                            lines.points.push(lines.points[0]);
+                                                        if (lines.points.length < 2) {
+                                                            // eslint-disable-next-line no-continue
+                                                            continue;
                                                         }
-                                                        var polyline = new BMap.Polyline(lines.points, Object.assign({
-                                                            enableEditing: false,
-                                                            enableClicking: true,
-                                                            strokeWeight: 4,
-                                                            strokeOpacity: 0.5,
-                                                            strokeColor: 'blue'
-                                                        }, lines.option));
-                                                        that.map.addOverlay(polyline);
+                                                        if (lines.poiType === 'route') {
+                                                            var points = lines.points.map(function (v) {
+                                                                return new BMap.Point(v.lng, v.lat);
+                                                            });
+                                                            var driving = new BMap.DrivingRoute(that.map, {
+                                                                renderOptions: {
+                                                                    map: that.map,
+                                                                    autoViewport: true
+                                                                }
+                                                            });
+                                                            driving.search(points[0], points[-1], { waypoints: points.slice(1, -2) }); // waypoints表示途经点
+                                                        } else {
+                                                            if (lines.poiType === 'polygon') {
+                                                                lines.points.push(lines.points[0]);
+                                                            }
+                                                            var polyline = new BMap.Polyline(lines.points, Object.assign({
+                                                                enableEditing: false,
+                                                                enableClicking: true,
+                                                                strokeWeight: 4,
+                                                                strokeOpacity: 0.5,
+                                                                strokeColor: 'blue'
+                                                            }, lines.option));
+                                                            that.map.addOverlay(polyline);
+                                                        }
                                                     }
                                                 }
                                                 if (markerArray.length > 0) {
