@@ -98,6 +98,13 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         // this.loadLocationDataFromFile();
     }
 
+    getPoiOption(poiType, poiConfig, defaultValue = '') {
+        const configName = 'option';
+        const poiOption = this.getPoiExt(poiType, poiConfig, configName, defaultValue);
+        const typeOption = this.getPoiExt(poiType, poiConfig, configName, defaultValue);
+        return Object.assign({}, typeOption, poiOption);
+    }
+
     getPoiExt(poiType, poiConfig, configName, defaultValue = '') {
         const extName = this.panel.extName;
         if (poiConfig && extName in poiConfig && poiConfig[extName].length > 0) {
@@ -224,9 +231,6 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         if (this.getPoiExt(poiType, data, 'enableDragging', false)) {
             marker.enableDragging();
         }
-        if (this.getPoiExt(poiType, data, 'animation', false)) {
-            marker.setAnimation(BMAP_ANIMATION_BOUNCE); //跳动的动画
-        }
         let scontent = '';
         scontent += '<a href=""><div class="infobox" id="infobox"><div class="infobox-content" style="display:block">';
         scontent += '<div class="infobox-header"><div class="infobox-header-icon"><img src="' + this.getPoiExt(poiType, data, 'detail-icon', 'public/plugins/grafana-baidumap-panel/images/bike.png') + '"></div>';
@@ -241,6 +245,9 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         });
 
         this.map.addOverlay(marker);
+        if (this.getPoiExt(poiType, data, 'animation', false)) {
+            marker.setAnimation(BMAP_ANIMATION_BOUNCE); //跳动的动画
+        }
         marker.addEventListener('dragend', function (e) {
             point = new BMap.Point(e.point.lng, e.point.lat);
             alert('当前位置：' + e.point.lng + ', ' + e.point.lat);

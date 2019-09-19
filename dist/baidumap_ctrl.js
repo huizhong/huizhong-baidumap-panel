@@ -210,6 +210,16 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 }
 
                 _createClass(BaidumapCtrl, [{
+                    key: 'getPoiOption',
+                    value: function getPoiOption(poiType, poiConfig) {
+                        var defaultValue = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+
+                        var configName = 'option';
+                        var poiOption = this.getPoiExt(poiType, poiConfig, configName, defaultValue);
+                        var typeOption = this.getPoiExt(poiType, poiConfig, configName, defaultValue);
+                        return Object.assign({}, typeOption, poiOption);
+                    }
+                }, {
                     key: 'getPoiExt',
                     value: function getPoiExt(poiType, poiConfig, configName) {
                         var defaultValue = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '';
@@ -343,9 +353,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         if (this.getPoiExt(poiType, data, 'enableDragging', false)) {
                             marker.enableDragging();
                         }
-                        if (this.getPoiExt(poiType, data, 'animation', false)) {
-                            marker.setAnimation(BMAP_ANIMATION_BOUNCE); //跳动的动画
-                        }
                         var scontent = '';
                         scontent += '<a href=""><div class="infobox" id="infobox"><div class="infobox-content" style="display:block">';
                         scontent += '<div class="infobox-header"><div class="infobox-header-icon"><img src="' + this.getPoiExt(poiType, data, 'detail-icon', 'public/plugins/grafana-baidumap-panel/images/bike.png') + '"></div>';
@@ -360,6 +367,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         });
 
                         this.map.addOverlay(marker);
+                        if (this.getPoiExt(poiType, data, 'animation', false)) {
+                            marker.setAnimation(BMAP_ANIMATION_BOUNCE); //跳动的动画
+                        }
                         marker.addEventListener('dragend', function (e) {
                             point = new BMap.Point(e.point.lng, e.point.lat);
                             alert('当前位置：' + e.point.lng + ', ' + e.point.lat);
