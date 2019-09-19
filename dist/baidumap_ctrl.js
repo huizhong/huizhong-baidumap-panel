@@ -391,7 +391,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 });
                                                 for (var translateIndex = 0; translateIndex < translatedItems.length; translateIndex++) {
                                                     var translatedItem = translatedItems[translateIndex];
-                                                    var poiType = translatedItem.gps[that.typeName];
+                                                    var poiType = translatedItem.gps[that.panel.typeName];
                                                     var poiIndexKey = 'key_' + translatedItem.poiIndex;
                                                     if (poiType === 'heat') {
                                                         var heatPoint = {
@@ -520,7 +520,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                         for (var layerIndex = 0; layerIndex < layerArray.length; layerIndex++) {
                                                             var _layerItem = layerArray[layerIndex];
                                                             ctx.fillStyle = getColor(_layerItem.color, 0.5);
-                                                            var isPie = _layerItem[that.typeName] === 'pie';
+                                                            var isPie = _layerItem[that.panel.typeName] === 'pie';
                                                             var posRect = getDotRect(that.map, parseFloat(_layerItem.lng), parseFloat(_layerItem.lat), _layerItem.size, !isPie);
                                                             // console.log(posRect);
                                                             if (isPie) {
@@ -572,8 +572,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                 for (var i = 0; i < poiList.length; i++) {
                                     setTimeout(function (poiIndex) {
                                         return function () {
-                                            if (poiList[poiIndex][that.posName] && poiList[poiIndex][that.posName].length > 0) {
-                                                var gpsList = poiList[poiIndex][that.posName].split(';');
+                                            if (poiList[poiIndex][that.panel.posName] && poiList[poiIndex][that.panel.posName].length > 0) {
+                                                var gpsList = poiList[poiIndex][that.panel.posName].split(';');
                                                 for (var gpsIndex = 0; gpsIndex < gpsList.length; gpsIndex++) {
                                                     var gpsStr = gpsList[gpsIndex];
 

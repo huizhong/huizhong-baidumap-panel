@@ -264,8 +264,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
             for (let i = 0; i < poiList.length; i++) {
                 setTimeout((function (poiIndex) {
                     return function () {
-                        if (poiList[poiIndex][that.posName] && poiList[poiIndex][that.posName].length > 0) {
-                            const gpsList = poiList[poiIndex][that.posName].split(';');
+                        if (poiList[poiIndex][that.panel.posName] && poiList[poiIndex][that.panel.posName].length > 0) {
+                            const gpsList = poiList[poiIndex][that.panel.posName].split(';');
                             for (let gpsIndex = 0; gpsIndex < gpsList.length; gpsIndex++) {
                                 const gpsStr = gpsList[gpsIndex];
                                 const [lng, lat] = gpsStr.split('|');
@@ -297,7 +297,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             });
                             for (let translateIndex = 0; translateIndex < translatedItems.length; translateIndex++) {
                                 const translatedItem = translatedItems[translateIndex];
-                                const poiType = translatedItem.gps[that.typeName];
+                                const poiType = translatedItem.gps[that.panel.typeName];
                                 const poiIndexKey = 'key_' + translatedItem.poiIndex;
                                 if (poiType === 'heat') {
                                     const heatPoint = {
@@ -433,7 +433,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                     for (let layerIndex = 0; layerIndex < layerArray.length; layerIndex++) {
                                         const layerItem = layerArray[layerIndex];
                                         ctx.fillStyle = getColor(layerItem.color, 0.5);
-                                        const isPie = layerItem[that.typeName] === 'pie';
+                                        const isPie = layerItem[that.panel.typeName] === 'pie';
                                         const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
                                             parseFloat(layerItem.lat), layerItem.size, !isPie);
                                         // console.log(posRect);
