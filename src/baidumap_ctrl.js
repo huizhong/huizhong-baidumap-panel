@@ -206,7 +206,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
     addMarker(point, BMap, data) {
         // public/plugins/grafana-baidumap-panel/images/bike.png
         const poiType = 'marker';
-        const markerOption = this.getPoiExt(poiType, data, 'option', {});
+        const markerOption = this.getPoiOption(poiType, data, {});
         const iconUrl = this.getPoiExt(poiType, data, 'icon', '');
         if (Number.isInteger(iconUrl)) {
             markerOption.icon = new BMap.Icon('http://api.map.baidu.com/img/markers.png', new BMap.Size(23, 25), {
@@ -321,7 +321,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                     } else {
                                         const option = Object.assign(
                                             {},
-                                            that.getPoiExt(poiType, translatedItem.gps, 'option', {})
+                                            that.getPoiOption(poiType, translatedItem.gps, {})
                                         );
                                         lineMap[poiIndexKey] = {
                                             poiType: poiType,
@@ -358,7 +358,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         {
                                             radius: 20,
                                         },
-                                        that.getPoiExt('heat', null, 'option', {})
+                                        that.getPoiOption('heat', null, {})
                                     ));
                                 that.map.addOverlay(heatmapOverlay);
                                 heatmapOverlay.setDataSet({
