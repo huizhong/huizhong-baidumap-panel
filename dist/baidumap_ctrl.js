@@ -35,18 +35,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
         if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
     }
 
-    function getPoiExt(poiConfig, configName) {
-        var defaultValue = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
-
-        if ('ext' in poiConfig && poiConfig.ext.length > 0) {
-            var extJson = JSON.parse(poiConfig.ext);
-            if (configName in extJson) {
-                return extJson[configName];
-            }
-        }
-        return defaultValue;
-    }
-
     function getColor(orginBili, alpha) {
         var bili = orginBili > 100 ? 100 : orginBili;
         // 百分之一 = (单色值范围) / 50;  单颜色的变化范围只在50%之内
@@ -193,7 +181,10 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 overviewMap: false,
                 hideZero: false,
                 mapType: true,
-                clusterPoint: false
+                clusterPoint: false,
+                pieSize: 10,
+                blockSize: 10,
+                globalConfig: ''
             };
 
             BaidumapCtrl = function (_MetricsPanelCtrl) {
@@ -218,6 +209,25 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 }
 
                 _createClass(BaidumapCtrl, [{
+                    key: 'getPoiExt',
+                    value: function getPoiExt(poiType, poiConfig, configName) {
+                        var defaultValue = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '';
+
+                        if ('ext' in poiConfig && poiConfig.ext.length > 0) {
+                            var extJson = JSON.parse(poiConfig.ext);
+                            if (configName in extJson) {
+                                return extJson[configName];
+                            }
+                        }
+                        if (this.panel.globalConfig && this.panel.globalConfig.length > 0) {
+                            var globalConfig = JSON.parse(this.panel.globalConfig);
+                            if (poiType in globalConfig && configName in globalConfig[poiType]) {
+                                return globalConfig[poiType][configName];
+                            }
+                        }
+                        return defaultValue;
+                    }
+                }, {
                     key: 'setMapProvider',
                     value: function setMapProvider(contextSrv) {
                         //    this.tileServer = contextSrv.user.lightTheme ? 'CartoDB Positron' : 'CartoDB Dark';
@@ -305,8 +315,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                     key: 'addMarker',
                     value: function addMarker(point, BMap, data) {
                         // public/plugins/grafana-baidumap-panel/images/bike.png
+                        var poiType = 'marker';
                         var markerOption = {};
-                        var iconUrl = getPoiExt(data, 'icon', '');
+                        var iconUrl = this.getPoiExt(poiType, data, 'icon', '');
                         if (Number.isInteger(iconUrl)) {
                             markerOption.icon = new BMap.Icon('http://api.map.baidu.com/img/markers.png', new BMap.Size(23, 25), {
                                 offset: new BMap.Size(10, 25), // 指定定位位置
@@ -319,7 +330,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                             });
                         }
                         var marker = new BMap.Marker(point, markerOption);
-                        var pointLabel = getPoiExt(data, 'label');
+                        var pointLabel = this.getPoiExt(poiType, data, 'label');
                         if (pointLabel.length > 0) {
                             var label = new BMap.Label(pointLabel, { offset: new BMap.Size(20, -10) });
                             marker.setLabel(label);
@@ -330,10 +341,10 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         marker.enableDragging();
                         var scontent = '';
                         scontent += '<a href=""><div class="infobox" id="infobox"><div class="infobox-content" style="display:block">';
-                        scontent += '<div class="infobox-header"><div class="infobox-header-icon"><img src="' + getPoiExt(data, 'detail-icon', 'public/plugins/grafana-baidumap-panel/images/bike.png') + '"></div>';
-                        scontent += '<div class="infobox-header-name"><p>' + getPoiExt(data, 'name') + '</p></div>';
-                        scontent += '<div class="infobox-header-type" style="min-width:250px"><p>' + getPoiExt(data, 'type') + '</p></div></div>';
-                        scontent += '<div class="infobox-footer">' + getPoiExt(data, 'desc') + '</div>';
+                        scontent += '<div class="infobox-header"><div class="infobox-header-icon"><img src="' + this.getPoiExt(poiType, data, 'detail-icon', 'public/plugins/grafana-baidumap-panel/images/bike.png') + '"></div>';
+                        scontent += '<div class="infobox-header-name"><p>' + this.getPoiExt(poiType, data, 'name') + '</p></div>';
+                        scontent += '<div class="infobox-header-type" style="min-width:250px"><p>' + this.getPoiExt(poiType, data, 'type') + '</p></div></div>';
+                        scontent += '<div class="infobox-footer">' + this.getPoiExt(poiType, data, 'desc') + '</div>';
                         scontent += '<div class="infobox-footer-right"></div></div><div class="arrow"></div></div></a>';
 
                         var infoWindow = new BMap.InfoWindow(scontent); // 创建信息窗口对象
@@ -380,7 +391,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                         var heatPoint = {
                                                             lng: translatedItem.point.lng,
                                                             lat: translatedItem.point.lat,
-                                                            count: getPoiExt(translatedItem.gps, 'count', 1)
+                                                            count: that.getPoiExt(poiType, translatedItem.gps, 'count', 1)
                                                         };
                                                         heatArray.push(heatPoint);
                                                     } else if (poiType === 'line' || poiType === 'polygon') {
@@ -390,8 +401,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                         } else {
                                                             lineMap[poiIndexKey] = {
                                                                 poiType: poiType,
-                                                                strokeColor: getPoiExt(translatedItem.gps, 'strokeColor', 'blue'),
-                                                                strokeWeight: getPoiExt(translatedItem.gps, 'strokeWeight', '4'),
+                                                                strokeColor: that.getPoiExt(poiType, translatedItem.gps, 'strokeColor', 'blue'),
+                                                                strokeWeight: that.getPoiExt(poiType, translatedItem.gps, 'strokeWeight', '4'),
                                                                 points: [pointItem]
                                                             };
                                                         }
@@ -399,8 +410,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                         var layerItem = {
                                                             lng: translatedItem.point.lng,
                                                             lat: translatedItem.point.lat,
-                                                            color: getPoiExt(translatedItem.gps, 'color', 100),
-                                                            size: getPoiExt(translatedItem.gps, 'size', 20),
+                                                            color: that.getPoiExt(poiType, translatedItem.gps, 'color', 100),
+                                                            size: that.getPoiExt(poiType, translatedItem.gps, 'size', 20),
                                                             type: poiType
                                                         };
                                                         layerArray.push(layerItem);

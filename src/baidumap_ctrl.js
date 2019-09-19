@@ -26,19 +26,12 @@ const panelDefaults = {
     overviewMap: false,
     hideZero: false,
     mapType: true,
-    clusterPoint: false
+    clusterPoint: false,
+    pieSize: 10,
+    blockSize: 10,
+    globalConfig: '',
 };
 
-
-function getPoiExt(poiConfig, configName, defaultValue = '') {
-    if ('ext' in poiConfig && poiConfig.ext.length > 0) {
-        const extJson = JSON.parse(poiConfig.ext);
-        if (configName in extJson) {
-            return extJson[configName];
-        }
-    }
-    return defaultValue;
-}
 
 function getColor(orginBili, alpha) {
     const bili = orginBili > 100 ? 100 : orginBili;
@@ -103,6 +96,23 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         this.events.on('data-snapshot-load', this.onDataSnapshotLoad.bind(this));
         // this.loadLocationDataFromFile();
     }
+
+    getPoiExt(poiType, poiConfig, configName, defaultValue = '') {
+        if ('ext' in poiConfig && poiConfig.ext.length > 0) {
+            const extJson = JSON.parse(poiConfig.ext);
+            if (configName in extJson) {
+                return extJson[configName];
+            }
+        }
+        if (this.panel.globalConfig && this.panel.globalConfig.length > 0) {
+            const globalConfig = JSON.parse(this.panel.globalConfig);
+            if (poiType in globalConfig && configName in globalConfig[poiType]) {
+                return globalConfig[poiType][configName];
+            }
+        }
+        return defaultValue;
+    }
+
 
     setMapProvider(contextSrv) {
 //    this.tileServer = contextSrv.user.lightTheme ? 'CartoDB Positron' : 'CartoDB Dark';
@@ -187,8 +197,9 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
 
     addMarker(point, BMap, data) {
         // public/plugins/grafana-baidumap-panel/images/bike.png
+        const poiType = 'marker';
         const markerOption = {};
-        const iconUrl = getPoiExt(data, 'icon', '');
+        const iconUrl = this.getPoiExt(poiType, data, 'icon', '');
         if (Number.isInteger(iconUrl)) {
             markerOption.icon = new BMap.Icon('http://api.map.baidu.com/img/markers.png', new BMap.Size(23, 25), {
                 offset: new BMap.Size(10, 25), // 指定定位位置
@@ -201,7 +212,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
             });
         }
         const marker = new BMap.Marker(point, markerOption);
-        const pointLabel = getPoiExt(data, 'label');
+        const pointLabel = this.getPoiExt(poiType, data, 'label');
         if (pointLabel.length > 0) {
             const label = new BMap.Label(pointLabel, {offset: new BMap.Size(20, -10)});
             marker.setLabel(label);
@@ -212,10 +223,10 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         marker.enableDragging();
         let scontent = '';
         scontent += '<a href=""><div class="infobox" id="infobox"><div class="infobox-content" style="display:block">';
-        scontent += '<div class="infobox-header"><div class="infobox-header-icon"><img src="' + getPoiExt(data, 'detail-icon', 'public/plugins/grafana-baidumap-panel/images/bike.png') + '"></div>';
-        scontent += '<div class="infobox-header-name"><p>' + getPoiExt(data, 'name') + '</p></div>';
-        scontent += '<div class="infobox-header-type" style="min-width:250px"><p>' + getPoiExt(data, 'type') + '</p></div></div>';
-        scontent += '<div class="infobox-footer">' + getPoiExt(data, 'desc') + '</div>';
+        scontent += '<div class="infobox-header"><div class="infobox-header-icon"><img src="' + this.getPoiExt(poiType, data, 'detail-icon', 'public/plugins/grafana-baidumap-panel/images/bike.png') + '"></div>';
+        scontent += '<div class="infobox-header-name"><p>' + this.getPoiExt(poiType, data, 'name') + '</p></div>';
+        scontent += '<div class="infobox-header-type" style="min-width:250px"><p>' + this.getPoiExt(poiType, data, 'type') + '</p></div></div>';
+        scontent += '<div class="infobox-footer">' + this.getPoiExt(poiType, data, 'desc') + '</div>';
         scontent += '<div class="infobox-footer-right"></div></div><div class="arrow"></div></div></a>';
 
         const infoWindow = new BMap.InfoWindow(scontent); // 创建信息窗口对象
@@ -287,7 +298,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                     const heatPoint = {
                                         lng: translatedItem.point.lng,
                                         lat: translatedItem.point.lat,
-                                        count: getPoiExt(translatedItem.gps, 'count', 1)
+                                        count: that.getPoiExt(poiType, translatedItem.gps, 'count', 1)
                                     };
                                     heatArray.push(heatPoint);
                                 } else if (poiType === 'line' || poiType === 'polygon') {
@@ -297,8 +308,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                     } else {
                                         lineMap[poiIndexKey] = {
                                             poiType: poiType,
-                                            strokeColor: getPoiExt(translatedItem.gps, 'strokeColor', 'blue'),
-                                            strokeWeight: getPoiExt(translatedItem.gps, 'strokeWeight', '4'),
+                                            strokeColor: that.getPoiExt(poiType, translatedItem.gps, 'strokeColor', 'blue'),
+                                            strokeWeight: that.getPoiExt(poiType, translatedItem.gps, 'strokeWeight', '4'),
                                             points: [pointItem]
                                         };
                                     }
@@ -306,8 +317,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                     const layerItem = {
                                         lng: translatedItem.point.lng,
                                         lat: translatedItem.point.lat,
-                                        color: getPoiExt(translatedItem.gps, 'color', 100),
-                                        size: getPoiExt(translatedItem.gps, 'size', 20),
+                                        color: that.getPoiExt(poiType, translatedItem.gps, 'color', 100),
+                                        size: that.getPoiExt(poiType, translatedItem.gps, 'size', 20),
                                         type: poiType
                                     };
                                     layerArray.push(layerItem);
