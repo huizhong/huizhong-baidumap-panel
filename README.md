@@ -86,27 +86,26 @@ pie和block的color（0~100）是从绿到红的渐变色，size对应圆的半�
 ```json
 {
     "marker":{
-        "label":"xxx",
+        "label":"默认说明",
         "enableDragging": true
      },
     "block":{
         "size":100
     },
     "pie": {
-        "alpha": 0.8
+        "alpha": 0.3
     },
     "heat": {
         "count": 3,
         "max": 120,
         "option":{
-            "radius": 15
+            "radius": 150
         }
     },
     "polygon": {
         "option":{
-            "strokeWeight":5,
-            "strokeColor":"blue",
-            "enableEditing": true
+            "strokeWeight":8,
+            "strokeColor":"blue"
         }
     }
 }

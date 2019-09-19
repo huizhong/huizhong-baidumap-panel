@@ -34,6 +34,13 @@ System.register(['./css/leaflet.css!', './libs/baidumap.js'], function (_export,
           ctrl.overviewMapSwitch = new BMap.OverviewMapControl({ isOpen: true, anchor: BMAP_ANCHOR_BOTTOM_RIGHT });
           ctrl.mapTypeSwitch = new BMap.MapTypeControl();
 
+          // 覆盖区域图层测试
+          ctrl.map.addTileLayer(new BMap.PanoramaCoverageLayer());
+
+          var stCtrl = new BMap.PanoramaControl(); //构造全景控件
+          stCtrl.setOffset(new BMap.Size(20, 60));
+          ctrl.map.addControl(stCtrl); //添加全景控件
+
           if (ctrl.panel.navigation === true) ctrl.map.addControl(ctrl.navigationSwitch);
           if (ctrl.panel.scale === true) ctrl.map.addControl(ctrl.scaleSwitch);
           if (ctrl.panel.overviewMap === true) ctrl.map.addControl(ctrl.overviewMapSwitch);

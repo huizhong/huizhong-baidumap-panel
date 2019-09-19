@@ -1,5 +1,5 @@
 import './css/leaflet.css!';
-import { MP } from "./libs/baidumap.js";  
+import { MP } from "./libs/baidumap.js";
 
 
 export default function link(scope, elem, attrs, ctrl) {
@@ -10,13 +10,13 @@ export default function link(scope, elem, attrs, ctrl) {
 
   function render() {
     if (!ctrl.data && ctrl.map) return;
-  
+
     const mapContainer = elem.find('.mapcontainer');
 
     if (mapContainer[0].id.indexOf('{{') > -1) {
       return;
     }
-    
+
     if (!ctrl.map) {
       MP(ctrl.panel.ak).then(BMap => {
         console.log('start');
@@ -30,8 +30,16 @@ export default function link(scope, elem, attrs, ctrl) {
         ctrl.navigationSwitch = new BMap.NavigationControl();
         ctrl.scaleSwitch = new BMap.ScaleControl();
         ctrl.overviewMapSwitch = new BMap.OverviewMapControl({isOpen:true, anchor: BMAP_ANCHOR_BOTTOM_RIGHT});
-        ctrl.mapTypeSwitch = new BMap.MapTypeControl();   
-        
+        ctrl.mapTypeSwitch = new BMap.MapTypeControl();
+
+
+        // 覆盖区域图层测试
+        ctrl.map.addTileLayer(new BMap.PanoramaCoverageLayer());
+
+        var stCtrl = new BMap.PanoramaControl(); //构造全景控件
+        stCtrl.setOffset(new BMap.Size(20, 60));
+        ctrl.map.addControl(stCtrl);//添加全景控件
+
         if(ctrl.panel.navigation === true)ctrl.map.addControl(ctrl.navigationSwitch);
         if(ctrl.panel.scale === true)ctrl.map.addControl(ctrl.scaleSwitch);
         if(ctrl.panel.overviewMap === true)ctrl.map.addControl(ctrl.overviewMapSwitch);
@@ -42,11 +50,11 @@ export default function link(scope, elem, attrs, ctrl) {
           ctrl.panel.lat = center.lat;
           ctrl.panel.lng = center.lng;
         });
-            
+
         ctrl.addNode(BMap);
       });
     }
-    
+
     //ctrl.map.resize();
 
     //if (ctrl.mapCenterMoved) ctrl.map.panToMapCenter();
