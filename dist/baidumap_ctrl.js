@@ -477,8 +477,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                             });
                                                             var driving = new BMap.RidingRoute(that.map, {
                                                                 renderOptions: {
-                                                                    map: that.map,
-                                                                    autoViewport: true
+                                                                    map: that.map
+                                                                    // autoViewport: true
                                                                 }
                                                             });
                                                             driving.search(points[0], points.slice(-1)[0]);
@@ -701,11 +701,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                     key: 'link',
                     value: function link(scope, elem, attrs, ctrl) {
                         mapRenderer(scope, elem, attrs, ctrl);
-                    }
-                }, {
-                    key: 'closeDistanceTool',
-                    value: function closeDistanceTool() {
-                        this.distanceTool.close();
                     }
                 }, {
                     key: 'openDistanceTool',

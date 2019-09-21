@@ -385,7 +385,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         const driving = new BMap.RidingRoute(that.map, {
                                             renderOptions: {
                                                 map: that.map,
-                                                autoViewport: true
+                                                // autoViewport: true
                                             }
                                         });
                                         driving.search(points[0], points.slice(-1)[0]);
@@ -568,9 +568,6 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         mapRenderer(scope, elem, attrs, ctrl);
     }
 
-    closeDistanceTool() {
-        this.distanceTool.close();
-    }
     openDistanceTool() {
         if (!this.distanceTool) {
             this.distanceTool = new BMapLib.DistanceTool(this.map);

@@ -50,14 +50,9 @@ System.register(['./css/leaflet.css!', './libs/baidumap.js'], function (_export,
 
                     var menu = new BMap.ContextMenu();
                     var txtMenuItem = [{
-                        text: '开启测距',
+                        text: '测距',
                         callback: function callback() {
                             ctrl.openDistanceTool();
-                        }
-                    }, {
-                        text: '关闭测距',
-                        callback: function callback() {
-                            ctrl.closeDistanceTool();
                         }
                     }];
 

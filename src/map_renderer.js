@@ -51,15 +51,9 @@ export default function link(scope, elem, attrs, ctrl) {
                     const menu = new BMap.ContextMenu();
                     const txtMenuItem = [
                         {
-                            text: '开启测距',
+                            text: '测距',
                             callback: function () {
                                 ctrl.openDistanceTool();
-                            }
-                        },
-                        {
-                            text: '关闭测距',
-                            callback: function () {
-                                ctrl.closeDistanceTool();
                             }
                         }
                     ];
