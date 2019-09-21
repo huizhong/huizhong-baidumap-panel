@@ -10,6 +10,14 @@ System.register([], function (_export, _context) {
         document.head.appendChild(fileElement);
     }
 
+    function loadCssFile(fileName) {
+        var fileElement = document.createElement('link');
+        fileElement.type = 'text/css';
+        fileElement.ref = 'stylesheet';
+        fileElement.href = fileName;
+        document.head.appendChild(fileElement);
+    }
+
     function MP(ak) {
         return new Promise(function (resolve, reject) {
             var script = document.createElement('script');
@@ -25,6 +33,7 @@ System.register([], function (_export, _context) {
                 loadJsFile('http://api.map.baidu.com/library/DistanceTool/1.2/src/DistanceTool_min.js');
                 loadJsFile('http://api.map.baidu.com/library/RectangleZoom/1.2/src/RectangleZoom_min.js');
                 loadJsFile('http://api.map.baidu.com/library/TrafficControl/1.4/src/TrafficControl_min.js');
+                loadCssFile('"http://api.map.baidu.com/library/TrafficControl/1.4/src/TrafficControl_min.cs');
                 resolve(BMap);
             }, 500);
         });

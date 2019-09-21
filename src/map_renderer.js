@@ -55,11 +55,14 @@ export default function link(scope, elem, attrs, ctrl) {
                             followText: '拖拽鼠标进行操作',
                             autoClose: true
                         });
-                        ctrl.trafficMapSwitch = new BMapLib.TrafficControl({
-                            showPanel: true,
+
+                        ctrl.trafficControl = new BMapLib.TrafficControl({
+                            showPanel: false, // 是否显示路况提示面板
+                            // eslint-disable-next-line no-undef
                             anchor: BMAP_ANCHOR_BOTTOM_RIGHT
                         });
-                        ctrl.map.addControl(ctrl.trafficMapSwitch);
+                        ctrl.map.addControl(ctrl.trafficControl);
+
                     }, 1000);
 
                     const menu = new BMap.ContextMenu();
