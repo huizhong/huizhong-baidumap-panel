@@ -36,7 +36,6 @@ System.register(['./css/leaflet.css!', './libs/baidumap.js'], function (_export,
                         anchor: BMAP_ANCHOR_BOTTOM_RIGHT
                     });
                     ctrl.mapTypeSwitch = new BMap.MapTypeControl();
-                    ctrl.mapTypeSwitch.setOffset(new BMap.Size(50, 10));
 
                     if (ctrl.panel.navigation === true) ctrl.map.addControl(ctrl.navigationSwitch);
                     if (ctrl.panel.scale === true) ctrl.map.addControl(ctrl.scaleSwitch);
@@ -60,6 +59,7 @@ System.register(['./css/leaflet.css!', './libs/baidumap.js'], function (_export,
                         ctrl.trafficControl = new BMapLib.TrafficControl({
                             showPanel: false // 是否显示路况提示面板
                         });
+                        ctrl.trafficControl.setOffset(new BMap.Size(10, 40));
                         // ctrl.trafficControl.setAnchor(BMAP_ANCHOR_BOTTOM_RIGHT);
                         ctrl.map.addControl(ctrl.trafficControl);
                     }, 1000);
