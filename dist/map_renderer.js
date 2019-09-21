@@ -48,6 +48,24 @@ System.register(['./css/leaflet.css!', './libs/baidumap.js'], function (_export,
                         ctrl.panel.lng = center.lng;
                     });
 
+                    var menu = new BMap.ContextMenu();
+                    var txtMenuItem = [{
+                        text: '放大',
+                        callback: function callback() {
+                            that.map.zoomIn();
+                        }
+                    }, {
+                        text: '缩小',
+                        callback: function callback() {
+                            that.map.zoomOut();
+                        }
+                    }];
+
+                    for (var menuIndex = 0; menuIndex < txtMenuItem.length; menuIndex++) {
+                        menu.addItem(new BMap.MenuItem(txtMenuItem[menuIndex].text, txtMenuItem[menuIndex].callback, 100));
+                    }
+                    ctrl.map.addContextMenu(menu);
+
                     ctrl.addNode(BMap);
                 });
             }
