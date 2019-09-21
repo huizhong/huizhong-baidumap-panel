@@ -179,6 +179,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 scale: true,
                 hideEmpty: false,
                 overviewMap: false,
+                trafficMap: false,
                 hideZero: false,
                 mapType: true,
                 clusterPoint: false,
@@ -368,7 +369,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
 
                         this.map.addOverlay(marker);
                         if (this.getPoiExt(poiType, data, 'animation', false)) {
-                            marker.setAnimation(BMAP_ANIMATION_BOUNCE); //跳动的动画
+                            marker.setAnimation(BMAP_ANIMATION_BOUNCE); // 跳动的动画
                         }
                         marker.addEventListener('dragend', function (e) {
                             point = new BMap.Point(e.point.lng, e.point.lat);
@@ -667,16 +668,25 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 }, {
                     key: 'overviewMapControl',
                     value: function overviewMapControl() {
-                        if (this.panel.overviewMap == true) {
+                        if (this.panel.overviewMap === true) {
                             this.map.addControl(this.overviewMapSwitch);
                         } else {
                             this.map.removeControl(this.overviewMapSwitch);
                         }
                     }
                 }, {
+                    key: 'trafficMapControl',
+                    value: function trafficMapControl() {
+                        if (this.panel.trafficMap === true) {
+                            this.map.addControl(this.trafficMapSwitch);
+                        } else {
+                            this.map.removeControl(this.trafficMapSwitch);
+                        }
+                    }
+                }, {
                     key: 'mapTypeControl',
                     value: function mapTypeControl() {
-                        if (this.panel.mapType == true) {
+                        if (this.panel.mapType === true) {
                             this.map.addControl(this.mapTypeSwitch);
                         } else {
                             this.map.removeControl(this.mapTypeSwitch);
@@ -709,6 +719,21 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                             this.distanceTool = new BMapLib.DistanceTool(this.map);
                         }
                         this.distanceTool.open();
+                    }
+                }, {
+                    key: 'openRectangleZoom',
+                    value: function openRectangleZoom() {
+                        if (!this.rectangleZoomTool) {
+                            this.rectangleZoomTool = new BMapLib.RectangleZoom(this.map, {
+                                followText: '拖拽鼠标进行操作'
+                            });
+                        }
+                        this.rectangleZoomTool.open();
+                    }
+                }, {
+                    key: 'closeRectangleZoom',
+                    value: function closeRectangleZoom() {
+                        this.rectangleZoomTool.close();
                     }
                 }]);
 

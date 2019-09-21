@@ -35,6 +35,10 @@ export default function link(scope, elem, attrs, ctrl) {
                         isOpen: true,
                         anchor: BMAP_ANCHOR_BOTTOM_RIGHT
                     });
+                    ctrl.trafficMapSwitch = new BMapLib.TrafficControl({
+                        showPanel: false,
+                        anchor: BMAP_ANCHOR_BOTTOM_RIGHT
+                    });
                     ctrl.mapTypeSwitch = new BMap.MapTypeControl();
 
                     if (ctrl.panel.navigation === true) ctrl.map.addControl(ctrl.navigationSwitch);
@@ -54,6 +58,18 @@ export default function link(scope, elem, attrs, ctrl) {
                             text: '测距',
                             callback: function () {
                                 ctrl.openDistanceTool();
+                            }
+                        },
+                        {
+                            text: '开启拉框放大',
+                            callback: function () {
+                                ctrl.openRectangleZoom();
+                            }
+                        },
+                        {
+                            text: '关闭拉框放大',
+                            callback: function () {
+                                ctrl.closeRectangleZoom();
                             }
                         }
                     ];

@@ -1,3 +1,10 @@
+function loadJsFile(fileName) {
+    const fileElement = document.createElement('script');
+    fileElement.type = 'text/javascript';
+    fileElement.src = fileName;
+    document.head.appendChild(fileElement);
+}
+
 export function MP(ak) {
     return new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -7,28 +14,13 @@ export function MP(ak) {
         document.head.appendChild(script);
 
         setTimeout(() => {
-            const textIconOverlay = document.createElement('script');
-            textIconOverlay.type = 'text/javascript';
-            textIconOverlay.src = 'http://api.map.baidu.com/library/TextIconOverlay/1.2/src/TextIconOverlay_min.js';
-            document.head.appendChild(textIconOverlay);
-
-            const markerClusterers = document.createElement('script');
-            markerClusterers.type = 'text/javascript';
-            markerClusterers.src = 'http://api.map.baidu.com/library/MarkerClusterer/1.2/src/MarkerClusterer_min.js';
-            document.head.appendChild(markerClusterers);
-
-            const heatmap = document.createElement('script');
-            heatmap.type = 'text/javascript';
-            heatmap.src = 'http://api.map.baidu.com/library/Heatmap/2.0/src/Heatmap_min.js';
-            document.head.appendChild(heatmap);
-
-            const distanceTool = document.createElement('script');
-            distanceTool.type = 'text/javascript';
-            distanceTool.src = 'http://api.map.baidu.com/library/DistanceTool/1.2/src/DistanceTool_min.js';
-            document.head.appendChild(distanceTool);
-
+            loadJsFile('http://api.map.baidu.com/library/TextIconOverlay/1.2/src/TextIconOverlay_min.js');
+            loadJsFile('http://api.map.baidu.com/library/MarkerClusterer/1.2/src/MarkerClusterer_min.js');
+            loadJsFile('http://api.map.baidu.com/library/Heatmap/2.0/src/Heatmap_min.js');
+            loadJsFile('http://api.map.baidu.com/library/DistanceTool/1.2/src/DistanceTool_min.js');
+            loadJsFile('http://api.map.baidu.com/library/RectangleZoom/1.2/src/RectangleZoom_min.js');
+            loadJsFile('http://api.map.baidu.com/library/TrafficControl/1.4/src/TrafficControl_min.js');
             resolve(BMap);
         }, 500);
     });
-
 }
