@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 import './css/leaflet.css!';
 import {MP} from './libs/baidumap.js';
 
@@ -46,6 +47,27 @@ export default function link(scope, elem, attrs, ctrl) {
                         ctrl.panel.lat = center.lat;
                         ctrl.panel.lng = center.lng;
                     });
+
+                    const menu = new BMap.ContextMenu();
+                    const txtMenuItem = [
+                        {
+                            text: '放大',
+                            callback: function () {
+                                that.map.zoomIn();
+                            }
+                        },
+                        {
+                            text: '缩小',
+                            callback: function () {
+                                that.map.zoomOut();
+                            }
+                        }
+                    ];
+
+                    for (let menuIndex = 0; menuIndex < txtMenuItem.length; menuIndex++) {
+                        menu.addItem(new BMap.MenuItem(txtMenuItem[menuIndex].text, txtMenuItem[menuIndex].callback, 100));
+                    }
+                    ctrl.map.addContextMenu(menu);
 
                     ctrl.addNode(BMap);
                 });
