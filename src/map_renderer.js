@@ -30,6 +30,7 @@ export default function link(scope, elem, attrs, ctrl) {
                     ctrl.map.setMapStyle({style: ctrl.panel.theme});
 
                     ctrl.navigationSwitch = new BMap.NavigationControl();
+                    ctrl.navigationSwitch.setOffset(new BMap.Size(50, 10));
                     ctrl.scaleSwitch = new BMap.ScaleControl();
                     ctrl.overviewMapSwitch = new BMap.OverviewMapControl({
                         isOpen: true,
