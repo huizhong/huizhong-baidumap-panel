@@ -573,7 +573,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
     }
     openDistanceTool() {
         if (!this.distanceTool) {
-            this.distanceTool = new BMapLib.DistanceTool(map);
+            this.distanceTool = new BMapLib.DistanceTool(this.map);
         }
         this.distanceTool.open();
     }

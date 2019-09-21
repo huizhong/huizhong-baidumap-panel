@@ -711,7 +711,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                     key: 'openDistanceTool',
                     value: function openDistanceTool() {
                         if (!this.distanceTool) {
-                            this.distanceTool = new BMapLib.DistanceTool(map);
+                            this.distanceTool = new BMapLib.DistanceTool(this.map);
                         }
                         this.distanceTool.open();
                     }
