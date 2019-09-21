@@ -718,29 +718,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                     value: function link(scope, elem, attrs, ctrl) {
                         mapRenderer(scope, elem, attrs, ctrl);
                     }
-                }, {
-                    key: 'openDistanceTool',
-                    value: function openDistanceTool() {
-                        if (!this.distanceTool) {
-                            this.distanceTool = new BMapLib.DistanceTool(this.map);
-                        }
-                        this.distanceTool.open();
-                    }
-                }, {
-                    key: 'openRectangleZoom',
-                    value: function openRectangleZoom() {
-                        if (!this.rectangleZoomTool) {
-                            this.rectangleZoomTool = new BMapLib.RectangleZoom(this.map, {
-                                followText: '拖拽鼠标进行操作'
-                            });
-                        }
-                        this.rectangleZoomTool.open();
-                    }
-                }, {
-                    key: 'closeRectangleZoom',
-                    value: function closeRectangleZoom() {
-                        this.rectangleZoomTool.close();
-                    }
                 }]);
 
                 return BaidumapCtrl;

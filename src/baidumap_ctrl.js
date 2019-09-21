@@ -583,25 +583,6 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         mapRenderer(scope, elem, attrs, ctrl);
     }
 
-    openDistanceTool() {
-        if (!this.distanceTool) {
-            this.distanceTool = new BMapLib.DistanceTool(this.map);
-        }
-        this.distanceTool.open();
-    }
-
-    openRectangleZoom() {
-        if (!this.rectangleZoomTool) {
-            this.rectangleZoomTool = new BMapLib.RectangleZoom(this.map, {
-                followText: '拖拽鼠标进行操作'
-            });
-        }
-        this.rectangleZoomTool.open();
-    }
-
-    closeRectangleZoom() {
-        this.rectangleZoomTool.close();
-    }
 
 // 如果要调试事件接口，请打开下方屏蔽代码，
 // 在firefox或者chrome下查看调试信息

@@ -48,21 +48,30 @@ System.register(['./css/leaflet.css!', './libs/baidumap.js'], function (_export,
                         ctrl.panel.lng = center.lng;
                     });
 
+                    // eslint-disable-next-line no-unused-expressions
+                    setTimeout(function () {
+                        ctrl.distanceTool = new BMapLib.DistanceTool(this.map);
+                        ctrl.rectangleZoomTool = new BMapLib.RectangleZoom(this.map, {
+                            followText: '拖拽鼠标进行操作',
+                            autoClose: true
+                        });
+                        ctrl.trafficMapSwitch = new BMapLib.TrafficControl({
+                            showPanel: false,
+                            anchor: BMAP_ANCHOR_BOTTOM_RIGHT
+                        });
+                        ctrl.map.addControl(ctrl.trafficMapSwitch);
+                    }, 1000);
+
                     var menu = new BMap.ContextMenu();
                     var txtMenuItem = [{
                         text: '测距',
                         callback: function callback() {
-                            ctrl.openDistanceTool();
+                            ctrl.distanceTool.open();
                         }
                     }, {
-                        text: '开启拉框放大',
+                        text: '拉框放大',
                         callback: function callback() {
-                            ctrl.openRectangleZoom();
-                        }
-                    }, {
-                        text: '关闭拉框放大',
-                        callback: function callback() {
-                            ctrl.closeRectangleZoom();
+                            ctrl.rectangleZoomTool.open();
                         }
                     }];
 
