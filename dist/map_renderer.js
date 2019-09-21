@@ -50,8 +50,8 @@ System.register(['./css/leaflet.css!', './libs/baidumap.js'], function (_export,
 
                     // eslint-disable-next-line no-unused-expressions
                     setTimeout(function () {
-                        ctrl.distanceTool = new BMapLib.DistanceTool(this.map);
-                        ctrl.rectangleZoomTool = new BMapLib.RectangleZoom(this.map, {
+                        ctrl.distanceTool = new BMapLib.DistanceTool(ctrl.map);
+                        ctrl.rectangleZoomTool = new BMapLib.RectangleZoom(ctrl.map, {
                             followText: '拖拽鼠标进行操作',
                             autoClose: true
                         });
