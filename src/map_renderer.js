@@ -48,21 +48,47 @@ export default function link(scope, elem, attrs, ctrl) {
                         ctrl.panel.lng = center.lng;
                     });
 
+                    const distanceTool = new BMapLib.DistanceTool(map);
                     const menu = new BMap.ContextMenu();
                     const txtMenuItem = [
                         {
-                            text: '放大',
+                            text: '开启测距',
                             callback: function () {
-                                that.map.zoomIn();
+                                distanceTool.open();
                             }
                         },
                         {
-                            text: '缩小',
+                            text: '关闭测距',
                             callback: function () {
-                                that.map.zoomOut();
+                                distanceTool.close();
                             }
                         }
                     ];
+
+
+// 如果要调试事件接口，请打开下方屏蔽代码，
+// 在firefox或者chrome下查看调试信息
+
+                    // distanceTool.addEventListener('drawend', function (e) {
+                    //     console.log('drawend');
+                    //     console.log(e.points);
+                    //     console.log(e.overlays);
+                    //     console.log(e.distance);
+                    // });
+                    //
+                    // distanceTool.addEventListener('addpoint', function (e) {
+                    //     console.log('addpoint');
+                    //     console.log(e.point);
+                    //     console.log(e.pixel);
+                    //     console.log(e.index);
+                    //     console.log(e.distance);
+                    // });
+                    //
+                    // distanceTool.addEventListener('removepolyline', function (e) {
+                    //     console.log('removepolyline');
+                    //     console.log(e);
+                    // });
+
 
                     for (let menuIndex = 0; menuIndex < txtMenuItem.length; menuIndex++) {
                         menu.addItem(new BMap.MenuItem(txtMenuItem[menuIndex].text, txtMenuItem[menuIndex].callback, 100));

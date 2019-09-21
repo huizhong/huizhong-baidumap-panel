@@ -27,6 +27,11 @@ System.register([], function (_export, _context) {
                 heatmap.src = 'http://api.map.baidu.com/library/Heatmap/2.0/src/Heatmap_min.js';
                 document.head.appendChild(heatmap);
 
+                var distanceTool = document.createElement('script');
+                heatmap.type = 'text/javascript';
+                heatmap.src = 'http://api.map.baidu.com/library/DistanceTool/1.2/src/DistanceTool_min.js';
+                document.head.appendChild(distanceTool);
+
                 resolve(BMap);
             }, 500);
         });
