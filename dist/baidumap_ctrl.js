@@ -475,14 +475,13 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                             var points = lines.points.map(function (v) {
                                                                 return new BMap.Point(v.lng, v.lat);
                                                             });
-                                                            var driving = new BMap.DrivingRoute(that.map, {
+                                                            var driving = new BMap.RidingRoute(that.map, {
                                                                 renderOptions: {
                                                                     map: that.map,
                                                                     autoViewport: true
                                                                 }
                                                             });
-                                                            var waypoints = points.slice(1, -1);
-                                                            driving.search(points[0], points.slice(-1)[0], { waypoints: waypoints }); // waypoints表示途经点
+                                                            driving.search(points[0], points.slice(-1)[0]);
                                                         } else {
                                                             if (lines.poiType === 'polygon') {
                                                                 lines.points.push(lines.points[0]);

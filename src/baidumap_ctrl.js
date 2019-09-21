@@ -382,14 +382,13 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                     }
                                     if (lines.poiType === 'route') {
                                         const points = lines.points.map(v => new BMap.Point(v.lng, v.lat));
-                                        const driving = new BMap.DrivingRoute(that.map, {
+                                        const driving = new BMap.RidingRoute(that.map, {
                                             renderOptions: {
                                                 map: that.map,
                                                 autoViewport: true
                                             }
                                         });
-                                        const waypoints = points.slice(1, -1);
-                                        driving.search(points[0], points.slice(-1)[0], {waypoints: waypoints}); // waypoints表示途经点
+                                        driving.search(points[0], points.slice(-1)[0]);
                                     } else {
                                         if (lines.poiType === 'polygon') {
                                             lines.points.push(lines.points[0]);
@@ -406,9 +405,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                             )
                                         );
                                         that.map.addOverlay(polyline);
-
                                     }
-
                                 }
                             }
                             if (markerArray.length > 0) {

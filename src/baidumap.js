@@ -1,232 +1,260 @@
+/* eslint-disable no-plusplus */
 import _ from 'lodash';
 /* eslint-disable id-length, no-unused-vars */
 import L from './libs/leaflet';
 /* eslint-disable id-length, no-unused-vars */
-import { MP } from './libs/baidumap.js';  
+import {MP} from './libs/baidumap.js';
 
 const tileServers = {
-	'CartoDB Positron' : {
-		url : 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png',
-		attribution : '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
-		subdomains : 'abcd'
-	},
-	'CartoDB Dark' : {
-		url : 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png',
-		attribution : '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
-		subdomains : 'abcd'
-	}
+    'CartoDB Positron': {
+        url: 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png',
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+        subdomains: 'abcd'
+    },
+    'CartoDB Dark': {
+        url: 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png',
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+        subdomains: 'abcd'
+    }
 };
 
 export default class WorldMap {
-	constructor(ctrl, mapContainer) {
-		this.ctrl = ctrl;
-		this.mapContainer = mapContainer;
-		this.circles = [];
-		console.log(ctrl);
-		return this.createMap();
-	}
-
-	createMap() {
-		MP(this.ctrl.panel.ak).then(BMap => {
-			const elementId = "mapid_" + this.ctrl.panel.id;
-			this.map = new BMap.Map(elementId);
-			this.map.centerAndZoom(new BMap.Point(116.404, 39.915), this.ctrl.panel.initialZoom);
-			this.map.enableScrollWheelZoom();
-			this.map.addControl(new BMap.NavigationControl()); // 添加平移缩放控件
-			this.map.addControl(new BMap.ScaleControl()); // 添加比例尺控件
-			this.map.addControl(new BMap.OverviewMapControl()); //添加缩略地图控件
-			this.map.enableScrollWheelZoom(); //启用滚轮放大缩小
-			this.map.addControl(new BMap.MapTypeControl()); //添加地图类型控件
-		})
+    constructor(ctrl, mapContainer) {
+        this.ctrl = ctrl;
+        this.mapContainer = mapContainer;
+        this.circles = [];
+        console.log(ctrl);
+        return this.createMap();
     }
 
-	createLegend() {
-		this.legend = window.L.control({
-			position : 'bottomleft'
-		});
-		this.legend.onAdd = () => {
-			this.legend._div = window.L.DomUtil.create('div', 'info legend');
-			this.legend.update();
-			return this.legend._div;
-		};
+    createMap() {
+        MP(this.ctrl.panel.ak)
+            .then(BMap => {
+                const that = this;
+                const elementId = 'mapid_' + this.ctrl.panel.id;
+                this.map = new BMap.Map(elementId);
+                this.map.centerAndZoom(new BMap.Point(116.404, 39.915), this.ctrl.panel.initialZoom);
+                this.map.enableScrollWheelZoom();
+                this.map.addControl(new BMap.NavigationControl()); // 添加平移缩放控件
+                this.map.addControl(new BMap.ScaleControl()); // 添加比例尺控件
+                this.map.addControl(new BMap.OverviewMapControl()); // 添加缩略地图控件
+                this.map.enableScrollWheelZoom(); // 启用滚轮放大缩小
+                this.map.addControl(new BMap.MapTypeControl()); // 添加地图类型控件
 
-		this.legend.update = () => {
-			const thresholds = this.ctrl.data.thresholds;
-			let legendHtml = '';
-			legendHtml += '<div class="legend-item"><i style="background:' + this.ctrl.panel.colors[0] + '"></i> ' +
-				'&lt; ' + thresholds[0] + '</div>';
-			for (let index = 0; index < thresholds.length; index += 1) {
-				legendHtml += '<div class="legend-item"><i style="background:' + this.ctrl.panel.colors[index + 1] + '"></i> ' +
-				thresholds[index] + (thresholds[index + 1] ? '&ndash;' + thresholds[index + 1] + '</div>' : '+');
-			}
-			this.legend._div.innerHTML = legendHtml;
-		};
-		this.legend.addTo(this.map);
-	}
+                const menu = new BMap.ContextMenu();
+                const txtMenuItem = [
+                    {
+                        text: '放大',
+                        callback: function () {
+                            that.map.zoomIn();
+                        }
+                    },
+                    {
+                        text: '缩小',
+                        callback: function () {
+                            that.map.zoomOut();
+                        }
+                    }
+                ];
 
-	needToRedrawCircles(data) {
-		if (this.circles.length === 0 && data.length > 0) return true;
+                for (let i = 0; i < txtMenuItem.length; i++) {
+                    menu.addItem(new BMap.MenuItem(txtMenuItem[i].text, txtMenuItem[i].callback, 100));
+                }
+                that.map.addContextMenu(menu);
 
-		if (this.circles.length !== data.length) return true;
-		const locations = _.map(_.map(this.circles, 'options'), 'location').sort();
-		const dataPoints = _.map(data, 'key').sort();
-		return !_.isEqual(locations, dataPoints);
-	}
+            });
+    }
 
-	filterEmptyAndZeroValues(data) {
-		return _.filter(data, (o) => {
-			return !(this.ctrl.panel.hideEmpty && _.isNil(o.value)) && !(this.ctrl.panel.hideZero && o.value === 0);
-		});
-	}
+    createLegend() {
+        this.legend = window.L.control({
+            position: 'bottomleft'
+        });
+        this.legend.onAdd = () => {
+            this.legend._div = window.L.DomUtil.create('div', 'info legend');
+            this.legend.update();
+            return this.legend._div;
+        };
 
-	clearCircles() {
-		if (this.circlesLayer) {
-			this.circlesLayer.clearLayers();
-			this.removeCircles(this.circlesLayer);
-			this.circles = [];
-		}
-	}
+        this.legend.update = () => {
+            const thresholds = this.ctrl.data.thresholds;
+            let legendHtml = '';
+            legendHtml += '<div class="legend-item"><i style="background:' + this.ctrl.panel.colors[0] + '"></i> ' +
+                '&lt; ' + thresholds[0] + '</div>';
+            for (let index = 0; index < thresholds.length; index += 1) {
+                legendHtml += '<div class="legend-item"><i style="background:' + this.ctrl.panel.colors[index + 1] + '"></i> ' +
+                    thresholds[index] + (thresholds[index + 1] ? '&ndash;' + thresholds[index + 1] + '</div>' : '+');
+            }
+            this.legend._div.innerHTML = legendHtml;
+        };
+        this.legend.addTo(this.map);
+    }
 
-	drawCircles() {
-		const data = this.filterEmptyAndZeroValues(this.ctrl.data);
-		if (this.needToRedrawCircles(data)) {
-			this.clearCircles();
-			this.createCircles(data);
-		} else {
-			this.updateCircles(data);
-		}
-	}
+    needToRedrawCircles(data) {
+        if (this.circles.length === 0 && data.length > 0) return true;
 
-	createCircles(data) {
-		const circles = [];
-		data.forEach((dataPoint) => {
-			if (!dataPoint.locationName) return;
-			circles.push(this.createCircle(dataPoint));
-		});
-		this.circlesLayer = this.addCircles(circles);
-		this.circles = circles;
-	}
+        if (this.circles.length !== data.length) return true;
+        const locations = _.map(_.map(this.circles, 'options'), 'location')
+            .sort();
+        const dataPoints = _.map(data, 'key')
+            .sort();
+        return !_.isEqual(locations, dataPoints);
+    }
 
-	updateCircles(data) {
-		data.forEach((dataPoint) => {
-			if (!dataPoint.locationName) return;
+    filterEmptyAndZeroValues(data) {
+        return _.filter(data, (o) => {
+            return !(this.ctrl.panel.hideEmpty && _.isNil(o.value)) && !(this.ctrl.panel.hideZero && o.value === 0);
+        });
+    }
 
-			const circle = _.find(this.circles, (cir) => {
-				return cir.options.location === dataPoint.key;
-			});
+    clearCircles() {
+        if (this.circlesLayer) {
+            this.circlesLayer.clearLayers();
+            this.removeCircles(this.circlesLayer);
+            this.circles = [];
+        }
+    }
 
-			if (circle) {
-				circle.setRadius(this.calcCircleSize(dataPoint.value || 0));
-				circle.setStyle({
-					color : this.getColor(dataPoint.value),
-					fillColor : this.getColor(dataPoint.value),
-					fillOpacity : 0.5,
-					location : dataPoint.key,
-				});
-				circle.unbindPopup();
-				this.createPopup(circle, dataPoint.locationName, dataPoint.valueRounded);
-			}
-		});
-	}
+    drawCircles() {
+        const data = this.filterEmptyAndZeroValues(this.ctrl.data);
+        if (this.needToRedrawCircles(data)) {
+            this.clearCircles();
+            this.createCircles(data);
+        } else {
+            this.updateCircles(data);
+        }
+    }
 
-	createCircle(dataPoint) {
-		const circle = window.L.circleMarker([ dataPoint.locationLatitude, dataPoint.locationLongitude ], {
-			radius : this.calcCircleSize(dataPoint.value || 0),
-			color : this.getColor(dataPoint.value),
-			fillColor : this.getColor(dataPoint.value),
-			fillOpacity : 0.5,
-			location : dataPoint.key
-		});
+    createCircles(data) {
+        const circles = [];
+        data.forEach((dataPoint) => {
+            if (!dataPoint.locationName) return;
+            circles.push(this.createCircle(dataPoint));
+        });
+        this.circlesLayer = this.addCircles(circles);
+        this.circles = circles;
+    }
 
-		this.createPopup(circle, dataPoint.locationName, dataPoint.valueRounded);
-		return circle;
-	}
+    updateCircles(data) {
+        data.forEach((dataPoint) => {
+            if (!dataPoint.locationName) return;
 
-	calcCircleSize(dataPointValue) {
-		const circleMinSize = parseInt(this.ctrl.panel.circleMinSize, 10) || 2;
-		const circleMaxSize = parseInt(this.ctrl.panel.circleMaxSize, 10) || 30;
+            const circle = _.find(this.circles, (cir) => {
+                return cir.options.location === dataPoint.key;
+            });
 
-		if (this.ctrl.data.valueRange === 0) {
-			return circleMaxSize;
-		}
+            if (circle) {
+                circle.setRadius(this.calcCircleSize(dataPoint.value || 0));
+                circle.setStyle({
+                    color: this.getColor(dataPoint.value),
+                    fillColor: this.getColor(dataPoint.value),
+                    fillOpacity: 0.5,
+                    location: dataPoint.key,
+                });
+                circle.unbindPopup();
+                this.createPopup(circle, dataPoint.locationName, dataPoint.valueRounded);
+            }
+        });
+    }
 
-		const dataFactor = (dataPointValue - this.ctrl.data.lowestValue) / this.ctrl.data.valueRange;
-		const circleSizeRange = circleMaxSize - circleMinSize;
+    createCircle(dataPoint) {
+        const circle = window.L.circleMarker([dataPoint.locationLatitude, dataPoint.locationLongitude], {
+            radius: this.calcCircleSize(dataPoint.value || 0),
+            color: this.getColor(dataPoint.value),
+            fillColor: this.getColor(dataPoint.value),
+            fillOpacity: 0.5,
+            location: dataPoint.key
+        });
 
-		return (circleSizeRange * dataFactor) + circleMinSize;
-	}
+        this.createPopup(circle, dataPoint.locationName, dataPoint.valueRounded);
+        return circle;
+    }
 
-	createPopup(circle, locationName, value) {
-		const unit = value && value === 1 ? this.ctrl.panel.unitSingular : this.ctrl.panel.unitPlural;
-		const label = ('显示标签：：' + locationName + ': ' + value + ' ' + (unit || '')).trim();
-		circle.bindPopup(label, {
-			'offset' : window.L.point(0, -2),
-			'className' : 'worldmap-popup',
-			'closeButton' : this.ctrl.panel.stickyLabels
-		});
+    calcCircleSize(dataPointValue) {
+        const circleMinSize = parseInt(this.ctrl.panel.circleMinSize, 10) || 2;
+        const circleMaxSize = parseInt(this.ctrl.panel.circleMaxSize, 10) || 30;
 
-		circle.on('mouseover', function onMouseOver(evt) {
-			const layer = evt.target;
-			layer.bringToFront();
-			this.openPopup();
-		});
+        if (this.ctrl.data.valueRange === 0) {
+            return circleMaxSize;
+        }
 
-		if (!this.ctrl.panel.stickyLabels) {
-			circle.on('mouseout', function onMouseOut() {
-				circle.closePopup();
-			});
-		}
+        const dataFactor = (dataPointValue - this.ctrl.data.lowestValue) / this.ctrl.data.valueRange;
+        const circleSizeRange = circleMaxSize - circleMinSize;
 
-		circle.on('click', function onClick(evt) {
-			const layer = evt.target;
-			layer.bringToFront();
-			//this.openPopup();
-			// console.log(this);
-			console.log(locationName);
-			console.log($.parseJSON(locationName));
-			location.href = "http://" + locationName;
-		});
-	}
+        return (circleSizeRange * dataFactor) + circleMinSize;
+    }
 
-	getColor(value) {
-		for (let index = this.ctrl.data.thresholds.length; index > 0; index -= 1) {
-			if (value >= this.ctrl.data.thresholds[index - 1]) {
-				return this.ctrl.panel.colors[index];
-			}
-		}
-		return _.first(this.ctrl.panel.colors);
-	}
+    createPopup(circle, locationName, value) {
+        const unit = value && value === 1 ? this.ctrl.panel.unitSingular : this.ctrl.panel.unitPlural;
+        const label = ('显示标签：：' + locationName + ': ' + value + ' ' + (unit || '')).trim();
+        circle.bindPopup(label, {
+            'offset': window.L.point(0, -2),
+            'className': 'worldmap-popup',
+            'closeButton': this.ctrl.panel.stickyLabels
+        });
 
-	resize() {
-		this.map.invalidateSize();
-	}
+        circle.on('mouseover', function onMouseOver(evt) {
+            const layer = evt.target;
+            layer.bringToFront();
+            this.openPopup();
+        });
 
-	panToMapCenter() {
-		this.map.panTo([ parseFloat(this.ctrl.panel.lat), parseFloat(this.ctrl.panel.lng) ]);
-		this.ctrl.mapCenterMoved = false;
-	}
+        if (!this.ctrl.panel.stickyLabels) {
+            circle.on('mouseout', function onMouseOut() {
+                circle.closePopup();
+            });
+        }
 
-	removeLegend() {
-		this.legend.removeFrom(this.map);
-		this.legend = null;
-	}
+        circle.on('click', function onClick(evt) {
+            const layer = evt.target;
+            layer.bringToFront();
+            //this.openPopup();
+            // console.log(this);
+            console.log(locationName);
+            console.log($.parseJSON(locationName));
+            location.href = 'http://' + locationName;
+        });
+    }
 
-	addCircles(circles) {
-		return window.L.layerGroup(circles).addTo(this.map);
-	}
+    getColor(value) {
+        for (let index = this.ctrl.data.thresholds.length; index > 0; index -= 1) {
+            if (value >= this.ctrl.data.thresholds[index - 1]) {
+                return this.ctrl.panel.colors[index];
+            }
+        }
+        return _.first(this.ctrl.panel.colors);
+    }
 
-	removeCircles() {
-		this.map.removeLayer(this.circlesLayer);
-	}
+    resize() {
+        this.map.invalidateSize();
+    }
 
-	setZoom(zoomFactor) {
-		this.map.setZoom(parseInt(zoomFactor, 10));
-	}
+    panToMapCenter() {
+        this.map.panTo([parseFloat(this.ctrl.panel.lat), parseFloat(this.ctrl.panel.lng)]);
+        this.ctrl.mapCenterMoved = false;
+    }
 
-	remove() {
-		this.circles = [];
-		if (this.circlesLayer) this.removeCircles();
-		if (this.legend) this.removeLegend();
-		this.map.remove();
-	}
+    removeLegend() {
+        this.legend.removeFrom(this.map);
+        this.legend = null;
+    }
+
+    addCircles(circles) {
+        return window.L.layerGroup(circles)
+            .addTo(this.map);
+    }
+
+    removeCircles() {
+        this.map.removeLayer(this.circlesLayer);
+    }
+
+    setZoom(zoomFactor) {
+        this.map.setZoom(parseInt(zoomFactor, 10));
+    }
+
+    remove() {
+        this.circles = [];
+        if (this.circlesLayer) this.removeCircles();
+        if (this.legend) this.removeLegend();
+        this.map.remove();
+    }
 }
