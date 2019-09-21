@@ -544,6 +544,12 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
 
     trafficMapControl() {
         if (this.panel.trafficMap === true) {
+            if (!this.trafficMapSwitch) {
+                this.trafficMapSwitch = new BMapLib.TrafficControl({
+                    showPanel: false,
+                    anchor: BMAP_ANCHOR_BOTTOM_RIGHT
+                });
+            }
             this.map.addControl(this.trafficMapSwitch);
         } else {
             this.map.removeControl(this.trafficMapSwitch);
@@ -592,6 +598,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         }
         this.rectangleZoomTool.open();
     }
+
     closeRectangleZoom() {
         this.rectangleZoomTool.close();
     }

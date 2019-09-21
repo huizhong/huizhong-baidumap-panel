@@ -678,6 +678,12 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                     key: 'trafficMapControl',
                     value: function trafficMapControl() {
                         if (this.panel.trafficMap === true) {
+                            if (!this.trafficMapSwitch) {
+                                this.trafficMapSwitch = new BMapLib.TrafficControl({
+                                    showPanel: false,
+                                    anchor: BMAP_ANCHOR_BOTTOM_RIGHT
+                                });
+                            }
                             this.map.addControl(this.trafficMapSwitch);
                         } else {
                             this.map.removeControl(this.trafficMapSwitch);
