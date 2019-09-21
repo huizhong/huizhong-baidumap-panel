@@ -1,15 +1,15 @@
 function loadJsFile(fileName) {
     const fileElement = document.createElement('script');
-    fileElement.type = 'text/javascript';
-    fileElement.src = fileName;
+    fileElement.setAttribute('type', 'text/javascript');
+    fileElement.setAttribute('src', fileName);
     document.head.appendChild(fileElement);
 }
 
 function loadCssFile(fileName) {
     const fileElement = document.createElement('link');
-    fileElement.type = 'text/css';
-    fileElement.ref = 'stylesheet';
-    fileElement.href = fileName;
+    fileElement.setAttribute('rel', 'stylesheet');
+    fileElement.setAttribute('type', 'text/css');
+    fileElement.setAttribute('href', fileName);
     document.head.appendChild(fileElement);
 }
 

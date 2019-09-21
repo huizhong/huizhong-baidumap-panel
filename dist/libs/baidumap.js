@@ -5,16 +5,16 @@ System.register([], function (_export, _context) {
 
     function loadJsFile(fileName) {
         var fileElement = document.createElement('script');
-        fileElement.type = 'text/javascript';
-        fileElement.src = fileName;
+        fileElement.setAttribute('type', 'text/javascript');
+        fileElement.setAttribute('src', fileName);
         document.head.appendChild(fileElement);
     }
 
     function loadCssFile(fileName) {
         var fileElement = document.createElement('link');
-        fileElement.type = 'text/css';
-        fileElement.ref = 'stylesheet';
-        fileElement.href = fileName;
+        fileElement.setAttribute('rel', 'stylesheet');
+        fileElement.setAttribute('type', 'text/css');
+        fileElement.setAttribute('href', fileName);
         document.head.appendChild(fileElement);
     }
 
