@@ -12,11 +12,6 @@ System.register([], function (_export, _context) {
             document.head.appendChild(script);
 
             setTimeout(function () {
-                var distanceTool = document.createElement('script');
-                heatmap.type = 'text/javascript';
-                heatmap.src = 'http://api.map.baidu.com/library/DistanceTool/1.2/src/DistanceTool_min.js';
-                document.head.appendChild(distanceTool);
-
                 var textIconOverlay = document.createElement('script');
                 textIconOverlay.type = 'text/javascript';
                 textIconOverlay.src = 'http://api.map.baidu.com/library/TextIconOverlay/1.2/src/TextIconOverlay_min.js';
@@ -31,6 +26,11 @@ System.register([], function (_export, _context) {
                 heatmap.type = 'text/javascript';
                 heatmap.src = 'http://api.map.baidu.com/library/Heatmap/2.0/src/Heatmap_min.js';
                 document.head.appendChild(heatmap);
+
+                var distanceTool = document.createElement('script');
+                distanceTool.type = 'text/javascript';
+                distanceTool.src = 'http://api.map.baidu.com/library/DistanceTool/1.2/src/DistanceTool_min.js';
+                document.head.appendChild(distanceTool);
 
                 resolve(BMap);
             }, 500);
