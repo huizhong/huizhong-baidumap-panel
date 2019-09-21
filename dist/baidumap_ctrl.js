@@ -702,6 +702,19 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                     value: function link(scope, elem, attrs, ctrl) {
                         mapRenderer(scope, elem, attrs, ctrl);
                     }
+                }, {
+                    key: 'closeDistanceTool',
+                    value: function closeDistanceTool() {
+                        this.distanceTool.close();
+                    }
+                }, {
+                    key: 'openDistanceTool',
+                    value: function openDistanceTool() {
+                        if (!this.distanceTool) {
+                            this.distanceTool = new BMapLib.DistanceTool(map);
+                        }
+                        this.distanceTool.open();
+                    }
                 }]);
 
                 return BaidumapCtrl;
