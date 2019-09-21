@@ -55,6 +55,7 @@ System.register(['./css/leaflet.css!', './libs/baidumap.js'], function (_export,
                             followText: '拖拽鼠标进行操作',
                             autoClose: true
                         });
+
                         ctrl.trafficControl = new BMapLib.TrafficControl({
                             showPanel: false, // 是否显示路况提示面板
                             // eslint-disable-next-line no-undef
