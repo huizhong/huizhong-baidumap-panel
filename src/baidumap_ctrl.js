@@ -24,7 +24,6 @@ const panelDefaults = {
     scale: true,
     hideEmpty: false,
     overviewMap: false,
-    trafficMap: false,
     hideZero: false,
     mapType: true,
     clusterPoint: false,
@@ -539,20 +538,6 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
             this.map.addControl(this.overviewMapSwitch);
         } else {
             this.map.removeControl(this.overviewMapSwitch);
-        }
-    }
-
-    trafficMapControl() {
-        if (this.panel.trafficMap === true) {
-            if (!this.trafficMapSwitch) {
-                this.trafficMapSwitch = new BMapLib.TrafficControl({
-                    showPanel: false,
-                    anchor: BMAP_ANCHOR_BOTTOM_RIGHT
-                });
-            }
-            this.map.addControl(this.trafficMapSwitch);
-        } else {
-            this.map.removeControl(this.trafficMapSwitch);
         }
     }
 

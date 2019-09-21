@@ -56,7 +56,7 @@ System.register(['./css/leaflet.css!', './libs/baidumap.js'], function (_export,
                             autoClose: true
                         });
                         ctrl.trafficMapSwitch = new BMapLib.TrafficControl({
-                            showPanel: false,
+                            showPanel: true,
                             anchor: BMAP_ANCHOR_BOTTOM_RIGHT
                         });
                         ctrl.map.addControl(ctrl.trafficMapSwitch);

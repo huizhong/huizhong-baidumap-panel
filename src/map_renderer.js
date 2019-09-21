@@ -56,9 +56,10 @@ export default function link(scope, elem, attrs, ctrl) {
                             autoClose: true
                         });
                         ctrl.trafficMapSwitch = new BMapLib.TrafficControl({
-                            showPanel: false,
+                            showPanel: true,
                             anchor: BMAP_ANCHOR_BOTTOM_RIGHT
                         });
+                        ctrl.map.addControl(ctrl.trafficMapSwitch);
                     }, 1000);
 
                     const menu = new BMap.ContextMenu();

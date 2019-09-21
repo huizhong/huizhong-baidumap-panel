@@ -179,7 +179,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 scale: true,
                 hideEmpty: false,
                 overviewMap: false,
-                trafficMap: false,
                 hideZero: false,
                 mapType: true,
                 clusterPoint: false,
@@ -672,21 +671,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                             this.map.addControl(this.overviewMapSwitch);
                         } else {
                             this.map.removeControl(this.overviewMapSwitch);
-                        }
-                    }
-                }, {
-                    key: 'trafficMapControl',
-                    value: function trafficMapControl() {
-                        if (this.panel.trafficMap === true) {
-                            if (!this.trafficMapSwitch) {
-                                this.trafficMapSwitch = new BMapLib.TrafficControl({
-                                    showPanel: false,
-                                    anchor: BMAP_ANCHOR_BOTTOM_RIGHT
-                                });
-                            }
-                            this.map.addControl(this.trafficMapSwitch);
-                        } else {
-                            this.map.removeControl(this.trafficMapSwitch);
                         }
                     }
                 }, {
