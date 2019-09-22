@@ -1,9 +1,9 @@
 'use strict';
 
-System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn', 'lodash', './map_renderer', './data_formatter'], function (_export, _context) {
+System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn', 'lodash', './map_renderer', './data_formatter', './geohash'], function (_export, _context) {
     "use strict";
 
-    var MetricsPanelCtrl, TimeSeries, kbn, _, mapRenderer, DataFormatter, _slicedToArray, _typeof, _createClass, panelDefaults, BaidumapCtrl;
+    var MetricsPanelCtrl, TimeSeries, kbn, _, mapRenderer, DataFormatter, decodeGeoHash, _slicedToArray, _typeof, _createClass, panelDefaults, BaidumapCtrl;
 
     function _classCallCheck(instance, Constructor) {
         if (!(instance instanceof Constructor)) {
@@ -99,6 +99,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
             mapRenderer = _map_renderer.default;
         }, function (_data_formatter) {
             DataFormatter = _data_formatter.default;
+        }, function (_geohash) {
+            decodeGeoHash = _geohash.default;
         }],
         execute: function () {
             _slicedToArray = function () {
@@ -180,11 +182,15 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 hideEmpty: false,
                 overviewMap: false,
                 hideZero: false,
-                mapType: true,
+                mapType: false,
+                traffic: false,
                 clusterPoint: false,
                 globalConfig: '',
                 typeName: 'type',
+                lngName: 'longitude',
+                latName: 'latitude',
                 posName: 'pos',
+                geohashName: 'geohash',
                 extName: 'ext'
             };
 
@@ -574,20 +580,32 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                 for (var i = 0; i < poiList.length; i++) {
                                     setTimeout(function (poiIndex) {
                                         return function () {
-                                            if (poiList[poiIndex][that.panel.posName] && poiList[poiIndex][that.panel.posName].length > 0) {
+                                            if (poiList[poiIndex][that.panel.lngName] && poiList[poiIndex][that.panel.latName] && poiList[poiIndex][that.panel.lngName] > 0 && poiList[poiIndex][that.panel.latName] > 0) {
+                                                var gpsItem = Object.assign({}, poiList[poiIndex]);
+                                                gpsItem.lng = parseFloat(poiList[poiIndex][that.panel.lngName]);
+                                                gpsItem.lat = parseFloat(poiList[poiIndex][that.panel.latName]);
+                                                translateOne(poiIndex, 0, gpsItem, BMap);
+                                            } else if (poiList[poiIndex][that.panel.geohashName] && poiList[poiIndex][that.panel.geohashName].length > 0) {
+                                                var _decodeGeoHash = decodeGeoHash(poiList[poiIndex][that.panel.geohashName]),
+                                                    lng = _decodeGeoHash.longitude,
+                                                    lat = _decodeGeoHash.latitude;
+
+                                                var _gpsItem = Object.assign({}, poiList[poiIndex], { lng: lng, lat: lat });
+                                                translateOne(poiIndex, 0, _gpsItem, BMap);
+                                            } else if (poiList[poiIndex][that.panel.posName] && poiList[poiIndex][that.panel.posName].length > 0) {
                                                 var gpsList = poiList[poiIndex][that.panel.posName].split(';');
                                                 for (var gpsIndex = 0; gpsIndex < gpsList.length; gpsIndex++) {
                                                     var gpsStr = gpsList[gpsIndex];
 
                                                     var _gpsStr$split = gpsStr.split('|'),
                                                         _gpsStr$split2 = _slicedToArray(_gpsStr$split, 2),
-                                                        lng = _gpsStr$split2[0],
-                                                        lat = _gpsStr$split2[1];
+                                                        _lng = _gpsStr$split2[0],
+                                                        _lat = _gpsStr$split2[1];
 
-                                                    var gpsItem = Object.assign({}, poiList[poiIndex]);
-                                                    gpsItem.lng = parseFloat(lng);
-                                                    gpsItem.lat = parseFloat(lat);
-                                                    translateOne(poiIndex, gpsIndex, gpsItem, BMap);
+                                                    var _gpsItem2 = Object.assign({}, poiList[poiIndex]);
+                                                    _gpsItem2.lng = parseFloat(_lng);
+                                                    _gpsItem2.lat = parseFloat(_lat);
+                                                    translateOne(poiIndex, gpsIndex, _gpsItem2, BMap);
                                                 }
                                             }
                                         };
@@ -680,6 +698,15 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                             this.map.addControl(this.mapTypeSwitch);
                         } else {
                             this.map.removeControl(this.mapTypeSwitch);
+                        }
+                    }
+                }, {
+                    key: 'trafficControl',
+                    value: function trafficControl() {
+                        if (this.panel.traffic === true) {
+                            this.map.addControl(this.trafficSwitch);
+                        } else {
+                            this.map.removeControl(this.trafficSwitch);
                         }
                     }
                 }, {

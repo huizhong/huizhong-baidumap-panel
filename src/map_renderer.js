@@ -56,12 +56,14 @@ export default function link(scope, elem, attrs, ctrl) {
                             autoClose: true
                         });
 
-                        ctrl.trafficControl = new BMapLib.TrafficControl({
+                        ctrl.trafficSwitch = new BMapLib.TrafficControl({
                             showPanel: false, // 是否显示路况提示面板
                         });
-                        ctrl.trafficControl.setOffset(new BMap.Size(10, 40));
-                        // ctrl.trafficControl.setAnchor(BMAP_ANCHOR_BOTTOM_RIGHT);
-                        ctrl.map.addControl(ctrl.trafficControl);
+                        ctrl.trafficSwitch.setOffset(new BMap.Size(10, 40));
+                        // ctrl.trafficSwitch.setAnchor(BMAP_ANCHOR_BOTTOM_RIGHT);
+                        if (ctrl.panel.traffic === true) {
+                            ctrl.map.addControl(ctrl.trafficSwitch);
+                        }
 
                     }, 1000);
 

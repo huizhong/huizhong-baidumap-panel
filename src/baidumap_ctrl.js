@@ -8,6 +8,8 @@ import _ from 'lodash';
 import mapRenderer from './map_renderer';
 import DataFormatter from './data_formatter';
 
+import decodeGeoHash from './geohash';
+
 const panelDefaults = {
     ak: 'QKCqsdHBbGxBnNbvUwWdUEBjonk7jUj6',
     maxDataPoints: 1,
@@ -25,11 +27,15 @@ const panelDefaults = {
     hideEmpty: false,
     overviewMap: false,
     hideZero: false,
-    mapType: true,
+    mapType: false,
+    traffic: false,
     clusterPoint: false,
     globalConfig: '',
     typeName: 'type',
+    lngName: 'longitude',
+    latName: 'latitude',
     posName: 'pos',
+    geohashName: 'geohash',
     extName: 'ext'
 };
 
@@ -272,7 +278,20 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
             for (let i = 0; i < poiList.length; i++) {
                 setTimeout((function (poiIndex) {
                     return function () {
-                        if (poiList[poiIndex][that.panel.posName] && poiList[poiIndex][that.panel.posName].length > 0) {
+                        if (poiList[poiIndex][that.panel.lngName]
+                            && poiList[poiIndex][that.panel.latName]
+                            && poiList[poiIndex][that.panel.lngName] > 0
+                            && poiList[poiIndex][that.panel.latName] > 0
+                        ) {
+                            const gpsItem = Object.assign({}, poiList[poiIndex]);
+                            gpsItem.lng = parseFloat(poiList[poiIndex][that.panel.lngName]);
+                            gpsItem.lat = parseFloat(poiList[poiIndex][that.panel.latName]);
+                            translateOne(poiIndex, 0, gpsItem, BMap);
+                        } else if (poiList[poiIndex][that.panel.geohashName] && poiList[poiIndex][that.panel.geohashName].length > 0) {
+                            const {longitude: lng, latitude: lat} = decodeGeoHash(poiList[poiIndex][that.panel.geohashName]);
+                            const gpsItem = Object.assign({}, poiList[poiIndex], {lng, lat});
+                            translateOne(poiIndex, 0, gpsItem, BMap);
+                        } else if (poiList[poiIndex][that.panel.posName] && poiList[poiIndex][that.panel.posName].length > 0) {
                             const gpsList = poiList[poiIndex][that.panel.posName].split(';');
                             for (let gpsIndex = 0; gpsIndex < gpsList.length; gpsIndex++) {
                                 const gpsStr = gpsList[gpsIndex];
@@ -546,6 +565,14 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
             this.map.addControl(this.mapTypeSwitch);
         } else {
             this.map.removeControl(this.mapTypeSwitch);
+        }
+    }
+
+    trafficControl() {
+        if (this.panel.traffic === true) {
+            this.map.addControl(this.trafficSwitch);
+        } else {
+            this.map.removeControl(this.trafficSwitch);
         }
     }
 
