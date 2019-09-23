@@ -280,34 +280,37 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
             const translatedItems = [];
 
             for (let i = 0; i < poiList.length; i++) {
-                setTimeout((function (poiIndex) {
-                    return function () {
-                        if (poiList[poiIndex][that.panel.lngName]
-                            && poiList[poiIndex][that.panel.latName]
-                            && poiList[poiIndex][that.panel.lngName] > 0
-                            && poiList[poiIndex][that.panel.latName] > 0
-                        ) {
+                const poiIndex = i;
+                setTimeout(function () {
+                    // setTimeout((function (poiIndex) {
+                    //     return function () {
+                    if (poiList[poiIndex] && poiList[poiIndex][that.panel.lngName]
+                        && poiList[poiIndex][that.panel.latName]
+                        && poiList[poiIndex][that.panel.lngName] > 0
+                        && poiList[poiIndex][that.panel.latName] > 0
+                    ) {
+                        const gpsItem = Object.assign({}, poiList[poiIndex]);
+                        gpsItem.lng = parseFloat(poiList[poiIndex][that.panel.lngName]);
+                        gpsItem.lat = parseFloat(poiList[poiIndex][that.panel.latName]);
+                        translateOne(poiIndex, 0, gpsItem, BMap);
+                    } else if (poiList[poiIndex][that.panel.geohashName] && poiList[poiIndex][that.panel.geohashName].length > 0) {
+                        const {longitude: lng, latitude: lat} = decodeGeoHash(poiList[poiIndex][that.panel.geohashName]);
+                        const gpsItem = Object.assign({}, poiList[poiIndex], {lng, lat});
+                        translateOne(poiIndex, 0, gpsItem, BMap);
+                    } else if (poiList[poiIndex][that.panel.posName] && poiList[poiIndex][that.panel.posName].length > 0) {
+                        const gpsList = poiList[poiIndex][that.panel.posName].split(';');
+                        for (let gpsIndex = 0; gpsIndex < gpsList.length; gpsIndex++) {
+                            const gpsStr = gpsList[gpsIndex];
+                            const [lng, lat] = gpsStr.split('|');
                             const gpsItem = Object.assign({}, poiList[poiIndex]);
-                            gpsItem.lng = parseFloat(poiList[poiIndex][that.panel.lngName]);
-                            gpsItem.lat = parseFloat(poiList[poiIndex][that.panel.latName]);
-                            translateOne(poiIndex, 0, gpsItem, BMap);
-                        } else if (poiList[poiIndex][that.panel.geohashName] && poiList[poiIndex][that.panel.geohashName].length > 0) {
-                            const {longitude: lng, latitude: lat} = decodeGeoHash(poiList[poiIndex][that.panel.geohashName]);
-                            const gpsItem = Object.assign({}, poiList[poiIndex], {lng, lat});
-                            translateOne(poiIndex, 0, gpsItem, BMap);
-                        } else if (poiList[poiIndex][that.panel.posName] && poiList[poiIndex][that.panel.posName].length > 0) {
-                            const gpsList = poiList[poiIndex][that.panel.posName].split(';');
-                            for (let gpsIndex = 0; gpsIndex < gpsList.length; gpsIndex++) {
-                                const gpsStr = gpsList[gpsIndex];
-                                const [lng, lat] = gpsStr.split('|');
-                                const gpsItem = Object.assign({}, poiList[poiIndex]);
-                                gpsItem.lng = parseFloat(lng);
-                                gpsItem.lat = parseFloat(lat);
-                                translateOne(poiIndex, gpsIndex, gpsItem, BMap);
-                            }
+                            gpsItem.lng = parseFloat(lng);
+                            gpsItem.lat = parseFloat(lat);
+                            translateOne(poiIndex, gpsIndex, gpsItem, BMap);
                         }
-                    };
-                }(i)), i * 10);
+                    }
+                }, 10);
+                // };
+                // }(i)), i * 10);
             }
 
             function translateOne(poiIndex, gpsIndex, gps, BMap) {
