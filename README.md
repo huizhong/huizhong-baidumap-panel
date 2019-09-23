@@ -63,7 +63,7 @@ union
 
 select
 now() as time, 
-'block' as type,
+'square' as type,
 '116.487777|39.992133;116.484538|39.991283' as pos,
 '{"color":30,"size":80}' as ext
 union
@@ -89,7 +89,7 @@ pie和block的color（0~100）是从绿到红的渐变色，size对应圆的半�
         "label":"默认说明",
         "enableDragging": true
      },
-    "block":{
+    "square":{
         "size":100
     },
     "pie": {

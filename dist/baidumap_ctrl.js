@@ -191,7 +191,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 latName: 'latitude',
                 posName: 'pos',
                 geohashName: 'geohash',
-                extName: 'ext'
+                extName: 'config'
             };
 
             BaidumapCtrl = function (_MetricsPanelCtrl) {
@@ -361,7 +361,11 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         }
                         var scontent = '';
                         scontent += '<a href=""><div class="infobox" id="infobox"><div class="infobox-content" style="display:block">';
-                        scontent += '<div class="infobox-header"><div class="infobox-header-icon"><img src="' + this.getPoiExt(poiType, data, 'detail-icon', 'public/plugins/grafana-baidumap-panel/images/bike.png') + '"></div>';
+
+                        var detailImage = this.getPoiExt(poiType, data, 'detailIcon', '');
+                        if (detailImage.length > 0) {
+                            scontent += '<div class="infobox-header"><div class="infobox-header-icon"><img src="' + detailImage + '"></div>';
+                        }
                         scontent += '<div class="infobox-header-name"><p>' + this.getPoiExt(poiType, data, 'name') + '</p></div>';
                         scontent += '<div class="infobox-header-type" style="min-width:250px"><p>' + this.getPoiExt(poiType, data, 'type') + '</p></div></div>';
                         scontent += '<div class="infobox-footer">' + this.getPoiExt(poiType, data, 'desc') + '</div>';
@@ -429,7 +433,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                                 points: [pointItem]
                                                             };
                                                         }
-                                                    } else if (poiType === 'pie' || poiType === 'block') {
+                                                    } else if (poiType === 'circle' || poiType === 'square') {
                                                         var layerItem = {
                                                             lng: translatedItem.point.lng,
                                                             lat: translatedItem.point.lat,
@@ -471,8 +475,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 }
                                                 var lineCount = Object.keys(lineMap).length;
                                                 if (lineCount > 0) {
-                                                    for (var _i = 0; _i < lineCount; _i++) {
-                                                        var lines = Object.values(lineMap)[_i];
+                                                    for (var i = 0; i < lineCount; i++) {
+                                                        var lines = Object.values(lineMap)[i];
                                                         if (lines.points.length < 2) {
                                                             // eslint-disable-next-line no-continue
                                                             continue;
@@ -504,8 +508,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     }
                                                 }
                                                 if (markerArray.length > 0) {
-                                                    for (var _i2 = 0; _i2 < markerArray.length; _i2++) {
-                                                        that.addMarker(markerArray[_i2].point, BMap, markerArray[_i2].data);
+                                                    for (var _i = 0; _i < markerArray.length; _i++) {
+                                                        that.addMarker(markerArray[_i].point, BMap, markerArray[_i].data);
                                                     }
                                                     if (that.panel.clusterPoint) {
                                                         new BMapLib.MarkerClusterer(that.map, {
@@ -528,7 +532,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                             var _layerItem = layerArray[layerIndex];
                                                             var _poiType = _layerItem[that.panel.typeName];
                                                             ctx.fillStyle = getColor(_layerItem.color, that.getPoiExt(_poiType, null, 'alpha', 0.5));
-                                                            var isPie = _poiType === 'pie';
+                                                            var isPie = _poiType === 'circle';
                                                             var posRect = getDotRect(that.map, parseFloat(_layerItem.lng), parseFloat(_layerItem.lat), _layerItem.size, !isPie);
                                                             // console.log(posRect);
                                                             if (isPie) {
@@ -577,39 +581,46 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                 var rawLength = 0;
                                 var translatedItems = [];
 
-                                for (var i = 0; i < poiList.length; i++) {
-                                    setTimeout(function (poiIndex) {
-                                        return function () {
-                                            if (poiList[poiIndex][that.panel.lngName] && poiList[poiIndex][that.panel.latName] && poiList[poiIndex][that.panel.lngName] > 0 && poiList[poiIndex][that.panel.latName] > 0) {
-                                                var gpsItem = Object.assign({}, poiList[poiIndex]);
-                                                gpsItem.lng = parseFloat(poiList[poiIndex][that.panel.lngName]);
-                                                gpsItem.lat = parseFloat(poiList[poiIndex][that.panel.latName]);
-                                                translateOne(poiIndex, 0, gpsItem, BMap);
-                                            } else if (poiList[poiIndex][that.panel.geohashName] && poiList[poiIndex][that.panel.geohashName].length > 0) {
-                                                var _decodeGeoHash = decodeGeoHash(poiList[poiIndex][that.panel.geohashName]),
-                                                    lng = _decodeGeoHash.longitude,
-                                                    lat = _decodeGeoHash.latitude;
+                                var _loop = function _loop(i) {
+                                    var poiIndex = i;
+                                    setTimeout(function () {
+                                        // setTimeout((function (poiIndex) {
+                                        //     return function () {
+                                        if (poiList[poiIndex] && poiList[poiIndex][that.panel.lngName] && poiList[poiIndex][that.panel.latName] && poiList[poiIndex][that.panel.lngName] > 0 && poiList[poiIndex][that.panel.latName] > 0) {
+                                            var gpsItem = Object.assign({}, poiList[poiIndex]);
+                                            gpsItem.lng = parseFloat(poiList[poiIndex][that.panel.lngName]);
+                                            gpsItem.lat = parseFloat(poiList[poiIndex][that.panel.latName]);
+                                            translateOne(poiIndex, 0, gpsItem, BMap);
+                                        } else if (poiList[poiIndex][that.panel.geohashName] && poiList[poiIndex][that.panel.geohashName].length > 0) {
+                                            var _decodeGeoHash = decodeGeoHash(poiList[poiIndex][that.panel.geohashName]),
+                                                lng = _decodeGeoHash.longitude,
+                                                lat = _decodeGeoHash.latitude;
 
-                                                var _gpsItem = Object.assign({}, poiList[poiIndex], { lng: lng, lat: lat });
-                                                translateOne(poiIndex, 0, _gpsItem, BMap);
-                                            } else if (poiList[poiIndex][that.panel.posName] && poiList[poiIndex][that.panel.posName].length > 0) {
-                                                var gpsList = poiList[poiIndex][that.panel.posName].split(';');
-                                                for (var gpsIndex = 0; gpsIndex < gpsList.length; gpsIndex++) {
-                                                    var gpsStr = gpsList[gpsIndex];
+                                            var _gpsItem = Object.assign({}, poiList[poiIndex], { lng: lng, lat: lat });
+                                            translateOne(poiIndex, 0, _gpsItem, BMap);
+                                        } else if (poiList[poiIndex][that.panel.posName] && poiList[poiIndex][that.panel.posName].length > 0) {
+                                            var gpsList = poiList[poiIndex][that.panel.posName].split(';');
+                                            for (var gpsIndex = 0; gpsIndex < gpsList.length; gpsIndex++) {
+                                                var gpsStr = gpsList[gpsIndex];
 
-                                                    var _gpsStr$split = gpsStr.split('|'),
-                                                        _gpsStr$split2 = _slicedToArray(_gpsStr$split, 2),
-                                                        _lng = _gpsStr$split2[0],
-                                                        _lat = _gpsStr$split2[1];
+                                                var _gpsStr$split = gpsStr.split('|'),
+                                                    _gpsStr$split2 = _slicedToArray(_gpsStr$split, 2),
+                                                    _lng = _gpsStr$split2[0],
+                                                    _lat = _gpsStr$split2[1];
 
-                                                    var _gpsItem2 = Object.assign({}, poiList[poiIndex]);
-                                                    _gpsItem2.lng = parseFloat(_lng);
-                                                    _gpsItem2.lat = parseFloat(_lat);
-                                                    translateOne(poiIndex, gpsIndex, _gpsItem2, BMap);
-                                                }
+                                                var _gpsItem2 = Object.assign({}, poiList[poiIndex]);
+                                                _gpsItem2.lng = parseFloat(_lng);
+                                                _gpsItem2.lat = parseFloat(_lat);
+                                                translateOne(poiIndex, gpsIndex, _gpsItem2, BMap);
                                             }
-                                        };
-                                    }(i), i * 10);
+                                        }
+                                    }, 10);
+                                    // };
+                                    // }(i)), i * 10);
+                                };
+
+                                for (var i = 0; i < poiList.length; i++) {
+                                    _loop(i);
                                 }
                             })();
                         }

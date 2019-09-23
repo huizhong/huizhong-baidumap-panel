@@ -36,7 +36,7 @@ const panelDefaults = {
     latName: 'latitude',
     posName: 'pos',
     geohashName: 'geohash',
-    extName: 'ext'
+    extName: 'config'
 };
 
 
@@ -239,7 +239,11 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         }
         let scontent = '';
         scontent += '<a href=""><div class="infobox" id="infobox"><div class="infobox-content" style="display:block">';
-        scontent += '<div class="infobox-header"><div class="infobox-header-icon"><img src="' + this.getPoiExt(poiType, data, 'detail-icon', 'public/plugins/grafana-baidumap-panel/images/bike.png') + '"></div>';
+
+        const detailImage = this.getPoiExt(poiType, data, 'detailIcon', '');
+        if (detailImage.length > 0) {
+            scontent += '<div class="infobox-header"><div class="infobox-header-icon"><img src="' + detailImage + '"></div>';
+        }
         scontent += '<div class="infobox-header-name"><p>' + this.getPoiExt(poiType, data, 'name') + '</p></div>';
         scontent += '<div class="infobox-header-type" style="min-width:250px"><p>' + this.getPoiExt(poiType, data, 'type') + '</p></div></div>';
         scontent += '<div class="infobox-footer">' + this.getPoiExt(poiType, data, 'desc') + '</div>';
@@ -348,7 +352,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                             points: [pointItem]
                                         };
                                     }
-                                } else if (poiType === 'pie' || poiType === 'block') {
+                                } else if (poiType === 'circle' || poiType === 'square') {
                                     const layerItem = {
                                         lng: translatedItem.point.lng,
                                         lat: translatedItem.point.lat,
@@ -458,7 +462,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         const layerItem = layerArray[layerIndex];
                                         const poiType = layerItem[that.panel.typeName];
                                         ctx.fillStyle = getColor(layerItem.color, that.getPoiExt(poiType, null, 'alpha', 0.5));
-                                        const isPie = poiType === 'pie';
+                                        const isPie = poiType === 'circle';
                                         const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
                                             parseFloat(layerItem.lat), layerItem.size, !isPie);
                                         // console.log(posRect);
