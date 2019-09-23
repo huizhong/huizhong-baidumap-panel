@@ -569,7 +569,16 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                     } else if (sourceGps === 'GCJ02') {
                                         sourceGpsId = 3;
                                     }
-                                    convertor.translate(sourcePointList, sourceGpsId, 5, translateCallback);
+                                    if (sourceGpsId === 5) {
+                                        setTimeout(function () {
+                                            translateCallback({
+                                                'status': 0,
+                                                'points': [{ lng: gps.lng, lat: gps.lat }]
+                                            });
+                                        }, 1);
+                                    } else {
+                                        convertor.translate(sourcePointList, sourceGpsId, 5, translateCallback);
+                                    }
                                 };
 
                                 var lineMap = [];
