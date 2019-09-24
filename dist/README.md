@@ -26,7 +26,7 @@ select
 now() as time, 
 'marker' as type,
 '116.487777|39.992133' as pos,
-'{"name":"设备编号xxx","type":"设备类型xxx","desc":"设备描述xxx"}' as ext
+'{"name":"设备编号xxx","type":"设备类型xxx","desc":"设备描述xxx"}' as config
 
 union
 
@@ -34,14 +34,14 @@ select
 now() as time, 
 'marker' as type,
 '116.484538|39.991283' as pos,
-'{"name":"设备编号xxx","type":"设备类型xxx","desc":"设备描述xxx","icon":3,"label":"自定义图标0~9"}' as ext
+'{"name":"设备编号xxx","type":"设备类型xxx","desc":"设备描述xxx","icon":3,"label":"自定义图标0~9"}' as config
 
 union
 select
 now() as time, 
 'marker' as type,
 '116.490502|39.988408' as pos,
-'{"name":"设备编号xxx","type":"设备类型xxx","desc":"设备描述xxx","icon":"public/plugins/grafana-baidumap-panel/images/bike.png","animation":true}' as ext
+'{"name":"设备编号xxx","type":"设备类型xxx","desc":"设备描述xxx","icon":"public/plugins/grafana-baidumap-panel/images/bike.png","animation":true}' as config
 
 union
 
@@ -65,14 +65,14 @@ select
 now() as time, 
 'square' as type,
 '116.487777|39.992133;116.484538|39.991283' as pos,
-'{"color":30,"size":80}' as ext
+'{"color":30,"size":80}' as config
 union
 
 select
 now() as time, 
-'pie' as type,
+'circle' as type,
 '116.487777|39.992133;116.490502|39.988408' as pos,
-'{"color":70,"size":40}' as ext
+'{"color":70,"size":40}' as config
 
 ```
 

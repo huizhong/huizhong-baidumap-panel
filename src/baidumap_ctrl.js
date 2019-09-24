@@ -453,7 +453,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 const driving = new BMap.RidingRoute(that.map, {
                                     renderOptions: {
                                         map: that.map,
-                                        // autoViewport: true
+                                        autoViewport: false
                                     }
                                 });
                                 driving.search(points[0], points.slice(-1)[0]);
