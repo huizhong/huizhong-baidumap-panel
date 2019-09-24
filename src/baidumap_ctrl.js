@@ -318,10 +318,11 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
 
                 function translateCallback(returnedData) {
                     if (returnedData.status == 0) {
+                        const {lng, lat} = returnedData.points[0];
                         translatedItems.push({
                             poiIndex: poiIndex,
                             gpsIndex: gpsIndex,
-                            point: returnedData.points[0],
+                            point: new BMap.Point(lng, lat),
                             gps: gps,
                         });
 

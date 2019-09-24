@@ -399,10 +399,14 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
 
                                     function translateCallback(returnedData) {
                                         if (returnedData.status == 0) {
+                                            var _returnedData$points$ = returnedData.points[0],
+                                                lng = _returnedData$points$.lng,
+                                                lat = _returnedData$points$.lat;
+
                                             translatedItems.push({
                                                 poiIndex: poiIndex,
                                                 gpsIndex: gpsIndex,
-                                                point: returnedData.points[0],
+                                                point: new BMap.Point(lng, lat),
                                                 gps: gps
                                             });
 
