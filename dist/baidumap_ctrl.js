@@ -433,6 +433,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                 };
 
                                 var translateCallback = function translateCallback(myPoiIndex, myGpsIndex, myGps, translatedData) {
+                                    var _this2 = this;
+
                                     var lng = translatedData.lng,
                                         lat = translatedData.lat;
 
@@ -534,7 +536,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 paneName: 'vertexPane',
                                                 zIndex: -1,
                                                 update: function update() {
-                                                    var ctx = that.canvas.getContext('2d');
+                                                    var ctx = _this2.canvas.getContext('2d');
                                                     if (!ctx) {
                                                         return;
                                                     }
@@ -647,10 +649,10 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 }, {
                     key: 'filterEmptyAndZeroValues',
                     value: function filterEmptyAndZeroValues(data) {
-                        var _this2 = this;
+                        var _this3 = this;
 
                         return _.filter(data, function (o) {
-                            return !(_this2.panel.hideEmpty && _.isNil(o.value)) && !(_this2.panel.hideZero && o.value === 0);
+                            return !(_this3.panel.hideEmpty && _.isNil(o.value)) && !(_this3.panel.hideZero && o.value === 0);
                         });
                     }
                 }, {

@@ -466,7 +466,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             paneName: 'vertexPane',
                             zIndex: -1,
                             update: () => {
-                                const ctx = that.canvas.getContext('2d');
+                                const ctx = this.canvas.getContext('2d');
                                 if (!ctx) {
                                     return;
                                 }
