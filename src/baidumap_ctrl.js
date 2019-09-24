@@ -386,8 +386,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             shapeMap[poiType] = [];
                         }
                         const shapeList = shapeMap[poiType];
-                        if (shapeList.length > 0 && shapeList[-1].poiIndexKey === poiIndexKey) {
-                            shapeList[-1].points.push(pointItem);
+                        if (shapeList.length > 0 && shapeList[shapeList.length - 1].poiIndexKey === poiIndexKey) {
+                            shapeList[shapeList.length - 1].points.push(pointItem);
                         } else {
                             shapeList.push({
                                 poiIndexKey: poiIndexKey,
@@ -431,7 +431,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     ['RidingRoute', 'DrivingRoute', 'WalkingRoute'].forEach((poiType) => {
                         if (poiType in shapeMap) {
                             shapeMap[poiType].forEach((item) => {
-                                const points = [item[0], item[-1]].points.map(v => new BMap.Point(v.lng, v.lat));
+                                const points = item.points.map(v => new BMap.Point(v.lng, v.lat));
                                 const driving = new BMap[poiType](that.map, {
                                     renderOptions: {
                                         map: that.map,

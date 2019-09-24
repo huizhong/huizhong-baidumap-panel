@@ -456,14 +456,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 shapeMap[poiType] = [];
                                             }
                                             var shapeList = shapeMap[poiType];
-                                            if (shapeList.length > 0 && shapeList[-1].poiIndexKey === poiIndexKey) {
-                                                shapeList[-1].points.push(pointItem);
+                                            if (shapeList.length > 0 && shapeList[shapeList.length - 1].poiIndexKey === poiIndexKey) {
+                                                shapeList[shapeList.length - 1].points.push(pointItem);
                                             } else {
-                                                // TODO
-                                                // const option = Object.assign(
-                                                //     {},
-                                                //     that.getPoiOption(poiType, translatedItem.gps, {})
-                                                // );
                                                 shapeList.push({
                                                     poiIndexKey: poiIndexKey,
                                                     poiType: poiType,
@@ -506,7 +501,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         ['RidingRoute', 'DrivingRoute', 'WalkingRoute'].forEach(function (poiType) {
                                             if (poiType in shapeMap) {
                                                 shapeMap[poiType].forEach(function (item) {
-                                                    var points = [item[0], item[-1]].points.map(function (v) {
+                                                    var points = item.points.map(function (v) {
                                                         return new BMap.Point(v.lng, v.lat);
                                                     });
                                                     var driving = new BMap[poiType](that.map, {
