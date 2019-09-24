@@ -216,14 +216,26 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 }
 
                 _createClass(BaidumapCtrl, [{
+                    key: 'getPoiTypeOption',
+                    value: function getPoiTypeOption(poiType) {
+                        return this.getPoiOption(poiType, null, {});
+                    }
+                }, {
                     key: 'getPoiOption',
                     value: function getPoiOption(poiType, poiConfig) {
                         var defaultValue = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
 
                         var configName = 'option';
-                        var typeOption = this.getPoiExt(poiType, null, configName, defaultValue);
+                        var typeOption = this.getPoiTypeExt(poiType, configName, defaultValue);
                         var poiOption = this.getPoiExt(poiType, poiConfig, configName, defaultValue);
                         return Object.assign({}, typeOption, poiOption);
+                    }
+                }, {
+                    key: 'getPoiTypeExt',
+                    value: function getPoiTypeExt(poiType, configName) {
+                        var defaultValue = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+
+                        return this.getPoiExt(poiType, null, configName, defaultValue);
                     }
                 }, {
                     key: 'getPoiExt',
@@ -439,151 +451,132 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             var translatedItem = translatedItems[translateIndex];
                                             var poiType = translatedItem.gps[that.panel.typeName];
                                             var poiIndexKey = 'key_' + translatedItem.poiIndex;
-                                            if (poiType === 'heat') {
-                                                var heatPoint = {
-                                                    lng: translatedItem.point.lng,
-                                                    lat: translatedItem.point.lat,
-                                                    count: that.getPoiExt(poiType, translatedItem.gps, 'count', 1)
-                                                };
-                                                heatArray.push(heatPoint);
-                                            } else if (poiType === 'line' || poiType === 'polygon' || poiType === 'route') {
-                                                var pointItem = translatedItem.point;
-                                                if (poiIndexKey in lineMap) {
-                                                    lineMap[poiIndexKey].points.push(pointItem);
-                                                } else {
-                                                    var option = Object.assign({}, that.getPoiOption(poiType, translatedItem.gps, {}));
-                                                    lineMap[poiIndexKey] = {
-                                                        poiType: poiType,
-                                                        option: option,
-                                                        points: [pointItem]
-                                                    };
-                                                }
-                                            } else if (poiType === 'circle' || poiType === 'square') {
-                                                var layerItem = {
-                                                    lng: translatedItem.point.lng,
-                                                    lat: translatedItem.point.lat,
-                                                    color: that.getPoiExt(poiType, translatedItem.gps, 'color', 20),
-                                                    size: that.getPoiExt(poiType, translatedItem.gps, 'size', 20),
-                                                    type: poiType
-                                                };
-                                                layerArray.push(layerItem);
+                                            var pointItem = translatedItem.point;
+                                            if (!(poiType in shapeMap)) {
+                                                shapeMap[poiType] = [];
+                                            }
+                                            var shapeList = shapeMap[poiType];
+                                            if (shapeList.length > 0 && shapeList[-1].poiIndexKey === poiIndexKey) {
+                                                shapeList[-1].points.push(pointItem);
                                             } else {
-                                                markerArray.push({ point: translatedItem.point, data: translatedItem.gps });
+                                                // TODO
+                                                // const option = Object.assign(
+                                                //     {},
+                                                //     that.getPoiOption(poiType, translatedItem.gps, {})
+                                                // );
+                                                shapeList.push({
+                                                    poiIndexKey: poiIndexKey,
+                                                    poiType: poiType,
+                                                    poiData: translatedItem.gps,
+                                                    points: [pointItem]
+                                                });
                                             }
                                         }
-                                        console.log('markerArray', markerArray);
-                                        console.log('lineMap', lineMap);
-                                        console.log('heatArray', heatArray);
-                                        console.log('layerArray', layerArray);
-
-                                        if (heatArray.length > 0) {
-                                            var isSupportCanvas = function isSupportCanvas() {
-                                                var elem = document.createElement('canvas');
-                                                return !!(elem.getContext && elem.getContext('2d'));
-                                            };
-
-                                            // 热力图
-                                            if (!isSupportCanvas()) {
-                                                alert('热力图目前只支持有canvas支持的浏览器,您所使用的浏览器不能使用热力图功能~');
-                                            }
-                                            // http://xcx1024.com/ArtInfo/271881.html
+                                        console.log('shapeMap', shapeMap);
+                                        var heatPoiType = 'heat';
+                                        if (shapeMap[heatPoiType]) {
+                                            var heatShapeList = shapeMap.heat;
                                             var heatmapOverlay = new BMapLib.HeatmapOverlay(Object.assign({
                                                 radius: 20
-                                            }, that.getPoiOption('heat', null, {})));
+                                            }, that.getPoiTypeOption('heat')));
                                             that.map.addOverlay(heatmapOverlay);
                                             heatmapOverlay.setDataSet({
-                                                data: heatArray,
-                                                max: that.getPoiExt('heat', null, 'max', 100)
+                                                data: heatShapeList.map(function (v) {
+                                                    return {
+                                                        lng: v.points[0].lng,
+                                                        lat: v.points[0].lat,
+                                                        count: that.getPoiExt(heatPoiType, v.poiData, 'count', 1)
+                                                    };
+                                                }),
+                                                max: that.getPoiTypeExt(heatPoiType, 'max', 100)
                                             });
-
-                                            // 判断浏览区是否支持canvas
                                         }
-                                        var lineCount = Object.keys(lineMap).length;
-                                        if (lineCount > 0) {
-                                            for (var i = 0; i < lineCount; i++) {
-                                                var lines = Object.values(lineMap)[i];
-                                                if (lines.points.length < 2) {
-                                                    // eslint-disable-next-line no-continue
-                                                    continue;
-                                                }
-                                                if (lines.poiType === 'route') {
-                                                    var points = lines.points.map(function (v) {
-                                                        return new BMap.Point(v.lng, v.lat);
-                                                    });
-                                                    var driving = new BMap.RidingRoute(that.map, {
-                                                        renderOptions: {
-                                                            map: that.map,
-                                                            autoViewport: false
-                                                        }
-                                                    });
-                                                    driving.search(points[0], points.slice(-1)[0]);
-                                                } else {
-                                                    if (lines.poiType === 'polygon') {
-                                                        lines.points.push(lines.points[0]);
-                                                    }
-                                                    var polyline = new BMap.Polyline(lines.points, Object.assign({
-                                                        enableEditing: false,
-                                                        enableClicking: true,
-                                                        strokeWeight: 4,
-                                                        strokeOpacity: 0.5,
-                                                        strokeColor: 'blue'
-                                                    }, lines.option));
-                                                    that.map.addOverlay(polyline);
-                                                }
-                                            }
-                                        }
-                                        if (markerArray.length > 0) {
-                                            for (var _i = 0; _i < markerArray.length; _i++) {
-                                                that.addMarker(markerArray[_i].point, BMap, markerArray[_i].data);
-                                            }
+                                        var markerTypeName = 'marker';
+                                        if (shapeMap[markerTypeName]) {
+                                            var markerArray = shapeMap[markerTypeName];
+                                            markerArray.forEach(function (v) {
+                                                return that.addMarker(v.points[0], BMap, v.poiData);
+                                            });
                                             if (that.panel.clusterPoint) {
                                                 new BMapLib.MarkerClusterer(that.map, {
                                                     markers: that.markers
                                                 });
                                             }
                                         }
-                                        if (layerArray.length > 0) {
-                                            var updateLayer = function updateLayer() {
-                                                var ctx = this.canvas.getContext('2d');
+                                        ['RidingRoute', 'DrivingRoute', 'WalkingRoute'].forEach(function (poiType) {
+                                            if (poiType in shapeMap) {
+                                                shapeMap[poiType].forEach(function (item) {
+                                                    var points = [item[0], item[-1]].points.map(function (v) {
+                                                        return new BMap.Point(v.lng, v.lat);
+                                                    });
+                                                    var driving = new BMap[poiType](that.map, {
+                                                        renderOptions: {
+                                                            map: that.map,
+                                                            autoViewport: false
+                                                        }
+                                                    });
+                                                    driving.search(points[0], points.slice(-1)[0]);
+                                                });
+                                            }
+                                        });
 
-                                                if (!ctx) {
-                                                    return;
-                                                }
-                                                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                                                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-                                                ctx.beginPath();
-                                                ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                                                for (var layerIndex = 0; layerIndex < layerArray.length; layerIndex++) {
-                                                    var _layerItem = layerArray[layerIndex];
-                                                    var _poiType = _layerItem[that.panel.typeName];
-                                                    ctx.fillStyle = getColor(_layerItem.color, that.getPoiExt(_poiType, null, 'alpha', 0.5));
-                                                    var isPie = _poiType === 'circle';
-                                                    var posRect = getDotRect(that.map, parseFloat(_layerItem.lng), parseFloat(_layerItem.lat), _layerItem.size, !isPie);
-                                                    // console.log(posRect);
-                                                    if (isPie) {
-                                                        ctx.ellipse(posRect.x, posRect.y, posRect.w, -posRect.h, 0, 0, 2 * Math.PI);
-                                                        ctx.fill();
-                                                        ctx.beginPath();
-                                                    } else {
-                                                        ctx.fillRect(posRect.x, posRect.y, posRect.w, posRect.h);
-                                                    }
-                                                }
-                                            };
-
-                                            var canvasLayer = new BMap.CanvasLayer({
+                                        ['Polyline', 'Polygon'].forEach(function (poiType) {
+                                            if (shapeMap[poiType]) {
+                                                shapeMap[poiType].forEach(function (item) {
+                                                    var polyline = new BMap[poiType](item.points, Object.assign({
+                                                        enableEditing: false,
+                                                        enableClicking: true,
+                                                        strokeWeight: 4,
+                                                        strokeOpacity: 0.5,
+                                                        strokeColor: 'blue'
+                                                    }, that.getPoiOption(item.poiType, item.poiData, {})));
+                                                    that.map.addOverlay(polyline);
+                                                });
+                                            }
+                                        });
+                                        if (shapeMap.pie || shapeMap.square) {
+                                            that.map.addOverlay(new BMap.CanvasLayer({
                                                 paneName: 'vertexPane',
-                                                zIndex: -999,
-                                                update: updateLayer
-                                            });
-
-                                            that.map.addOverlay(canvasLayer);
+                                                zIndex: -1,
+                                                update: function update() {
+                                                    var ctx = that.canvas.getContext('2d');
+                                                    if (!ctx) {
+                                                        return;
+                                                    }
+                                                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                                                    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                                                    ctx.beginPath();
+                                                    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                                                    ['pie', 'square'].forEach(function (poiType) {
+                                                        if (shapeMap[poiType]) {
+                                                            shapeMap[poiType].forEach(function (item) {
+                                                                var layerItem = {
+                                                                    lng: item.points[0].lng,
+                                                                    lat: item.points[0].lat,
+                                                                    color: that.getPoiExt(poiType, item.poiData, 'color', 20),
+                                                                    size: that.getPoiExt(poiType, item.poiData, 'size', 20)
+                                                                };
+                                                                ctx.fillStyle = getColor(layerItem.color, that.getPoiExt(poiType, null, 'alpha', 0.5));
+                                                                var isPie = poiType === 'pie';
+                                                                var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isPie);
+                                                                // console.log(posRect);
+                                                                if (isPie) {
+                                                                    ctx.ellipse(posRect.x, posRect.y, posRect.w, -posRect.h, 0, 0, 2 * Math.PI);
+                                                                    ctx.fill();
+                                                                    ctx.beginPath();
+                                                                } else {
+                                                                    ctx.fillRect(posRect.x, posRect.y, posRect.w, posRect.h);
+                                                                }
+                                                            });
+                                                        }
+                                                    });
+                                                }
+                                            }));
                                         }
                                     }
                                 };
 
-                                var lineMap = [];
-                                var heatArray = [];
-                                var markerArray = [];
+                                var shapeMap = [];
                                 var layerArray = [];
 
                                 var sourcePointList = [];

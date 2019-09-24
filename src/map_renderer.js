@@ -49,7 +49,7 @@ export default function link(scope, elem, attrs, ctrl) {
                     });
 
                     // eslint-disable-next-line no-unused-expressions
-                    setTimeout(function () {
+                    setTimeout(function (e) {
                         ctrl.distanceTool = new BMapLib.DistanceTool(ctrl.map);
                         ctrl.rectangleZoomTool = new BMapLib.RectangleZoom(ctrl.map, {
                             followText: '拖拽鼠标进行操作',

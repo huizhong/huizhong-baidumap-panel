@@ -70,7 +70,7 @@ union
 
 select
 now() as time, 
-'circle' as type,
+'pie' as type,
 '116.487777|39.992133;116.490502|39.988408' as pos,
 '{"color":70,"size":40}' as config
 
