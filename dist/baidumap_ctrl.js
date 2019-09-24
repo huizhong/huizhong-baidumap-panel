@@ -343,9 +343,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                     }
                 }, {
                     key: 'addMarker',
-                    value: function addMarker(point, BMap, data) {
+                    value: function addMarker(poiType, point, BMap, data) {
                         // public/plugins/grafana-baidumap-panel/images/bike.png
-                        var poiType = 'marker';
                         var markerOption = this.getPoiOption(poiType, data, {});
                         var iconUrl = this.getPoiExt(poiType, data, 'icon', '');
                         if (Number.isInteger(iconUrl)) {
@@ -433,8 +432,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                 };
 
                                 var translateCallback = function translateCallback(myPoiIndex, myGpsIndex, myGps, translatedData) {
-                                    var _this2 = this;
-
                                     var lng = translatedData.lng,
                                         lat = translatedData.lat;
 
@@ -488,11 +485,11 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 max: that.getPoiTypeExt(heatPoiType, 'max', 100)
                                             });
                                         }
-                                        var markerTypeName = 'marker';
+                                        var markerTypeName = 'Marker';
                                         if (shapeMap[markerTypeName]) {
                                             var markerArray = shapeMap[markerTypeName];
                                             markerArray.forEach(function (v) {
-                                                return that.addMarker(v.points[0], BMap, v.poiData);
+                                                return that.addMarker(markerTypeName, v.points[0], BMap, v.poiData);
                                             });
                                             if (that.panel.clusterPoint) {
                                                 new BMapLib.MarkerClusterer(that.map, {
@@ -536,7 +533,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 paneName: 'vertexPane',
                                                 zIndex: -1,
                                                 update: function update() {
-                                                    var ctx = _this2.canvas.getContext('2d');
+                                                    var ctx = this.canvas.getContext('2d');
                                                     if (!ctx) {
                                                         return;
                                                     }
@@ -574,8 +571,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                 };
 
                                 var shapeMap = [];
-                                var layerArray = [];
-
                                 var sourcePointList = [];
                                 var callbackList = [];
 
@@ -649,10 +644,10 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 }, {
                     key: 'filterEmptyAndZeroValues',
                     value: function filterEmptyAndZeroValues(data) {
-                        var _this3 = this;
+                        var _this2 = this;
 
                         return _.filter(data, function (o) {
-                            return !(_this3.panel.hideEmpty && _.isNil(o.value)) && !(_this3.panel.hideZero && o.value === 0);
+                            return !(_this2.panel.hideEmpty && _.isNil(o.value)) && !(_this2.panel.hideZero && o.value === 0);
                         });
                     }
                 }, {

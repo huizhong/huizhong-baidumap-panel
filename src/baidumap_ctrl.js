@@ -217,9 +217,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         }
     }
 
-    addMarker(point, BMap, data) {
+    addMarker(poiType, point, BMap, data) {
         // public/plugins/grafana-baidumap-panel/images/bike.png
-        const poiType = 'marker';
         const markerOption = this.getPoiOption(poiType, data, {});
         const iconUrl = this.getPoiExt(poiType, data, 'icon', '');
         if (Number.isInteger(iconUrl)) {
@@ -279,12 +278,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         console.log(poiList);
         if (poiList) {
             const shapeMap = [];
-            const layerArray = [];
-
-
             const sourcePointList = [];
             const callbackList = [];
-
 
             let rawLength = 0;
             const translatedItems = [];
@@ -418,10 +413,10 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             max: that.getPoiTypeExt(heatPoiType, 'max', 100)
                         });
                     }
-                    const markerTypeName = 'marker';
+                    const markerTypeName = 'Marker';
                     if (shapeMap[markerTypeName]) {
                         const markerArray = shapeMap[markerTypeName];
-                        markerArray.forEach(v => that.addMarker(v.points[0], BMap, v.poiData));
+                        markerArray.forEach(v => that.addMarker(markerTypeName, v.points[0], BMap, v.poiData));
                         if (that.panel.clusterPoint) {
                             new BMapLib.MarkerClusterer(that.map, {
                                 markers: that.markers
@@ -465,7 +460,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         that.map.addOverlay(new BMap.CanvasLayer({
                             paneName: 'vertexPane',
                             zIndex: -1,
-                            update: () => {
+                            update: function () {
                                 const ctx = this.canvas.getContext('2d');
                                 if (!ctx) {
                                     return;
