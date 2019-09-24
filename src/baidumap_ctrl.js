@@ -274,7 +274,11 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
             const heatArray = [];
             const markerArray = [];
             const layerArray = [];
-            const convertor = new BMap.Convertor();
+
+
+            const sourcePointList = [];
+            const callbackList = [];
+
 
             let rawLength = 0;
             const translatedItems = [];
@@ -282,8 +286,6 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
             for (let i = 0; i < poiList.length; i++) {
                 const poiIndex = i;
                 setTimeout(function () {
-                    // setTimeout((function (poiIndex) {
-                    //     return function () {
                     if (poiList[poiIndex] && poiList[poiIndex][that.panel.lngName]
                         && poiList[poiIndex][that.panel.latName]
                         && poiList[poiIndex][that.panel.lngName] > 0
@@ -308,189 +310,29 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             translateOne(poiIndex, gpsIndex, gpsItem, BMap);
                         }
                     }
+                    if (sourcePointList.length > 0) {
+                        const convertor = new BMap.Convertor();
+                        const groupSize = 10;
+                        for (let groupIndex = 0; groupIndex < sourcePointList.length; groupIndex += groupSize) {
+                            const pointList = [];
+                            for (let pointIndex = 0; pointIndex < groupSize && pointIndex + groupIndex < sourcePointList.length; pointIndex++) {
+                                pointList.push(sourcePointList[groupIndex + pointIndex]);
+                            }
+                            convertor.translate(pointList, getMapSourceId(), 5, (result) => {
+                                if (result.status === 0) {
+                                    for (let index = 0; index < result.points.length; index++) {
+                                        callbackList[groupIndex + index](result.points[index]);
+                                    }
+                                } else {
+                                    console.error('gps translate error', pointList);
+                                }
+                            });
+                        }
+                    }
                 }, 10);
-                // };
-                // }(i)), i * 10);
             }
 
-            function translateOne(poiIndex, gpsIndex, gps, BMap) {
-                rawLength += 1;
-
-                function translateCallback(returnedData) {
-                    if (returnedData.status == 0) {
-                        const {lng, lat} = returnedData.points[0];
-                        translatedItems.push({
-                            poiIndex: poiIndex,
-                            gpsIndex: gpsIndex,
-                            point: new BMap.Point(lng, lat),
-                            gps: gps,
-                        });
-
-                        if (translatedItems.length == rawLength) {
-                            translatedItems.sort(function (a, b) {
-                                return ((a.poiIndex - b.poiIndex) * 1000000) + (a.gpsIndex - b.gpsIndex);
-                            });
-                            for (let translateIndex = 0; translateIndex < translatedItems.length; translateIndex++) {
-                                const translatedItem = translatedItems[translateIndex];
-                                const poiType = translatedItem.gps[that.panel.typeName];
-                                const poiIndexKey = 'key_' + translatedItem.poiIndex;
-                                if (poiType === 'heat') {
-                                    const heatPoint = {
-                                        lng: translatedItem.point.lng,
-                                        lat: translatedItem.point.lat,
-                                        count: that.getPoiExt(poiType, translatedItem.gps, 'count', 1)
-                                    };
-                                    heatArray.push(heatPoint);
-                                } else if (poiType === 'line' || poiType === 'polygon' || poiType === 'route') {
-                                    const pointItem = translatedItem.point;
-                                    if (poiIndexKey in lineMap) {
-                                        lineMap[poiIndexKey].points.push(pointItem);
-                                    } else {
-                                        const option = Object.assign(
-                                            {},
-                                            that.getPoiOption(poiType, translatedItem.gps, {})
-                                        );
-                                        lineMap[poiIndexKey] = {
-                                            poiType: poiType,
-                                            option: option,
-                                            points: [pointItem]
-                                        };
-                                    }
-                                } else if (poiType === 'circle' || poiType === 'square') {
-                                    const layerItem = {
-                                        lng: translatedItem.point.lng,
-                                        lat: translatedItem.point.lat,
-                                        color: that.getPoiExt(poiType, translatedItem.gps, 'color', 20),
-                                        size: that.getPoiExt(poiType, translatedItem.gps, 'size', 20),
-                                        type: poiType
-                                    };
-                                    layerArray.push(layerItem);
-                                } else {
-                                    markerArray.push({point: translatedItem.point, data: translatedItem.gps});
-                                }
-                            }
-                            console.log('markerArray', markerArray);
-                            console.log('lineMap', lineMap);
-                            console.log('heatArray', heatArray);
-                            console.log('layerArray', layerArray);
-
-                            if (heatArray.length > 0) {
-                                // 热力图
-                                if (!isSupportCanvas()) {
-                                    alert('热力图目前只支持有canvas支持的浏览器,您所使用的浏览器不能使用热力图功能~');
-                                }
-                                // http://xcx1024.com/ArtInfo/271881.html
-                                const heatmapOverlay = new BMapLib.HeatmapOverlay(
-                                    Object.assign(
-                                        {
-                                            radius: 20,
-                                        },
-                                        that.getPoiOption('heat', null, {})
-                                    ));
-                                that.map.addOverlay(heatmapOverlay);
-                                heatmapOverlay.setDataSet({
-                                    data: heatArray,
-                                    max: that.getPoiExt('heat', null, 'max', 100)
-                                });
-
-                                // 判断浏览区是否支持canvas
-                                function isSupportCanvas() {
-                                    const elem = document.createElement('canvas');
-                                    return !!(elem.getContext && elem.getContext('2d'));
-                                }
-                            }
-                            const lineCount = Object.keys(lineMap).length;
-                            if (lineCount > 0) {
-                                for (let i = 0; i < lineCount; i++) {
-                                    const lines = Object.values(lineMap)[i];
-                                    if (lines.points.length < 2) {
-                                        // eslint-disable-next-line no-continue
-                                        continue;
-                                    }
-                                    if (lines.poiType === 'route') {
-                                        const points = lines.points.map(v => new BMap.Point(v.lng, v.lat));
-                                        const driving = new BMap.RidingRoute(that.map, {
-                                            renderOptions: {
-                                                map: that.map,
-                                                // autoViewport: true
-                                            }
-                                        });
-                                        driving.search(points[0], points.slice(-1)[0]);
-                                    } else {
-                                        if (lines.poiType === 'polygon') {
-                                            lines.points.push(lines.points[0]);
-                                        }
-                                        const polyline = new BMap.Polyline(lines.points, Object.assign(
-                                            {
-                                                enableEditing: false,
-                                                enableClicking: true,
-                                                strokeWeight: 4,
-                                                strokeOpacity: 0.5,
-                                                strokeColor: 'blue'
-                                            },
-                                            lines.option
-                                            )
-                                        );
-                                        that.map.addOverlay(polyline);
-                                    }
-                                }
-                            }
-                            if (markerArray.length > 0) {
-                                for (let i = 0; i < markerArray.length; i++) {
-                                    that.addMarker(markerArray[i].point, BMap, markerArray[i].data);
-                                }
-                                if (that.panel.clusterPoint) {
-                                    new BMapLib.MarkerClusterer(that.map, {
-                                        markers: that.markers
-                                    });
-                                }
-                            }
-                            if (layerArray.length > 0) {
-                                const canvasLayer = new BMap.CanvasLayer({
-                                    paneName: 'vertexPane',
-                                    zIndex: -999,
-                                    update: updateLayer
-                                });
-
-                                function updateLayer() {
-                                    const ctx = this.canvas.getContext('2d');
-
-                                    if (!ctx) {
-                                        return;
-                                    }
-                                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                                    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-                                    ctx.beginPath();
-                                    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                                    for (let layerIndex = 0; layerIndex < layerArray.length; layerIndex++) {
-                                        const layerItem = layerArray[layerIndex];
-                                        const poiType = layerItem[that.panel.typeName];
-                                        ctx.fillStyle = getColor(layerItem.color, that.getPoiExt(poiType, null, 'alpha', 0.5));
-                                        const isPie = poiType === 'circle';
-                                        const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
-                                            parseFloat(layerItem.lat), layerItem.size, !isPie);
-                                        // console.log(posRect);
-                                        if (isPie) {
-                                            ctx.ellipse(posRect.x, posRect.y, posRect.w, -posRect.h, 0, 0, 2 * Math.PI);
-                                            ctx.fill();
-                                            ctx.beginPath();
-                                        } else {
-                                            ctx.fillRect(posRect.x, posRect.y, posRect.w, posRect.h);
-                                        }
-                                    }
-                                }
-
-                                that.map.addOverlay(canvasLayer);
-                            }
-                        }
-                    } else {
-                        console.log('转换出错: ' + returnedData.status);
-                    }
-                }
-
-                // 转换坐标
-                const point = new BMap.Point(gps.lng, gps.lat);
-                const sourcePointList = new Array(point);
+            function getMapSourceId() {
                 const sourceGps = that.panel.gpsType;
                 let sourceGpsId = 5;
                 if (sourceGps === 'WGS84') {
@@ -498,16 +340,191 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 } else if (sourceGps === 'GCJ02') {
                     sourceGpsId = 3;
                 }
+                return sourceGpsId;
+            }
+
+            function translateOne(poiIndex, gpsIndex, gps) {
+                rawLength += 1;
+                // 转换坐标
+                const sourceGpsId = getMapSourceId();
                 if (sourceGpsId === 5) {
                     setTimeout(function () {
-                        translateCallback({
-                            'status': 0,
-                            'points': [{lng: gps.lng, lat: gps.lat}]
-                        });
+                        translateCallback(poiIndex, gpsIndex, gps, {lng: gps.lng, lat: gps.lat});
                     }, 1);
                 } else {
-                    convertor.translate(sourcePointList, sourceGpsId, 5, translateCallback);
+                    const point = new BMap.Point(gps.lng, gps.lat);
+                    sourcePointList.push(point);
+                    callbackList.push(translateCallback.bind(this, poiIndex, gpsIndex, gps));
                 }
+            }
+
+            function translateCallback(myPoiIndex, myGpsIndex, myGps, translatedData) {
+                const {lng, lat} = translatedData;
+                translatedItems.push({
+                    poiIndex: myPoiIndex,
+                    gpsIndex: myGpsIndex,
+                    point: new BMap.Point(lng, lat),
+                    gps: myGps,
+                });
+
+                if (translatedItems.length === rawLength) {
+                    translatedItems.sort(function (a, b) {
+                        return ((a.poiIndex - b.poiIndex) * 1000000) + (a.gpsIndex - b.gpsIndex);
+                    });
+                    for (let translateIndex = 0; translateIndex < translatedItems.length; translateIndex++) {
+                        const translatedItem = translatedItems[translateIndex];
+                        const poiType = translatedItem.gps[that.panel.typeName];
+                        const poiIndexKey = 'key_' + translatedItem.poiIndex;
+                        if (poiType === 'heat') {
+                            const heatPoint = {
+                                lng: translatedItem.point.lng,
+                                lat: translatedItem.point.lat,
+                                count: that.getPoiExt(poiType, translatedItem.gps, 'count', 1)
+                            };
+                            heatArray.push(heatPoint);
+                        } else if (poiType === 'line' || poiType === 'polygon' || poiType === 'route') {
+                            const pointItem = translatedItem.point;
+                            if (poiIndexKey in lineMap) {
+                                lineMap[poiIndexKey].points.push(pointItem);
+                            } else {
+                                const option = Object.assign(
+                                    {},
+                                    that.getPoiOption(poiType, translatedItem.gps, {})
+                                );
+                                lineMap[poiIndexKey] = {
+                                    poiType: poiType,
+                                    option: option,
+                                    points: [pointItem]
+                                };
+                            }
+                        } else if (poiType === 'circle' || poiType === 'square') {
+                            const layerItem = {
+                                lng: translatedItem.point.lng,
+                                lat: translatedItem.point.lat,
+                                color: that.getPoiExt(poiType, translatedItem.gps, 'color', 20),
+                                size: that.getPoiExt(poiType, translatedItem.gps, 'size', 20),
+                                type: poiType
+                            };
+                            layerArray.push(layerItem);
+                        } else {
+                            markerArray.push({point: translatedItem.point, data: translatedItem.gps});
+                        }
+                    }
+                    console.log('markerArray', markerArray);
+                    console.log('lineMap', lineMap);
+                    console.log('heatArray', heatArray);
+                    console.log('layerArray', layerArray);
+
+                    if (heatArray.length > 0) {
+                        // 热力图
+                        if (!isSupportCanvas()) {
+                            alert('热力图目前只支持有canvas支持的浏览器,您所使用的浏览器不能使用热力图功能~');
+                        }
+                        // http://xcx1024.com/ArtInfo/271881.html
+                        const heatmapOverlay = new BMapLib.HeatmapOverlay(
+                            Object.assign(
+                                {
+                                    radius: 20,
+                                },
+                                that.getPoiOption('heat', null, {})
+                            ));
+                        that.map.addOverlay(heatmapOverlay);
+                        heatmapOverlay.setDataSet({
+                            data: heatArray,
+                            max: that.getPoiExt('heat', null, 'max', 100)
+                        });
+
+                        // 判断浏览区是否支持canvas
+                        function isSupportCanvas() {
+                            const elem = document.createElement('canvas');
+                            return !!(elem.getContext && elem.getContext('2d'));
+                        }
+                    }
+                    const lineCount = Object.keys(lineMap).length;
+                    if (lineCount > 0) {
+                        for (let i = 0; i < lineCount; i++) {
+                            const lines = Object.values(lineMap)[i];
+                            if (lines.points.length < 2) {
+                                // eslint-disable-next-line no-continue
+                                continue;
+                            }
+                            if (lines.poiType === 'route') {
+                                const points = lines.points.map(v => new BMap.Point(v.lng, v.lat));
+                                const driving = new BMap.RidingRoute(that.map, {
+                                    renderOptions: {
+                                        map: that.map,
+                                        // autoViewport: true
+                                    }
+                                });
+                                driving.search(points[0], points.slice(-1)[0]);
+                            } else {
+                                if (lines.poiType === 'polygon') {
+                                    lines.points.push(lines.points[0]);
+                                }
+                                const polyline = new BMap.Polyline(lines.points, Object.assign(
+                                    {
+                                        enableEditing: false,
+                                        enableClicking: true,
+                                        strokeWeight: 4,
+                                        strokeOpacity: 0.5,
+                                        strokeColor: 'blue'
+                                    },
+                                    lines.option
+                                    )
+                                );
+                                that.map.addOverlay(polyline);
+                            }
+                        }
+                    }
+                    if (markerArray.length > 0) {
+                        for (let i = 0; i < markerArray.length; i++) {
+                            that.addMarker(markerArray[i].point, BMap, markerArray[i].data);
+                        }
+                        if (that.panel.clusterPoint) {
+                            new BMapLib.MarkerClusterer(that.map, {
+                                markers: that.markers
+                            });
+                        }
+                    }
+                    if (layerArray.length > 0) {
+                        const canvasLayer = new BMap.CanvasLayer({
+                            paneName: 'vertexPane',
+                            zIndex: -999,
+                            update: updateLayer
+                        });
+
+                        function updateLayer() {
+                            const ctx = this.canvas.getContext('2d');
+
+                            if (!ctx) {
+                                return;
+                            }
+                            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                            ctx.beginPath();
+                            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                            for (let layerIndex = 0; layerIndex < layerArray.length; layerIndex++) {
+                                const layerItem = layerArray[layerIndex];
+                                const poiType = layerItem[that.panel.typeName];
+                                ctx.fillStyle = getColor(layerItem.color, that.getPoiExt(poiType, null, 'alpha', 0.5));
+                                const isPie = poiType === 'circle';
+                                const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
+                                    parseFloat(layerItem.lat), layerItem.size, !isPie);
+                                // console.log(posRect);
+                                if (isPie) {
+                                    ctx.ellipse(posRect.x, posRect.y, posRect.w, -posRect.h, 0, 0, 2 * Math.PI);
+                                    ctx.fill();
+                                    ctx.beginPath();
+                                } else {
+                                    ctx.fillRect(posRect.x, posRect.y, posRect.w, posRect.h);
+                                }
+                            }
+                        }
+
+                        that.map.addOverlay(canvasLayer);
+                    }
+                }
+
             }
         }
     }

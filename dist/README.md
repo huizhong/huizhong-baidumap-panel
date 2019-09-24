@@ -49,7 +49,7 @@ select
 now() as time, 
 'polygon' as type,
 '116.485023|39.995332;116.484538|39.991283;116.483927|39.985900;116.490502|39.988408;116.490646|39.991946;116.485400|39.995442' as pos,
-'{"option":{"strokeWeight":10,"strokeColor":"red"}}' as ext
+'{"option":{"strokeWeight":10,"strokeColor":"red"}}' as config
 
 union
 
@@ -57,7 +57,7 @@ select
 now() as time, 
 'heat' as type,
 '116.487777|39.992133' as pos,
-'{"count":50}' as ext
+'{"count":50}' as config
 
 union
 
