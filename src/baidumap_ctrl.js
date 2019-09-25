@@ -535,7 +535,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                     if (shapeMap[linePoiType]) {
                                         shapeMap[linePoiType].forEach((item) => {
                                             ctx.beginPath();
-                                            filterCtx(ctx, that.getPoiOption(linePoiType, item.poiData));
+                                            const poiOption = that.getPoiOption(linePoiType, item.poiData);
+                                            filterCtx(ctx, poiOption);
                                             const startPoint = that.map.pointToPixel(item.points[0]);
                                             ctx.moveTo(startPoint.x, startPoint.y);
                                             for (let pointIndex = 1; pointIndex < item.points.length; pointIndex++) {
@@ -547,6 +548,9 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                             } else if (linePoiType === 'polygon') {
                                                 ctx.closePath();
                                                 ctx.stroke();
+                                                if (poiOption.fillOpacity) {
+                                                    ctx.globalAlpha = poiOption.fillOpacity;
+                                                }
                                                 ctx.fill();
                                             }
                                         });

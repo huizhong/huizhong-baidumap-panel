@@ -601,7 +601,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                         if (shapeMap[linePoiType]) {
                                                             shapeMap[linePoiType].forEach(function (item) {
                                                                 ctx.beginPath();
-                                                                filterCtx(ctx, that.getPoiOption(linePoiType, item.poiData));
+                                                                var poiOption = that.getPoiOption(linePoiType, item.poiData);
+                                                                filterCtx(ctx, poiOption);
                                                                 var startPoint = that.map.pointToPixel(item.points[0]);
                                                                 ctx.moveTo(startPoint.x, startPoint.y);
                                                                 for (var pointIndex = 1; pointIndex < item.points.length; pointIndex++) {
@@ -613,6 +614,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                                 } else if (linePoiType === 'polygon') {
                                                                     ctx.closePath();
                                                                     ctx.stroke();
+                                                                    if (poiOption.fillOpacity) {
+                                                                        ctx.globalAlpha = poiOption.fillOpacity;
+                                                                    }
                                                                     ctx.fill();
                                                                 }
                                                             });
