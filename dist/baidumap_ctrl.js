@@ -110,11 +110,11 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
 
     function getDefaultPolyOption() {
         return {
-            enableEditing: false,
-            enableClicking: true,
-            strokeWeight: 4,
-            strokeOpacity: 0.5,
-            strokeColor: 'blue'
+            strokeWeight: 3,
+            strokeOpacity: 0.6,
+            strokeColor: 'blue',
+            fillColor: 'white',
+            fillOpacity: 0.4
         };
     }
 
@@ -255,10 +255,12 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 }, {
                     key: 'getPoiOption',
                     value: function getPoiOption(poiType, poiConfig) {
+                        var defaultValue = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
                         var configName = 'option';
                         var typeOption = this.getPoiTypeExt(poiType, configName, {});
                         var poiOption = this.getPoiExt(poiType, poiConfig, configName, {});
-                        return Object.assign({}, typeOption, poiOption);
+                        return Object.assign(defaultValue, typeOption, poiOption);
                     }
                 }, {
                     key: 'getPoiTypeExt',
@@ -519,6 +521,24 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 max: that.getPoiTypeExt(heatPoiType, 'max', 100)
                                             });
                                         }
+
+                                        var pointTypeName = 'Point';
+                                        if (shapeMap[pointTypeName]) {
+                                            var pointArray = shapeMap[pointTypeName];
+                                            var points = [];
+                                            pointArray.forEach(function (v) {
+                                                v.points.forEach(function (point) {
+                                                    point.x = 'x1';
+                                                    points.push(point);
+                                                    // that.addpoint(pointTypeName, point, BMap, v.poiData);
+                                                });
+                                            });
+                                            var pointCollection = new BMap.PointCollection(points, that.getPoiTypeOption(pointTypeName));
+                                            pointCollection.addEventListener('click', function (e) {
+                                                alert('单击点的坐标为：' + e.point.lng + ',' + e.point.lat); // 监听点击事件
+                                            });
+                                            that.map.addOverlay(pointCollection);
+                                        }
                                         var markerTypeName = 'Marker';
                                         if (shapeMap[markerTypeName]) {
                                             var markerArray = shapeMap[markerTypeName];
@@ -533,6 +553,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 });
                                             }
                                         }
+
                                         ['RidingRoute', 'DrivingRoute', 'WalkingRoute'].forEach(function (poiType) {
                                             if (poiType in shapeMap) {
                                                 shapeMap[poiType].forEach(function (item) {
@@ -549,16 +570,18 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 });
                                             }
                                         });
-                                        ['Polyline', 'Polygon'].forEach(function (poiType) {
+                                        ['Polyline', 'Polygon', 'Circle'].forEach(function (poiType) {
                                             if (shapeMap[poiType]) {
                                                 shapeMap[poiType].forEach(function (item) {
-                                                    var polyline = new BMap[poiType](item.points, Object.assign(getDefaultPolyOption(), that.getPoiOption(item.poiType, item.poiData)));
+                                                    var poiOption = Object.assign(getDefaultPolyOption(), that.getPoiOption(item.poiType, item.poiData));
+                                                    var circleRadius = that.getPoiExt(item.poiType, item.poiData, 'radius', 20);
+                                                    var polyline = poiType === 'Circle' ? new BMap[poiType](item.points, circleRadius, poiOption) : new BMap[poiType](item.points, poiOption);
                                                     that.map.addOverlay(polyline);
                                                 });
                                             }
                                         });
                                         var linePoiTypes = ['polyline', 'polygon'];
-                                        var dotPoiTypes = ['Pie', 'Square'];
+                                        var dotPoiTypes = ['circle', 'square'];
                                         var canvasTypes = [].concat(dotPoiTypes, linePoiTypes);
                                         if (canvasTypes.some(function (canvasType) {
                                             return shapeMap[canvasType];
@@ -582,22 +605,23 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                             shapeMap[poiType].forEach(function (item) {
                                                                 item.points.forEach(function (point) {
                                                                     ctx.save();
+                                                                    var isCircle = poiType === 'circle';
                                                                     var layerItem = {
                                                                         lng: point.lng,
                                                                         lat: point.lat,
-                                                                        size: that.getPoiExt(poiType, item.poiData, 'size', 20)
+                                                                        size: that.getPoiExt(poiType, item.poiData, isCircle ? 'radius' : 'length', 20)
                                                                     };
                                                                     ctx.beginPath();
                                                                     filterCtx(ctx, that.getPoiOption(poiType, item.poiData));
-                                                                    var isPie = poiType === 'Pie';
-                                                                    var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isPie);
-                                                                    if (isPie) {
-                                                                        ctx.ellipse(posRect.x, posRect.y, posRect.w, -posRect.h, 0, 0, 2 * Math.PI);
-                                                                        ctx.fill();
+                                                                    var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isCircle);
+                                                                    if (isCircle) {
+                                                                        ctx.arc(posRect.x, posRect.y, posRect.w, 0, 2 * Math.PI);
                                                                     } else {
-                                                                        ctx.fillRect(posRect.x, posRect.y, posRect.w, posRect.h);
+                                                                        ctx.rect(posRect.x, posRect.y, posRect.w, posRect.h);
                                                                     }
                                                                     ctx.closePath();
+                                                                    ctx.stroke();
+                                                                    ctx.fill();
                                                                     ctx.restore();
                                                                 });
                                                             });

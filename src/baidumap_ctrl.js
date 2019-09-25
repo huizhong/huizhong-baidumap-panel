@@ -115,11 +115,11 @@ function getDotRect(mp, lng, lat, squareSize = 20, isCenterPoint = true) {
 
 function getDefaultPolyOption() {
     return {
-        enableEditing: false,
-        enableClicking: true,
-        strokeWeight: 4,
-        strokeOpacity: 0.5,
+        strokeWeight: 3,
+        strokeOpacity: 0.6,
         strokeColor: 'blue',
+        fillColor: 'white',
+        fillOpacity: 0.4
     };
 }
 
@@ -142,11 +142,11 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         return this.getPoiOption(poiType, null);
     }
 
-    getPoiOption(poiType, poiConfig) {
+    getPoiOption(poiType, poiConfig, defaultValue = {}) {
         const configName = 'option';
         const typeOption = this.getPoiTypeExt(poiType, configName, {});
         const poiOption = this.getPoiExt(poiType, poiConfig, configName, {});
-        return Object.assign({}, typeOption, poiOption);
+        return Object.assign(defaultValue, typeOption, poiOption);
     }
 
     getPoiTypeExt(poiType, configName, defaultValue = '') {
@@ -453,6 +453,24 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             max: that.getPoiTypeExt(heatPoiType, 'max', 100)
                         });
                     }
+
+                    const pointTypeName = 'Point';
+                    if (shapeMap[pointTypeName]) {
+                        const pointArray = shapeMap[pointTypeName];
+                        const points = [];
+                        pointArray.forEach((v) => {
+                            v.points.forEach((point) => {
+                                point.x = 'x1';
+                                points.push(point);
+                                // that.addpoint(pointTypeName, point, BMap, v.poiData);
+                            });
+                        });
+                        const pointCollection = new BMap.PointCollection(points, that.getPoiTypeOption(pointTypeName));
+                        pointCollection.addEventListener('click', (e) => {
+                            alert('单击点的坐标为：' + e.point.lng + ',' + e.point.lat);  // 监听点击事件
+                        });
+                        that.map.addOverlay(pointCollection);
+                    }
                     const markerTypeName = 'Marker';
                     if (shapeMap[markerTypeName]) {
                         const markerArray = shapeMap[markerTypeName];
@@ -467,6 +485,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             });
                         }
                     }
+
                     ['RidingRoute', 'DrivingRoute', 'WalkingRoute'].forEach((poiType) => {
                         if (poiType in shapeMap) {
                             shapeMap[poiType].forEach((item) => {
@@ -483,19 +502,22 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             });
                         }
                     });
-                    ['Polyline', 'Polygon'].forEach((poiType) => {
+                    ['Polyline', 'Polygon', 'Circle'].forEach((poiType) => {
                         if (shapeMap[poiType]) {
                             shapeMap[poiType].forEach((item) => {
-                                const polyline = new BMap[poiType](item.points, Object.assign(
+                                const poiOption = Object.assign(
                                     getDefaultPolyOption(),
                                     that.getPoiOption(item.poiType, item.poiData)
-                                ));
+                                );
+                                const circleRadius = that.getPoiExt(item.poiType, item.poiData, 'radius', 20);
+                                const polyline = poiType === 'Circle' ? new BMap[poiType](item.points, circleRadius, poiOption)
+                                    : new BMap[poiType](item.points, poiOption);
                                 that.map.addOverlay(polyline);
                             });
                         }
                     });
                     const linePoiTypes = ['polyline', 'polygon'];
-                    const dotPoiTypes = ['Pie', 'Square'];
+                    const dotPoiTypes = ['circle', 'square'];
                     const canvasTypes = [...dotPoiTypes, ...linePoiTypes];
                     if (canvasTypes.some(canvasType => shapeMap[canvasType])) {
                         that.map.addOverlay(new BMap.CanvasLayer({
@@ -517,23 +539,24 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         shapeMap[poiType].forEach((item) => {
                                             item.points.forEach((point) => {
                                                 ctx.save();
+                                                const isCircle = poiType === 'circle';
                                                 const layerItem = {
                                                     lng: point.lng,
                                                     lat: point.lat,
-                                                    size: that.getPoiExt(poiType, item.poiData, 'size', 20),
+                                                    size: that.getPoiExt(poiType, item.poiData, isCircle ? 'radius' : 'length', 20),
                                                 };
                                                 ctx.beginPath();
                                                 filterCtx(ctx, that.getPoiOption(poiType, item.poiData));
-                                                const isPie = poiType === 'Pie';
                                                 const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
-                                                    parseFloat(layerItem.lat), layerItem.size, !isPie);
-                                                if (isPie) {
-                                                    ctx.ellipse(posRect.x, posRect.y, posRect.w, -posRect.h, 0, 0, 2 * Math.PI);
-                                                    ctx.fill();
+                                                    parseFloat(layerItem.lat), layerItem.size, !isCircle);
+                                                if (isCircle) {
+                                                    ctx.arc(posRect.x, posRect.y, posRect.w, 0, 2 * Math.PI);
                                                 } else {
-                                                    ctx.fillRect(posRect.x, posRect.y, posRect.w, posRect.h);
+                                                    ctx.rect(posRect.x, posRect.y, posRect.w, posRect.h);
                                                 }
                                                 ctx.closePath();
+                                                ctx.stroke();
+                                                ctx.fill();
                                                 ctx.restore();
                                             });
                                         });
