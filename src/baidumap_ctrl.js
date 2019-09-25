@@ -41,6 +41,9 @@ const panelDefaults = {
 
 
 function getColor(orginBili, alpha) {
+    if ((typeof orginBili) !== 'number') {
+        return orginBili;
+    }
     const bili = orginBili > 100 ? 100 : orginBili;
     // 百分之一 = (单色值范围) / 50;  单颜色的变化范围只在50%之内
     const one = (255 + 255) / 100;
@@ -69,6 +72,17 @@ function getColor(orginBili, alpha) {
     g = parseInt(g, 10);// 取整
     b = parseInt(b, 10);// 取整
     return 'rgb(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+}
+
+function filterCtx(ctx, styleOption) {
+    ['fillColor', 'strokeColor'].forEach((keyName) => {
+        if (styleOption[keyName]) {
+            const newColor = getColor(styleOption[keyName], 0.5);
+            delete styleOption[keyName];
+            styleOption[keyName.replace('Color', 'Style')] = newColor;
+        }
+    });
+    Object.assign(ctx, styleOption);
 }
 
 // 获取色块对应的矩形相对于地图的像素值
@@ -105,13 +119,13 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
     }
 
     getPoiTypeOption(poiType) {
-        return this.getPoiOption(poiType, null, {});
+        return this.getPoiOption(poiType, null);
     }
 
-    getPoiOption(poiType, poiConfig, defaultValue = '') {
+    getPoiOption(poiType, poiConfig) {
         const configName = 'option';
-        const typeOption = this.getPoiTypeExt(poiType, configName, defaultValue);
-        const poiOption = this.getPoiExt(poiType, poiConfig, configName, defaultValue);
+        const typeOption = this.getPoiTypeExt(poiType, configName, {});
+        const poiOption = this.getPoiExt(poiType, poiConfig, configName, {});
         return Object.assign({}, typeOption, poiOption);
     }
 
@@ -219,7 +233,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
 
     addMarker(poiType, point, BMap, data) {
         // public/plugins/grafana-baidumap-panel/images/bike.png
-        const markerOption = this.getPoiOption(poiType, data, {});
+        const markerOption = this.getPoiOption(poiType, data);
         const iconUrl = this.getPoiExt(poiType, data, 'icon', '');
         if (Number.isInteger(iconUrl)) {
             markerOption.icon = new BMap.Icon('http://api.map.baidu.com/img/markers.png', new BMap.Size(23, 25), {
@@ -460,13 +474,16 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         strokeOpacity: 0.5,
                                         strokeColor: 'blue',
                                     },
-                                    that.getPoiOption(item.poiType, item.poiData, {})
+                                    that.getPoiOption(item.poiType, item.poiData)
                                 ));
                                 that.map.addOverlay(polyline);
                             });
                         }
                     });
-                    if (shapeMap.pie || shapeMap.square) {
+                    const linePoiTypes = ['polyline', 'polygon'];
+                    const dotPoiTypes = ['Pie', 'Square'];
+                    const canvasTypes = [...dotPoiTypes, ...linePoiTypes];
+                    if (canvasTypes.some(canvasType => shapeMap[canvasType])) {
                         that.map.addOverlay(new BMap.CanvasLayer({
                             paneName: 'vertexPane',
                             zIndex: -1,
@@ -479,7 +496,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
                                 ctx.beginPath();
                                 ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                                ['pie', 'square'].forEach((poiType) => {
+                                ctx.closePath();
+                                dotPoiTypes.forEach((poiType) => {
                                     if (shapeMap[poiType]) {
                                         shapeMap[poiType].forEach((item) => {
                                             item.points.forEach((point) => {
@@ -489,19 +507,38 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                                     color: that.getPoiExt(poiType, item.poiData, 'color', 20),
                                                     size: that.getPoiExt(poiType, item.poiData, 'size', 20),
                                                 };
-                                                ctx.fillStyle = getColor(layerItem.color, that.getPoiExt(poiType, null, 'alpha', 0.5));
-                                                const isPie = poiType === 'pie';
+                                                ctx.beginPath();
+                                                filterCtx(ctx, that.getPoiOption(poiType, item.poiData));
+                                                const isPie = poiType === 'Pie';
                                                 const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
                                                     parseFloat(layerItem.lat), layerItem.size, !isPie);
-                                                // console.log(posRect);
                                                 if (isPie) {
                                                     ctx.ellipse(posRect.x, posRect.y, posRect.w, -posRect.h, 0, 0, 2 * Math.PI);
                                                     ctx.fill();
-                                                    ctx.beginPath();
                                                 } else {
                                                     ctx.fillRect(posRect.x, posRect.y, posRect.w, posRect.h);
                                                 }
+                                                ctx.closePath();
                                             });
+                                        });
+                                    }
+                                });
+                                linePoiTypes.forEach((linePoiType) => {
+                                    if (shapeMap[linePoiType]) {
+                                        shapeMap[linePoiType].forEach((item) => {
+                                            ctx.beginPath();
+                                            filterCtx(ctx, that.getPoiOption(linePoiType, item.poiData));
+                                            ctx.moveTo(that.mp.pointToPixel(item.points[0]));
+                                            for (let pointIndex = 1; pointIndex < item.points.length; pointIndex++) {
+                                                ctx.lineTo(that.mp.pointToPixel(item.points[pointIndex]));
+                                            }
+                                            if (linePoiType === 'polyline') {
+                                                ctx.stroke();
+                                            } else if (linePoiType === 'polygon') {
+                                                ctx.closePath();
+                                                ctx.stroke();
+                                                ctx.fill();
+                                            }
                                         });
                                     }
                                 });
