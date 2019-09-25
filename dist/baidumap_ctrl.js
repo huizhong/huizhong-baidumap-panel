@@ -595,9 +595,11 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                             shapeMap[linePoiType].forEach(function (item) {
                                                                 ctx.beginPath();
                                                                 filterCtx(ctx, that.getPoiOption(linePoiType, item.poiData));
-                                                                ctx.moveTo(that.map.pointToPixel(item.points[0]));
+                                                                var startPoint = that.map.pointToPixel(item.points[0]);
+                                                                ctx.moveTo(startPoint.x, startPoint.y);
                                                                 for (var pointIndex = 1; pointIndex < item.points.length; pointIndex++) {
-                                                                    ctx.lineTo(that.map.pointToPixel(item.points[pointIndex]));
+                                                                    var linePoint = that.map.pointToPixel(item.points[pointIndex]);
+                                                                    ctx.lineTo(linePoint.x, linePoint.y);
                                                                 }
                                                                 if (linePoiType === 'polyline') {
                                                                     ctx.stroke();

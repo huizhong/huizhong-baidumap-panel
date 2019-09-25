@@ -527,9 +527,11 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         shapeMap[linePoiType].forEach((item) => {
                                             ctx.beginPath();
                                             filterCtx(ctx, that.getPoiOption(linePoiType, item.poiData));
-                                            ctx.moveTo(that.map.pointToPixel(item.points[0]));
+                                            const startPoint = that.map.pointToPixel(item.points[0]);
+                                            ctx.moveTo(startPoint.x, startPoint.y);
                                             for (let pointIndex = 1; pointIndex < item.points.length; pointIndex++) {
-                                                ctx.lineTo(that.map.pointToPixel(item.points[pointIndex]));
+                                                const linePoint = that.map.pointToPixel(item.points[pointIndex]);
+                                                ctx.lineTo(linePoint.x, linePoint.y);
                                             }
                                             if (linePoiType === 'polyline') {
                                                 ctx.stroke();
