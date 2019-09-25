@@ -84,6 +84,7 @@ function filterCtx(ctx, styleOption) {
         ['strokeWeight', 'lineWidth'],
         ['fillColor', 'fillStyle'],
         ['strokeColor', 'strokeStyle'],
+        ['strokeOpacity', 'globalAlpha'],
     ].forEach((keyMap) => {
         const [sourceName, targetName] = keyMap;
         const keyValue = styleOption[sourceName];

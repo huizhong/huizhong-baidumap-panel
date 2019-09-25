@@ -75,7 +75,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 styleOption[keyName] = getColor(styleOption[keyName], 0.5);
             }
         });
-        [['strokeWeight', 'lineWidth'], ['fillColor', 'fillStyle'], ['strokeColor', 'strokeStyle']].forEach(function (keyMap) {
+        [['strokeWeight', 'lineWidth'], ['fillColor', 'fillStyle'], ['strokeColor', 'strokeStyle'], ['strokeOpacity', 'globalAlpha']].forEach(function (keyMap) {
             var _keyMap = _slicedToArray(keyMap, 2),
                 sourceName = _keyMap[0],
                 targetName = _keyMap[1];
