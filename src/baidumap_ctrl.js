@@ -504,7 +504,6 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                                 const layerItem = {
                                                     lng: point.lng,
                                                     lat: point.lat,
-                                                    color: that.getPoiExt(poiType, item.poiData, 'color', 20),
                                                     size: that.getPoiExt(poiType, item.poiData, 'size', 20),
                                                 };
                                                 ctx.beginPath();
@@ -528,9 +527,9 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         shapeMap[linePoiType].forEach((item) => {
                                             ctx.beginPath();
                                             filterCtx(ctx, that.getPoiOption(linePoiType, item.poiData));
-                                            ctx.moveTo(that.mp.pointToPixel(item.points[0]));
+                                            ctx.moveTo(that.map.pointToPixel(item.points[0]));
                                             for (let pointIndex = 1; pointIndex < item.points.length; pointIndex++) {
-                                                ctx.lineTo(that.mp.pointToPixel(item.points[pointIndex]));
+                                                ctx.lineTo(that.map.pointToPixel(item.points[pointIndex]));
                                             }
                                             if (linePoiType === 'polyline') {
                                                 ctx.stroke();
