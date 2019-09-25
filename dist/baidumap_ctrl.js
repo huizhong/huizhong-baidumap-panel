@@ -469,19 +469,23 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         console.log('shapeMap', shapeMap);
                                         var heatPoiType = 'heat';
                                         if (shapeMap[heatPoiType]) {
-                                            var heatShapeList = shapeMap.heat;
+                                            var heatShapeList = shapeMap[heatPoiType];
                                             var heatmapOverlay = new BMapLib.HeatmapOverlay(Object.assign({
                                                 radius: 20
                                             }, that.getPoiTypeOption('heat')));
                                             that.map.addOverlay(heatmapOverlay);
-                                            heatmapOverlay.setDataSet({
-                                                data: heatShapeList.map(function (v) {
-                                                    return {
-                                                        lng: v.points[0].lng,
-                                                        lat: v.points[0].lat,
+                                            var dataList = [];
+                                            heatShapeList.forEach(function (v) {
+                                                v.points.forEach(function (point) {
+                                                    dataList.push({
+                                                        lng: point.lng,
+                                                        lat: point.lat,
                                                         count: that.getPoiExt(heatPoiType, v.poiData, 'count', 1)
-                                                    };
-                                                }),
+                                                    });
+                                                });
+                                            });
+                                            heatmapOverlay.setDataSet({
+                                                data: dataList,
                                                 max: that.getPoiTypeExt(heatPoiType, 'max', 100)
                                             });
                                         }
@@ -489,7 +493,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         if (shapeMap[markerTypeName]) {
                                             var markerArray = shapeMap[markerTypeName];
                                             markerArray.forEach(function (v) {
-                                                return that.addMarker(markerTypeName, v.points[0], BMap, v.poiData);
+                                                v.points.forEach(function (point) {
+                                                    that.addMarker(markerTypeName, point, BMap, v.poiData);
+                                                });
                                             });
                                             if (that.panel.clusterPoint) {
                                                 new BMapLib.MarkerClusterer(that.map, {
@@ -503,17 +509,18 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     var points = item.points.map(function (v) {
                                                         return new BMap.Point(v.lng, v.lat);
                                                     });
-                                                    var driving = new BMap[poiType](that.map, {
-                                                        renderOptions: {
-                                                            map: that.map,
-                                                            autoViewport: false
-                                                        }
-                                                    });
-                                                    driving.search(points[0], points.slice(-1)[0]);
+                                                    for (var pointIndex = 0; pointIndex < points.length - 1; pointIndex++) {
+                                                        var driving = new BMap[poiType](that.map, {
+                                                            renderOptions: {
+                                                                map: that.map,
+                                                                autoViewport: false
+                                                            }
+                                                        });
+                                                        driving.search(points[pointIndex], points[pointIndex + 1]);
+                                                    }
                                                 });
                                             }
                                         });
-
                                         ['Polyline', 'Polygon'].forEach(function (poiType) {
                                             if (shapeMap[poiType]) {
                                                 shapeMap[poiType].forEach(function (item) {
@@ -544,23 +551,25 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     ['pie', 'square'].forEach(function (poiType) {
                                                         if (shapeMap[poiType]) {
                                                             shapeMap[poiType].forEach(function (item) {
-                                                                var layerItem = {
-                                                                    lng: item.points[0].lng,
-                                                                    lat: item.points[0].lat,
-                                                                    color: that.getPoiExt(poiType, item.poiData, 'color', 20),
-                                                                    size: that.getPoiExt(poiType, item.poiData, 'size', 20)
-                                                                };
-                                                                ctx.fillStyle = getColor(layerItem.color, that.getPoiExt(poiType, null, 'alpha', 0.5));
-                                                                var isPie = poiType === 'pie';
-                                                                var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isPie);
-                                                                // console.log(posRect);
-                                                                if (isPie) {
-                                                                    ctx.ellipse(posRect.x, posRect.y, posRect.w, -posRect.h, 0, 0, 2 * Math.PI);
-                                                                    ctx.fill();
-                                                                    ctx.beginPath();
-                                                                } else {
-                                                                    ctx.fillRect(posRect.x, posRect.y, posRect.w, posRect.h);
-                                                                }
+                                                                item.points.forEach(function (point) {
+                                                                    var layerItem = {
+                                                                        lng: point.lng,
+                                                                        lat: point.lat,
+                                                                        color: that.getPoiExt(poiType, item.poiData, 'color', 20),
+                                                                        size: that.getPoiExt(poiType, item.poiData, 'size', 20)
+                                                                    };
+                                                                    ctx.fillStyle = getColor(layerItem.color, that.getPoiExt(poiType, null, 'alpha', 0.5));
+                                                                    var isPie = poiType === 'pie';
+                                                                    var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isPie);
+                                                                    // console.log(posRect);
+                                                                    if (isPie) {
+                                                                        ctx.ellipse(posRect.x, posRect.y, posRect.w, -posRect.h, 0, 0, 2 * Math.PI);
+                                                                        ctx.fill();
+                                                                        ctx.beginPath();
+                                                                    } else {
+                                                                        ctx.fillRect(posRect.x, posRect.y, posRect.w, posRect.h);
+                                                                    }
+                                                                });
                                                             });
                                                         }
                                                     });

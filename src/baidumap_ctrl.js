@@ -395,7 +395,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     console.log('shapeMap', shapeMap);
                     const heatPoiType = 'heat';
                     if (shapeMap[heatPoiType]) {
-                        const heatShapeList = shapeMap.heat;
+                        const heatShapeList = shapeMap[heatPoiType];
                         const heatmapOverlay = new BMapLib.HeatmapOverlay(
                             Object.assign(
                                 {
@@ -404,19 +404,29 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 that.getPoiTypeOption('heat')
                             ));
                         that.map.addOverlay(heatmapOverlay);
+                        const dataList = [];
+                        heatShapeList.forEach((v) => {
+                            v.points.forEach((point) => {
+                                dataList.push(({
+                                    lng: point.lng,
+                                    lat: point.lat,
+                                    count: that.getPoiExt(heatPoiType, v.poiData, 'count', 1)
+                                }));
+                            });
+                        });
                         heatmapOverlay.setDataSet({
-                            data: heatShapeList.map(v => ({
-                                lng: v.points[0].lng,
-                                lat: v.points[0].lat,
-                                count: that.getPoiExt(heatPoiType, v.poiData, 'count', 1)
-                            })),
+                            data: dataList,
                             max: that.getPoiTypeExt(heatPoiType, 'max', 100)
                         });
                     }
                     const markerTypeName = 'Marker';
                     if (shapeMap[markerTypeName]) {
                         const markerArray = shapeMap[markerTypeName];
-                        markerArray.forEach(v => that.addMarker(markerTypeName, v.points[0], BMap, v.poiData));
+                        markerArray.forEach((v) => {
+                            v.points.forEach((point) => {
+                                that.addMarker(markerTypeName, point, BMap, v.poiData);
+                            });
+                        });
                         if (that.panel.clusterPoint) {
                             new BMapLib.MarkerClusterer(that.map, {
                                 markers: that.markers
@@ -427,18 +437,18 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         if (poiType in shapeMap) {
                             shapeMap[poiType].forEach((item) => {
                                 const points = item.points.map(v => new BMap.Point(v.lng, v.lat));
-                                const driving = new BMap[poiType](that.map, {
-                                    renderOptions: {
-                                        map: that.map,
-                                        autoViewport: false
-                                    }
-                                });
-                                driving.search(points[0], points.slice(-1)[0]);
+                                for (let pointIndex = 0; pointIndex < points.length - 1; pointIndex++) {
+                                    const driving = new BMap[poiType](that.map, {
+                                        renderOptions: {
+                                            map: that.map,
+                                            autoViewport: false
+                                        }
+                                    });
+                                    driving.search(points[pointIndex], points[pointIndex + 1]);
+                                }
                             });
                         }
                     });
-
-
                     ['Polyline', 'Polygon'].forEach((poiType) => {
                         if (shapeMap[poiType]) {
                             shapeMap[poiType].forEach((item) => {
@@ -472,24 +482,26 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 ['pie', 'square'].forEach((poiType) => {
                                     if (shapeMap[poiType]) {
                                         shapeMap[poiType].forEach((item) => {
-                                            const layerItem = {
-                                                lng: item.points[0].lng,
-                                                lat: item.points[0].lat,
-                                                color: that.getPoiExt(poiType, item.poiData, 'color', 20),
-                                                size: that.getPoiExt(poiType, item.poiData, 'size', 20),
-                                            };
-                                            ctx.fillStyle = getColor(layerItem.color, that.getPoiExt(poiType, null, 'alpha', 0.5));
-                                            const isPie = poiType === 'pie';
-                                            const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
-                                                parseFloat(layerItem.lat), layerItem.size, !isPie);
-                                            // console.log(posRect);
-                                            if (isPie) {
-                                                ctx.ellipse(posRect.x, posRect.y, posRect.w, -posRect.h, 0, 0, 2 * Math.PI);
-                                                ctx.fill();
-                                                ctx.beginPath();
-                                            } else {
-                                                ctx.fillRect(posRect.x, posRect.y, posRect.w, posRect.h);
-                                            }
+                                            item.points.forEach((point) => {
+                                                const layerItem = {
+                                                    lng: point.lng,
+                                                    lat: point.lat,
+                                                    color: that.getPoiExt(poiType, item.poiData, 'color', 20),
+                                                    size: that.getPoiExt(poiType, item.poiData, 'size', 20),
+                                                };
+                                                ctx.fillStyle = getColor(layerItem.color, that.getPoiExt(poiType, null, 'alpha', 0.5));
+                                                const isPie = poiType === 'pie';
+                                                const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
+                                                    parseFloat(layerItem.lat), layerItem.size, !isPie);
+                                                // console.log(posRect);
+                                                if (isPie) {
+                                                    ctx.ellipse(posRect.x, posRect.y, posRect.w, -posRect.h, 0, 0, 2 * Math.PI);
+                                                    ctx.fill();
+                                                    ctx.beginPath();
+                                                } else {
+                                                    ctx.fillRect(posRect.x, posRect.y, posRect.w, posRect.h);
+                                                }
+                                            });
                                         });
                                     }
                                 });
