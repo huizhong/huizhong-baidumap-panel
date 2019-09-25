@@ -3,7 +3,7 @@
 System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn', 'lodash', './map_renderer', './data_formatter', './geohash'], function (_export, _context) {
     "use strict";
 
-    var MetricsPanelCtrl, TimeSeries, kbn, _, mapRenderer, DataFormatter, decodeGeoHash, _slicedToArray, _typeof, _createClass, panelDefaults, BaidumapCtrl;
+    var MetricsPanelCtrl, TimeSeries, kbn, _, mapRenderer, DataFormatter, decodeGeoHash, _typeof, _createClass, _slicedToArray, panelDefaults, BaidumapCtrl;
 
     function _classCallCheck(instance, Constructor) {
         if (!(instance instanceof Constructor)) {
@@ -72,10 +72,17 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
     function filterCtx(ctx, styleOption) {
         ['fillColor', 'strokeColor'].forEach(function (keyName) {
             if (styleOption[keyName]) {
-                var newColor = getColor(styleOption[keyName], 0.5);
-                delete styleOption[keyName];
-                styleOption[keyName.replace('Color', 'Style')] = newColor;
+                styleOption[keyName] = getColor(styleOption[keyName], 0.5);
             }
+        });
+        [['strokeWeight', 'lineWidth'], ['fillColor', 'fillStyle'], ['strokeColor', 'strokeStyle']].forEach(function (keyMap) {
+            var _keyMap = _slicedToArray(keyMap, 2),
+                sourceName = _keyMap[0],
+                targetName = _keyMap[1];
+
+            var keyValue = styleOption[sourceName];
+            delete styleOption[sourceName];
+            styleOption[targetName] = keyValue;
         });
         Object.assign(ctx, styleOption);
     }
@@ -117,6 +124,30 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
             decodeGeoHash = _geohash.default;
         }],
         execute: function () {
+            _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+                return typeof obj;
+            } : function (obj) {
+                return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+            };
+
+            _createClass = function () {
+                function defineProperties(target, props) {
+                    for (var i = 0; i < props.length; i++) {
+                        var descriptor = props[i];
+                        descriptor.enumerable = descriptor.enumerable || false;
+                        descriptor.configurable = true;
+                        if ("value" in descriptor) descriptor.writable = true;
+                        Object.defineProperty(target, descriptor.key, descriptor);
+                    }
+                }
+
+                return function (Constructor, protoProps, staticProps) {
+                    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+                    if (staticProps) defineProperties(Constructor, staticProps);
+                    return Constructor;
+                };
+            }();
+
             _slicedToArray = function () {
                 function sliceIterator(arr, i) {
                     var _arr = [];
@@ -152,30 +183,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                     } else {
                         throw new TypeError("Invalid attempt to destructure non-iterable instance");
                     }
-                };
-            }();
-
-            _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-                return typeof obj;
-            } : function (obj) {
-                return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-            };
-
-            _createClass = function () {
-                function defineProperties(target, props) {
-                    for (var i = 0; i < props.length; i++) {
-                        var descriptor = props[i];
-                        descriptor.enumerable = descriptor.enumerable || false;
-                        descriptor.configurable = true;
-                        if ("value" in descriptor) descriptor.writable = true;
-                        Object.defineProperty(target, descriptor.key, descriptor);
-                    }
-                }
-
-                return function (Constructor, protoProps, staticProps) {
-                    if (protoProps) defineProperties(Constructor.prototype, protoProps);
-                    if (staticProps) defineProperties(Constructor, staticProps);
-                    return Constructor;
                 };
             }();
 

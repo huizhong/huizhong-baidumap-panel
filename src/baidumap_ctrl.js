@@ -77,10 +77,18 @@ function getColor(orginBili, alpha) {
 function filterCtx(ctx, styleOption) {
     ['fillColor', 'strokeColor'].forEach((keyName) => {
         if (styleOption[keyName]) {
-            const newColor = getColor(styleOption[keyName], 0.5);
-            delete styleOption[keyName];
-            styleOption[keyName.replace('Color', 'Style')] = newColor;
+            styleOption[keyName] = getColor(styleOption[keyName], 0.5);
         }
+    });
+    [
+        ['strokeWeight', 'lineWidth'],
+        ['fillColor', 'fillStyle'],
+        ['strokeColor', 'strokeStyle'],
+    ].forEach((keyMap) => {
+        const [sourceName, targetName] = keyMap;
+        const keyValue = styleOption[sourceName];
+        delete styleOption[sourceName];
+        styleOption[targetName] = keyValue;
     });
     Object.assign(ctx, styleOption);
 }
