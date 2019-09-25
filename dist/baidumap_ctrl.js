@@ -575,8 +575,13 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 shapeMap[poiType].forEach(function (item) {
                                                     var poiOption = Object.assign(getDefaultPolyOption(), that.getPoiOption(item.poiType, item.poiData));
                                                     var circleRadius = that.getPoiExt(item.poiType, item.poiData, 'radius', 20);
-                                                    var polyline = poiType === 'Circle' ? new BMap[poiType](item.points, circleRadius, poiOption) : new BMap[poiType](item.points, poiOption);
-                                                    that.map.addOverlay(polyline);
+                                                    if (poiType === 'Circle') {
+                                                        item.points.forEach(function (point) {
+                                                            that.map.addOverlay(new BMap[poiType](point, circleRadius, poiOption));
+                                                        });
+                                                    } else {
+                                                        that.map.addOverlay(new BMap[poiType](item.points, poiOption));
+                                                    }
                                                 });
                                             }
                                         });

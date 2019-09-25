@@ -510,9 +510,13 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                     that.getPoiOption(item.poiType, item.poiData)
                                 );
                                 const circleRadius = that.getPoiExt(item.poiType, item.poiData, 'radius', 20);
-                                const polyline = poiType === 'Circle' ? new BMap[poiType](item.points, circleRadius, poiOption)
-                                    : new BMap[poiType](item.points, poiOption);
-                                that.map.addOverlay(polyline);
+                                if (poiType === 'Circle') {
+                                    item.points.forEach((point) => {
+                                        that.map.addOverlay(new BMap[poiType](point, circleRadius, poiOption));
+                                    });
+                                } else {
+                                    that.map.addOverlay(new BMap[poiType](item.points, poiOption));
+                                }
                             });
                         }
                     });
