@@ -69,7 +69,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
         return 'rgb(' + r + ',' + g + ',' + b + ',' + alpha + ')';
     }
 
-    function filterCtx(ctx, styleOption) {
+    function filterCtx(ctx, originOption) {
+        var styleOption = Object.assign(getDefaultPolyOption(), originOption);
         ['fillColor', 'strokeColor'].forEach(function (keyName) {
             if (styleOption[keyName]) {
                 styleOption[keyName] = getColor(styleOption[keyName], 0.5);
@@ -104,6 +105,16 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
             y: pixel.y,
             w: pixel2.x - pixel.x,
             h: pixel2.y - pixel.y
+        };
+    }
+
+    function getDefaultPolyOption() {
+        return {
+            enableEditing: false,
+            enableClicking: true,
+            strokeWeight: 4,
+            strokeOpacity: 0.5,
+            strokeColor: 'blue'
         };
     }
 
@@ -525,9 +536,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         ['RidingRoute', 'DrivingRoute', 'WalkingRoute'].forEach(function (poiType) {
                                             if (poiType in shapeMap) {
                                                 shapeMap[poiType].forEach(function (item) {
-                                                    var points = item.points.map(function (v) {
-                                                        return new BMap.Point(v.lng, v.lat);
-                                                    });
+                                                    var points = item.points;
                                                     for (var pointIndex = 0; pointIndex < points.length - 1; pointIndex++) {
                                                         var driving = new BMap[poiType](that.map, {
                                                             renderOptions: {
@@ -543,13 +552,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         ['Polyline', 'Polygon'].forEach(function (poiType) {
                                             if (shapeMap[poiType]) {
                                                 shapeMap[poiType].forEach(function (item) {
-                                                    var polyline = new BMap[poiType](item.points, Object.assign({
-                                                        enableEditing: false,
-                                                        enableClicking: true,
-                                                        strokeWeight: 4,
-                                                        strokeOpacity: 0.5,
-                                                        strokeColor: 'blue'
-                                                    }, that.getPoiOption(item.poiType, item.poiData)));
+                                                    var polyline = new BMap[poiType](item.points, Object.assign(getDefaultPolyOption(), that.getPoiOption(item.poiType, item.poiData)));
                                                     that.map.addOverlay(polyline);
                                                 });
                                             }
@@ -568,6 +571,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     if (!ctx) {
                                                         return;
                                                     }
+                                                    ctx.save();
                                                     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                                                     ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
                                                     ctx.beginPath();
@@ -577,6 +581,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                         if (shapeMap[poiType]) {
                                                             shapeMap[poiType].forEach(function (item) {
                                                                 item.points.forEach(function (point) {
+                                                                    ctx.save();
                                                                     var layerItem = {
                                                                         lng: point.lng,
                                                                         lat: point.lat,
@@ -593,6 +598,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                                         ctx.fillRect(posRect.x, posRect.y, posRect.w, posRect.h);
                                                                     }
                                                                     ctx.closePath();
+                                                                    ctx.restore();
                                                                 });
                                                             });
                                                         }
@@ -600,6 +606,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     linePoiTypes.forEach(function (linePoiType) {
                                                         if (shapeMap[linePoiType]) {
                                                             shapeMap[linePoiType].forEach(function (item) {
+                                                                ctx.save();
                                                                 ctx.beginPath();
                                                                 var poiOption = that.getPoiOption(linePoiType, item.poiData);
                                                                 filterCtx(ctx, poiOption);
@@ -619,9 +626,11 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                                     }
                                                                     ctx.fill();
                                                                 }
+                                                                ctx.restore();
                                                             });
                                                         }
                                                     });
+                                                    ctx.restore();
                                                 }
                                             }));
                                         }

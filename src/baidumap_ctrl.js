@@ -74,7 +74,8 @@ function getColor(orginBili, alpha) {
     return 'rgb(' + r + ',' + g + ',' + b + ',' + alpha + ')';
 }
 
-function filterCtx(ctx, styleOption) {
+function filterCtx(ctx, originOption) {
+    const styleOption = Object.assign(getDefaultPolyOption(), originOption);
     ['fillColor', 'strokeColor'].forEach((keyName) => {
         if (styleOption[keyName]) {
             styleOption[keyName] = getColor(styleOption[keyName], 0.5);
@@ -111,6 +112,16 @@ function getDotRect(mp, lng, lat, squareSize = 20, isCenterPoint = true) {
     };
 }
 
+
+function getDefaultPolyOption() {
+    return {
+        enableEditing: false,
+        enableClicking: true,
+        strokeWeight: 4,
+        strokeOpacity: 0.5,
+        strokeColor: 'blue',
+    };
+}
 
 export default class BaidumapCtrl extends MetricsPanelCtrl {
     constructor($scope, $injector, contextSrv) {
@@ -459,7 +470,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     ['RidingRoute', 'DrivingRoute', 'WalkingRoute'].forEach((poiType) => {
                         if (poiType in shapeMap) {
                             shapeMap[poiType].forEach((item) => {
-                                const points = item.points.map(v => new BMap.Point(v.lng, v.lat));
+                                const points = item.points;
                                 for (let pointIndex = 0; pointIndex < points.length - 1; pointIndex++) {
                                     const driving = new BMap[poiType](that.map, {
                                         renderOptions: {
@@ -476,13 +487,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         if (shapeMap[poiType]) {
                             shapeMap[poiType].forEach((item) => {
                                 const polyline = new BMap[poiType](item.points, Object.assign(
-                                    {
-                                        enableEditing: false,
-                                        enableClicking: true,
-                                        strokeWeight: 4,
-                                        strokeOpacity: 0.5,
-                                        strokeColor: 'blue',
-                                    },
+                                    getDefaultPolyOption(),
                                     that.getPoiOption(item.poiType, item.poiData)
                                 ));
                                 that.map.addOverlay(polyline);
@@ -501,6 +506,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 if (!ctx) {
                                     return;
                                 }
+                                ctx.save();
                                 ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                                 ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
                                 ctx.beginPath();
@@ -510,6 +516,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                     if (shapeMap[poiType]) {
                                         shapeMap[poiType].forEach((item) => {
                                             item.points.forEach((point) => {
+                                                ctx.save();
                                                 const layerItem = {
                                                     lng: point.lng,
                                                     lat: point.lat,
@@ -527,6 +534,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                                     ctx.fillRect(posRect.x, posRect.y, posRect.w, posRect.h);
                                                 }
                                                 ctx.closePath();
+                                                ctx.restore();
                                             });
                                         });
                                     }
@@ -534,6 +542,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 linePoiTypes.forEach((linePoiType) => {
                                     if (shapeMap[linePoiType]) {
                                         shapeMap[linePoiType].forEach((item) => {
+                                            ctx.save();
                                             ctx.beginPath();
                                             const poiOption = that.getPoiOption(linePoiType, item.poiData);
                                             filterCtx(ctx, poiOption);
@@ -553,9 +562,11 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                                 }
                                                 ctx.fill();
                                             }
+                                            ctx.restore();
                                         });
                                     }
                                 });
+                                ctx.restore();
                             }
                         }));
                     }
