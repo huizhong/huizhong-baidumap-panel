@@ -25,6 +25,8 @@
       label="导航" label-class="width-10"
       checked="ctrl.panel.navigation" on-change="ctrl.navigationControl()">
     </gf-form-switch>
+		<gf-form-switch class="gf-form" label="底图可点击" label-class="width-10" checked="ctrl.panel.enableMapClick" on-change="ctrl.refresh()">
+		</gf-form-switch>
 		<gf-form-switch class="gf-form" label="比例尺" label-class="width-10" checked="ctrl.panel.scale" on-change="ctrl.scaleControl()">
 		</gf-form-switch>
 		<gf-form-switch class="gf-form" label="缩略图" label-class="width-10" checked="ctrl.panel.overviewMap" on-change="ctrl.overviewMapControl()">
@@ -106,7 +108,11 @@
 		</div>
 		<div class="gf-form">
 			<label class="gf-form-label width-12">配置字段名称</label>
-			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.extName" ng-change="ctrl.refresh()" ng-model-onblur />
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.configName" ng-change="ctrl.refresh()" ng-model-onblur />
+		</div>
+		<div class="gf-form">
+			<label class="gf-form-label width-12">内容字段名称</label>
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.contentName" ng-change="ctrl.refresh()" ng-model-onblur />
 		</div>
 	</div>
 	<div class="section gf-form-group">

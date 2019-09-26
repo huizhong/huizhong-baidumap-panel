@@ -36,7 +36,9 @@ const panelDefaults = {
     latName: 'latitude',
     posName: 'pos',
     geohashName: 'geohash',
-    extName: 'config'
+    configName: 'config',
+    contentName: 'content',
+    enableMapClick: false
 };
 
 
@@ -144,30 +146,38 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
 
     getPoiOption(poiType, poiConfig, defaultValue = {}) {
         const configName = 'option';
-        const typeOption = this.getPoiTypeExt(poiType, configName, {});
-        const poiOption = this.getPoiExt(poiType, poiConfig, configName, {});
+        const typeOption = this.getPoiTypeConfig(poiType, configName, {});
+        const poiOption = this.getPoiConfig(poiType, poiConfig, configName, {});
         return Object.assign(defaultValue, typeOption, poiOption);
     }
 
-    getPoiTypeExt(poiType, configName, defaultValue = '') {
-        return this.getPoiExt(poiType, null, configName, defaultValue);
+    getPoiTypeConfig(poiType, configName, defaultValue = '') {
+        return this.getPoiConfig(poiType, null, configName, defaultValue);
     }
 
-    getPoiExt(poiType, poiConfig, configName, defaultValue = '') {
+    getPoiContent(poiType, poiItem, defaultValue = '') {
+        const contentName = this.panel.contentName;
+        if (poiItem && contentName in poiItem && poiItem[contentName].length > 0) {
+            return poiItem[contentName];
+        }
+        return this.getPoiConfig(poiType, poiItem, contentName, defaultValue);
+    }
+
+    getPoiConfig(poiType, poiItem, configKey, defaultValue = '') {
         if (!poiType) {
             return defaultValue;
         }
-        const extName = this.panel.extName;
-        if (poiConfig && extName in poiConfig && poiConfig[extName].length > 0) {
-            const extJson = JSON.parse(poiConfig[extName]);
-            if (configName in extJson) {
-                return extJson[configName];
+        const configName = this.panel.configName;
+        if (poiItem && configName in poiItem && poiItem[configName].length > 0) {
+            const extJson = JSON.parse(poiItem[configName]);
+            if (configKey in extJson) {
+                return extJson[configKey];
             }
         }
         if (this.panel.globalConfig && this.panel.globalConfig.length > 0) {
             const globalConfig = JSON.parse(this.panel.globalConfig);
-            if (poiType in globalConfig && configName in globalConfig[poiType]) {
-                return globalConfig[poiType][configName];
+            if (poiType in globalConfig && configKey in globalConfig[poiType]) {
+                return globalConfig[poiType][configKey];
             }
         }
         return defaultValue;
@@ -253,24 +263,27 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         }
     }
 
-    getPoiInfoWindowHandler(poiType, point, poiData, defaultContent = '') {
+    getPoiInfoWindowHandler(poiType, point, poiItem, defaultContent = '') {
         const that = this;
-        return () => {
-            const infoWindow = new BMap.InfoWindow(that.getPoiExt(poiType, poiData, 'content', defaultContent),
-                that.getPoiOption(poiType, poiData, {
-                    'title': that.getPoiExt(poiType, poiData, 'title', point.lng + '|' + point.lat)
+        return (e) => {
+            let clickPoint = point;
+            if (!clickPoint) {
+                clickPoint = e.point;
+            }
+            const infoWindow = new BMap.InfoWindow(that.getPoiContent(poiType, poiItem, defaultContent),
+                that.getPoiOption(poiType, poiItem, {
+                    'title': that.getPoiConfig(poiType, poiItem, 'title', clickPoint.lng + '|' + clickPoint.lat)
                 })
             ); // 创建信息窗口对象
-            that.map.openInfoWindow(infoWindow, point);
+            that.map.openInfoWindow(infoWindow, clickPoint);
         };
     }
 
     addMarker(poiType, point, BMap, data) {
-        const that = this;
 
         // public/plugins/grafana-baidumap-panel/images/bike.png
         const markerOption = this.getPoiOption(poiType, data);
-        const iconUrl = this.getPoiExt(poiType, data, 'icon', '');
+        const iconUrl = this.getPoiConfig(poiType, data, 'icon', '');
         if (Number.isInteger(iconUrl)) {
             markerOption.icon = new BMap.Icon('http://api.map.baidu.com/img/markers.png', new BMap.Size(23, 25), {
                 offset: new BMap.Size(10, 25), // 指定定位位置
@@ -283,7 +296,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
             });
         }
         const marker = new BMap.Marker(point, markerOption);
-        const pointLabel = this.getPoiExt(poiType, data, 'label', '');
+        const pointLabel = this.getPoiConfig(poiType, data, 'label', '');
         if (pointLabel.length > 0) {
             const label = new BMap.Label(pointLabel, {offset: new BMap.Size(20, -10)});
             marker.setLabel(label);
@@ -291,13 +304,13 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         this.markers.push(marker);
 
         // this.map.setViewport(pointArray);
-        if (this.getPoiExt(poiType, data, 'enableDragging', false)) {
+        if (this.getPoiConfig(poiType, data, 'enableDragging', false)) {
             marker.enableDragging();
         }
-        marker.addEventListener('click', this.getInfoWindowHandler(poiType, point, data));
+        marker.addEventListener('click', this.getPoiInfoWindowHandler(poiType, point, data));
 
         this.map.addOverlay(marker);
-        if (this.getPoiExt(poiType, data, 'animation', false)) {
+        if (this.getPoiConfig(poiType, data, 'animation', false)) {
             marker.setAnimation(BMAP_ANIMATION_BOUNCE); // 跳动的动画
         }
         marker.addEventListener('dragend', function (e) {
@@ -445,13 +458,13 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 dataList.push(({
                                     lng: point.lng,
                                     lat: point.lat,
-                                    count: that.getPoiExt(heatPoiType, v.poiData, 'count', 1)
+                                    count: that.getPoiConfig(heatPoiType, v.poiData, 'count', 1)
                                 }));
                             });
                         });
                         heatmapOverlay.setDataSet({
                             data: dataList,
-                            max: that.getPoiTypeExt(heatPoiType, 'max', 100)
+                            max: that.getPoiTypeConfig(heatPoiType, 'max', 100)
                         });
                     }
 
@@ -469,7 +482,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         pointCollection.addEventListener('click', (e) => {
                             const poiData = e.point.poiData;
                             delete e.point[poiData];
-                            that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)();
+                            that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)(e);
                         });
                         that.map.addOverlay(pointCollection);
                     }
@@ -478,14 +491,15 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         const labelArray = shapeMap[labelTypeName];
                         labelArray.forEach((v) => {
                             v.points.forEach((point) => {
-                                const labelText = that.getPoiExt(labelTypeName, v.poiData, 'text', '');
+                                const labelText = that.getPoiConfig(labelTypeName, v.poiData, 'text', '');
                                 const labelItem = new BMap.Label(labelText, {
                                     position: point,
-                                    enableMassClear: that.getPoiExt(labelTypeName, v.poiData, 'enableMassClear', true)
+                                    enableMassClear: that.getPoiConfig(labelTypeName, v.poiData, 'enableMassClear', true)
                                 });
                                 that.map.addOverlay(labelItem);
-                                labelItem.setStyle(that.getPoiExt(labelTypeName, v.poiData, 'style', {}));
-                                labelItem.setTitle(that.getPoiExt(labelTypeName, v.poiData, 'title', ''));
+                                labelItem.setStyle(that.getPoiConfig(labelTypeName, v.poiData, 'style', {}));
+                                labelItem.setTitle(that.getPoiConfig(labelTypeName, v.poiData, 'title', ''));
+                                labelItem.addEventListener('click', that.getPoiInfoWindowHandler(labelTypeName, point, v.poiData));
                                 // that.addlabel(labelTypeName, label, BMap, v.poiData);
                             });
                         });
@@ -528,13 +542,17 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                     getDefaultPolyOption(),
                                     that.getPoiOption(item.poiType, item.poiData)
                                 );
-                                const circleRadius = that.getPoiExt(item.poiType, item.poiData, 'radius', 20);
+                                const circleRadius = that.getPoiConfig(item.poiType, item.poiData, 'radius', 20);
                                 if (poiType === 'Circle') {
                                     item.points.forEach((point) => {
-                                        that.map.addOverlay(new BMap[poiType](point, circleRadius, poiOption));
+                                        const shape = new BMap[poiType](point, circleRadius, poiOption);
+                                        shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, point, item.poiData));
+                                        that.map.addOverlay(shape);
                                     });
                                 } else {
-                                    that.map.addOverlay(new BMap[poiType](item.points, poiOption));
+                                    const shape = new BMap[poiType](item.points, poiOption);
+                                    shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, null, item.poiData));
+                                    that.map.addOverlay(shape);
                                 }
                             });
                         }
@@ -568,7 +586,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                                 const layerItem = {
                                                     lng: point.lng,
                                                     lat: point.lat,
-                                                    size: that.getPoiExt(poiType, item.poiData, isCircle ? 'radius' : 'length', 20),
+                                                    size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' : 'length', 20),
                                                 };
                                                 ctx.beginPath();
                                                 filterCtx(ctx, that.getPoiOption(poiType, item.poiData));
@@ -619,7 +637,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         shapeMap[labelPoiType].forEach((item) => {
                                             ctx.save();
                                             ctx.beginPath();
-                                            const labelText = that.getPoiExt(labelPoiType, item.poiData, 'text');
+                                            const labelText = that.getPoiConfig(labelPoiType, item.poiData, 'text');
                                             const poiOption = that.getPoiOption(labelPoiType, item.poiData);
                                             filterCtx(ctx, poiOption, false);
                                             for (let pointIndex = 0; pointIndex < item.points.length; pointIndex++) {

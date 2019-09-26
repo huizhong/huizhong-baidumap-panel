@@ -225,7 +225,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 latName: 'latitude',
                 posName: 'pos',
                 geohashName: 'geohash',
-                extName: 'config'
+                configName: 'config',
+                contentName: 'content',
+                enableMapClick: false
             };
 
             BaidumapCtrl = function (_MetricsPanelCtrl) {
@@ -260,36 +262,47 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         var defaultValue = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
                         var configName = 'option';
-                        var typeOption = this.getPoiTypeExt(poiType, configName, {});
-                        var poiOption = this.getPoiExt(poiType, poiConfig, configName, {});
+                        var typeOption = this.getPoiTypeConfig(poiType, configName, {});
+                        var poiOption = this.getPoiConfig(poiType, poiConfig, configName, {});
                         return Object.assign(defaultValue, typeOption, poiOption);
                     }
                 }, {
-                    key: 'getPoiTypeExt',
-                    value: function getPoiTypeExt(poiType, configName) {
+                    key: 'getPoiTypeConfig',
+                    value: function getPoiTypeConfig(poiType, configName) {
                         var defaultValue = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
 
-                        return this.getPoiExt(poiType, null, configName, defaultValue);
+                        return this.getPoiConfig(poiType, null, configName, defaultValue);
                     }
                 }, {
-                    key: 'getPoiExt',
-                    value: function getPoiExt(poiType, poiConfig, configName) {
+                    key: 'getPoiContent',
+                    value: function getPoiContent(poiType, poiItem) {
+                        var defaultValue = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+
+                        var contentName = this.panel.contentName;
+                        if (poiItem && contentName in poiItem && poiItem[contentName].length > 0) {
+                            return poiItem[contentName];
+                        }
+                        return this.getPoiConfig(poiType, poiItem, contentName, defaultValue);
+                    }
+                }, {
+                    key: 'getPoiConfig',
+                    value: function getPoiConfig(poiType, poiItem, configKey) {
                         var defaultValue = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '';
 
                         if (!poiType) {
                             return defaultValue;
                         }
-                        var extName = this.panel.extName;
-                        if (poiConfig && extName in poiConfig && poiConfig[extName].length > 0) {
-                            var extJson = JSON.parse(poiConfig[extName]);
-                            if (configName in extJson) {
-                                return extJson[configName];
+                        var configName = this.panel.configName;
+                        if (poiItem && configName in poiItem && poiItem[configName].length > 0) {
+                            var extJson = JSON.parse(poiItem[configName]);
+                            if (configKey in extJson) {
+                                return extJson[configKey];
                             }
                         }
                         if (this.panel.globalConfig && this.panel.globalConfig.length > 0) {
                             var globalConfig = JSON.parse(this.panel.globalConfig);
-                            if (poiType in globalConfig && configName in globalConfig[poiType]) {
-                                return globalConfig[poiType][configName];
+                            if (poiType in globalConfig && configKey in globalConfig[poiType]) {
+                                return globalConfig[poiType][configKey];
                             }
                         }
                         return defaultValue;
@@ -379,25 +392,28 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                     }
                 }, {
                     key: 'getPoiInfoWindowHandler',
-                    value: function getPoiInfoWindowHandler(poiType, point, poiData) {
+                    value: function getPoiInfoWindowHandler(poiType, point, poiItem) {
                         var defaultContent = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '';
 
                         var that = this;
-                        return function () {
-                            var infoWindow = new BMap.InfoWindow(that.getPoiExt(poiType, poiData, 'content', defaultContent), that.getPoiOption(poiType, poiData, {
-                                'title': that.getPoiExt(poiType, poiData, 'title', point.lng + '|' + point.lat)
+                        return function (e) {
+                            var clickPoint = point;
+                            if (!clickPoint) {
+                                clickPoint = e.point;
+                            }
+                            var infoWindow = new BMap.InfoWindow(that.getPoiContent(poiType, poiItem, defaultContent), that.getPoiOption(poiType, poiItem, {
+                                'title': that.getPoiConfig(poiType, poiItem, 'title', clickPoint.lng + '|' + clickPoint.lat)
                             })); // 创建信息窗口对象
-                            that.map.openInfoWindow(infoWindow, point);
+                            that.map.openInfoWindow(infoWindow, clickPoint);
                         };
                     }
                 }, {
                     key: 'addMarker',
                     value: function addMarker(poiType, point, BMap, data) {
-                        var that = this;
 
                         // public/plugins/grafana-baidumap-panel/images/bike.png
                         var markerOption = this.getPoiOption(poiType, data);
-                        var iconUrl = this.getPoiExt(poiType, data, 'icon', '');
+                        var iconUrl = this.getPoiConfig(poiType, data, 'icon', '');
                         if (Number.isInteger(iconUrl)) {
                             markerOption.icon = new BMap.Icon('http://api.map.baidu.com/img/markers.png', new BMap.Size(23, 25), {
                                 offset: new BMap.Size(10, 25), // 指定定位位置
@@ -410,7 +426,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                             });
                         }
                         var marker = new BMap.Marker(point, markerOption);
-                        var pointLabel = this.getPoiExt(poiType, data, 'label', '');
+                        var pointLabel = this.getPoiConfig(poiType, data, 'label', '');
                         if (pointLabel.length > 0) {
                             var label = new BMap.Label(pointLabel, { offset: new BMap.Size(20, -10) });
                             marker.setLabel(label);
@@ -418,13 +434,13 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         this.markers.push(marker);
 
                         // this.map.setViewport(pointArray);
-                        if (this.getPoiExt(poiType, data, 'enableDragging', false)) {
+                        if (this.getPoiConfig(poiType, data, 'enableDragging', false)) {
                             marker.enableDragging();
                         }
-                        marker.addEventListener('click', this.getInfoWindowHandler(poiType, point, data));
+                        marker.addEventListener('click', this.getPoiInfoWindowHandler(poiType, point, data));
 
                         this.map.addOverlay(marker);
-                        if (this.getPoiExt(poiType, data, 'animation', false)) {
+                        if (this.getPoiConfig(poiType, data, 'animation', false)) {
                             marker.setAnimation(BMAP_ANIMATION_BOUNCE); // 跳动的动画
                         }
                         marker.addEventListener('dragend', function (e) {
@@ -516,13 +532,13 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     dataList.push({
                                                         lng: point.lng,
                                                         lat: point.lat,
-                                                        count: that.getPoiExt(heatPoiType, v.poiData, 'count', 1)
+                                                        count: that.getPoiConfig(heatPoiType, v.poiData, 'count', 1)
                                                     });
                                                 });
                                             });
                                             heatmapOverlay.setDataSet({
                                                 data: dataList,
-                                                max: that.getPoiTypeExt(heatPoiType, 'max', 100)
+                                                max: that.getPoiTypeConfig(heatPoiType, 'max', 100)
                                             });
                                         }
 
@@ -534,14 +550,13 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 v.points.forEach(function (point) {
                                                     point.poiData = v.poiData;
                                                     points.push(point);
-                                                    // that.addpoint(pointTypeName, point, BMap, v.poiData);
                                                 });
                                             });
                                             var pointCollection = new BMap.PointCollection(points, that.getPoiTypeOption(pointTypeName));
                                             pointCollection.addEventListener('click', function (e) {
                                                 var poiData = e.point.poiData;
                                                 delete e.point[poiData];
-                                                that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)();
+                                                that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)(e);
                                             });
                                             that.map.addOverlay(pointCollection);
                                         }
@@ -550,14 +565,15 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             var labelArray = shapeMap[labelTypeName];
                                             labelArray.forEach(function (v) {
                                                 v.points.forEach(function (point) {
-                                                    var labelText = that.getPoiExt(labelTypeName, v.poiData, 'text', '');
+                                                    var labelText = that.getPoiConfig(labelTypeName, v.poiData, 'text', '');
                                                     var labelItem = new BMap.Label(labelText, {
                                                         position: point,
-                                                        enableMassClear: that.getPoiExt(labelTypeName, v.poiData, 'enableMassClear', true)
+                                                        enableMassClear: that.getPoiConfig(labelTypeName, v.poiData, 'enableMassClear', true)
                                                     });
                                                     that.map.addOverlay(labelItem);
-                                                    labelItem.setStyle(that.getPoiExt(labelTypeName, v.poiData, 'style', {}));
-                                                    labelItem.setTitle(that.getPoiExt(labelTypeName, v.poiData, 'title', ''));
+                                                    labelItem.setStyle(that.getPoiConfig(labelTypeName, v.poiData, 'style', {}));
+                                                    labelItem.setTitle(that.getPoiConfig(labelTypeName, v.poiData, 'title', ''));
+                                                    labelItem.addEventListener('click', that.getPoiInfoWindowHandler(labelTypeName, point, v.poiData));
                                                     // that.addlabel(labelTypeName, label, BMap, v.poiData);
                                                 });
                                             });
@@ -597,13 +613,17 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             if (shapeMap[poiType]) {
                                                 shapeMap[poiType].forEach(function (item) {
                                                     var poiOption = Object.assign(getDefaultPolyOption(), that.getPoiOption(item.poiType, item.poiData));
-                                                    var circleRadius = that.getPoiExt(item.poiType, item.poiData, 'radius', 20);
+                                                    var circleRadius = that.getPoiConfig(item.poiType, item.poiData, 'radius', 20);
                                                     if (poiType === 'Circle') {
                                                         item.points.forEach(function (point) {
-                                                            that.map.addOverlay(new BMap[poiType](point, circleRadius, poiOption));
+                                                            var shape = new BMap[poiType](point, circleRadius, poiOption);
+                                                            shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, point, item.poiData));
+                                                            that.map.addOverlay(shape);
                                                         });
                                                     } else {
-                                                        that.map.addOverlay(new BMap[poiType](item.points, poiOption));
+                                                        var shape = new BMap[poiType](item.points, poiOption);
+                                                        shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, null, item.poiData));
+                                                        that.map.addOverlay(shape);
                                                     }
                                                 });
                                             }
@@ -639,7 +659,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                                     var layerItem = {
                                                                         lng: point.lng,
                                                                         lat: point.lat,
-                                                                        size: that.getPoiExt(poiType, item.poiData, isCircle ? 'radius' : 'length', 20)
+                                                                        size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' : 'length', 20)
                                                                     };
                                                                     ctx.beginPath();
                                                                     filterCtx(ctx, that.getPoiOption(poiType, item.poiData));
@@ -689,7 +709,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                             shapeMap[labelPoiType].forEach(function (item) {
                                                                 ctx.save();
                                                                 ctx.beginPath();
-                                                                var labelText = that.getPoiExt(labelPoiType, item.poiData, 'text');
+                                                                var labelText = that.getPoiConfig(labelPoiType, item.poiData, 'text');
                                                                 var poiOption = that.getPoiOption(labelPoiType, item.poiData);
                                                                 filterCtx(ctx, poiOption, false);
                                                                 for (var pointIndex = 0; pointIndex < item.points.length; pointIndex++) {
