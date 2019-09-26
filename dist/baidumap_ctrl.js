@@ -70,7 +70,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
     }
 
     function filterCtx(ctx, originOption) {
-        var styleOption = Object.assign(getDefaultPolyOption(), originOption);
+        var usePolyOption = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+
+        var styleOption = Object.assign(usePolyOption ? getDefaultPolyOption() : {}, originOption);
         ['fillColor', 'strokeColor'].forEach(function (keyName) {
             if (styleOption[keyName]) {
                 styleOption[keyName] = getColor(styleOption[keyName], 0.5);
@@ -623,6 +625,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     ctx.beginPath();
                                                     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                                                     ctx.closePath();
+                                                    ctx.restore();
                                                     dotPoiTypes.forEach(function (poiType) {
                                                         if (shapeMap[poiType]) {
                                                             shapeMap[poiType].forEach(function (item) {
@@ -684,7 +687,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                                 ctx.beginPath();
                                                                 var labelText = that.getPoiExt(labelPoiType, item.poiData, 'text');
                                                                 var poiOption = that.getPoiOption(labelPoiType, item.poiData);
-                                                                filterCtx(ctx, poiOption);
+                                                                filterCtx(ctx, poiOption, false);
                                                                 for (var pointIndex = 0; pointIndex < item.points.length; pointIndex++) {
                                                                     var labelPoint = that.map.pointToPixel(item.points[pointIndex]);
                                                                     ctx.fillText(labelText, labelPoint.x, labelPoint.y);
@@ -693,7 +696,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                             });
                                                         }
                                                     });
-                                                    ctx.restore();
                                                 }
                                             }));
                                         }

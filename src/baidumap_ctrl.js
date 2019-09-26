@@ -74,8 +74,8 @@ function getColor(orginBili, alpha) {
     return 'rgb(' + r + ',' + g + ',' + b + ',' + alpha + ')';
 }
 
-function filterCtx(ctx, originOption) {
-    const styleOption = Object.assign(getDefaultPolyOption(), originOption);
+function filterCtx(ctx, originOption, usePolyOption = true) {
+    const styleOption = Object.assign(usePolyOption ? getDefaultPolyOption() : {}, originOption);
     ['fillColor', 'strokeColor'].forEach((keyName) => {
         if (styleOption[keyName]) {
             styleOption[keyName] = getColor(styleOption[keyName], 0.5);
@@ -556,6 +556,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 ctx.beginPath();
                                 ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                                 ctx.closePath();
+                                ctx.restore();
                                 dotPoiTypes.forEach((poiType) => {
                                     if (shapeMap[poiType]) {
                                         shapeMap[poiType].forEach((item) => {
@@ -618,7 +619,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                             ctx.beginPath();
                                             const labelText = that.getPoiExt(labelPoiType, item.poiData, 'text');
                                             const poiOption = that.getPoiOption(labelPoiType, item.poiData);
-                                            filterCtx(ctx, poiOption);
+                                            filterCtx(ctx, poiOption, false);
                                             for (let pointIndex = 0; pointIndex < item.points.length; pointIndex++) {
                                                 const labelPoint = that.map.pointToPixel(item.points[pointIndex]);
                                                 ctx.fillText(labelText, labelPoint.x, labelPoint.y);
@@ -627,7 +628,6 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         });
                                     }
                                 });
-                                ctx.restore();
                             }
                         }));
                     }
