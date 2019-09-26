@@ -66,7 +66,6 @@ export default function link(scope, elem, attrs, ctrl) {
                         if (ctrl.panel.traffic === true) {
                             ctrl.map.addControl(ctrl.trafficSwitch);
                         }
-
                     }, 1000);
 
                     const menu = new BMap.ContextMenu();
@@ -94,6 +93,41 @@ export default function link(scope, elem, attrs, ctrl) {
                         menu.addItem(new BMap.MenuItem(txtMenuItem[menuIndex].text, txtMenuItem[menuIndex].callback, 100));
                     }
                     ctrl.map.addContextMenu(menu);
+
+                    const map = ctrl.map;
+                    var marker = new BMap.Marker(new BMap.Point(116.404, 39.915)); // 创建点
+                    map.addOverlay(marker);            //增加点
+                    marker.addEventListener('click', overlay_style);
+
+                    var polyline = new BMap.Polyline([
+                        new BMap.Point(116.383752, 39.91334),
+                        new BMap.Point(116.38792, 39.920866),
+                        new BMap.Point(116.390867, 39.906532)
+                    ], {strokeColor: 'blue', strokeWeight: 6, strokeOpacity: 0.5});   //创建折线
+                    polyline.addEventListener('click', overlay_style);
+                    map.addOverlay(polyline);          //增加折线
+
+                    var circle = new BMap.Circle(new BMap.Point(116.415157, 39.914004), 500, {
+                        strokeColor: 'blue',
+                        strokeWeight: 6,
+                        strokeOpacity: 0.5
+                    }); //创建圆
+                    map.addOverlay(circle);            //增加圆
+                    circle.addEventListener('click', overlay_style);
+
+                    //获取marker的属性
+                    function overlay_style(e) {
+                        var p = e.target;
+                        if (p instanceof BMap.Marker) {
+                            alert('该覆盖物是点，点的坐标是：' + p.getPosition().lng + ',' + p.getPosition().lat);
+                        } else if (p instanceof BMap.Circle) {
+                            alert('该覆盖物是圆，圆的半径是：' + p.getRadius() + '，圆的中心点坐标是：' + p.getCenter().lng + ',' + p.getCenter().lat);
+                        } else if (p instanceof BMap.Polyline) {
+                            alert('该覆盖物是折线，所画点的个数是：' + p.getPath().length);
+                        } else {
+                            alert('无法获知该覆盖物类型');
+                        }
+                    }
 
                     ctrl.addNode(BMap);
                 });
