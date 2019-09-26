@@ -303,11 +303,11 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 that.getPoiOption(poiType, data,
                     {
                         title: '',
-                        width: 280,
-                        height: 50,
+                        width: 290,
+                        height: 105,
                         panel: 'panel', // 检索结果面板
                         enableAutoPan: true, // 自动平移
-                        enableSendToPhone: true, // 是否启动发送到手机功能
+                        enableSendToPhone: false, // 是否启动发送到手机功能
                         searchTypes: [
                             BMAPLIB_TAB_SEARCH,   // 周边检索
                             BMAPLIB_TAB_TO_HERE,  // 到这里去
