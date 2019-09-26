@@ -252,6 +252,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
     }
 
     addMarker(poiType, point, BMap, data) {
+        const that = this;
+
         // public/plugins/grafana-baidumap-panel/images/bike.png
         const markerOption = this.getPoiOption(poiType, data);
         const iconUrl = this.getPoiExt(poiType, data, 'icon', '');
@@ -290,9 +292,31 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         scontent += '<div class="infobox-footer">' + this.getPoiExt(poiType, data, 'desc') + '</div>';
         scontent += '<div class="infobox-footer-right"></div></div><div class="arrow"></div></div></a>';
 
+
         const infoWindow = new BMap.InfoWindow(scontent); // 创建信息窗口对象
+
+
         marker.addEventListener('click', function () {
-            this.map.openInfoWindow(infoWindow, point); // 开启信息窗口
+            const searchInfoWindow = new BMapLib.SearchInfoWindow(
+                that.map,
+                that.getPoiExt(poiType, data, 'content', ''),
+                that.getPoiOption(poiType, data,
+                    {
+                        title: '',
+                        width: 280,
+                        height: 50,
+                        panel: 'panel', // 检索结果面板
+                        enableAutoPan: true, // 自动平移
+                        enableSendToPhone: true, // 是否启动发送到手机功能
+                        searchTypes: [
+                            BMAPLIB_TAB_SEARCH,   // 周边检索
+                            BMAPLIB_TAB_TO_HERE,  // 到这里去
+                            BMAPLIB_TAB_FROM_HERE // 从这里出发
+                        ]
+                    }
+                )
+            );
+            searchInfoWindow.open(point);
         });
 
         this.map.addOverlay(marker);
