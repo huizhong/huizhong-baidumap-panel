@@ -36,8 +36,9 @@ System.register([], function (_export, _context) {
                 loadJsFile('http://api.map.baidu.com/library/TrafficControl/1.4/src/TrafficControl_min.js');
                 loadCssFile('http://api.map.baidu.com/library/TrafficControl/1.4/src/TrafficControl_min.css');
 
-                loadJsFile('"http://api.map.baidu.com/library/SearchInfoWindow/1.5/src/SearchInfoWindow_min.js');
-                loadCssFile('"http://api.map.baidu.com/library/SearchInfoWindow/1.5/src/SearchInfoWindow_min.css');
+                loadJsFile('http://api.map.baidu.com/library/SearchInfoWindow/1.5/src/SearchInfoWindow_min.js');
+                loadCssFile('http://api.map.baidu.com/library/SearchInfoWindow/1.5/src/SearchInfoWindow_min.css');
+
                 resolve(BMap);
             }, 500);
         });
