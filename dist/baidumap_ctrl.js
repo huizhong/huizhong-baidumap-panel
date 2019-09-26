@@ -406,33 +406,11 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         if (this.getPoiExt(poiType, data, 'enableDragging', false)) {
                             marker.enableDragging();
                         }
-                        var scontent = '';
-                        scontent += '<a href=""><div class="infobox" id="infobox"><div class="infobox-content" style="display:block">';
-
-                        var detailImage = this.getPoiExt(poiType, data, 'detailIcon', '');
-                        if (detailImage.length > 0) {
-                            scontent += '<div class="infobox-header"><div class="infobox-header-icon"><img src="' + detailImage + '"></div>';
-                        }
-                        scontent += '<div class="infobox-header-name"><p>' + this.getPoiExt(poiType, data, 'name') + '</p></div>';
-                        scontent += '<div class="infobox-header-type" style="min-width:250px"><p>' + this.getPoiExt(poiType, data, 'type') + '</p></div></div>';
-                        scontent += '<div class="infobox-footer">' + this.getPoiExt(poiType, data, 'desc') + '</div>';
-                        scontent += '<div class="infobox-footer-right"></div></div><div class="arrow"></div></div></a>';
-
                         marker.addEventListener('click', function () {
-                            // const infoWindow = new BMap.InfoWindow(that.getPoiExt(poiType, data, 'content', '')); // 创建信息窗口对象
-
-                            var searchInfoWindow = new BMapLib.SearchInfoWindow(that.map, that.getPoiExt(poiType, data, 'content', ''), that.getPoiOption(poiType, data, {
-                                title: '',
-                                panel: 'panel', // 检索结果面板
-                                enableAutoPan: true, // 自动平移
-                                enableSendToPhone: false, // 是否启动发送到手机功能
-                                searchTypes: [BMAPLIB_TAB_SEARCH, // 周边检索
-                                BMAPLIB_TAB_TO_HERE, // 到这里去
-                                BMAPLIB_TAB_FROM_HERE // 从这里出发
-                                ]
-                            }));
-                            searchInfoWindow.open(point);
-                            // that.map.openInfoWindow(infoWindow, point);
+                            var infoWindow = new BMap.InfoWindow(that.getPoiExt(poiType, data, 'content', ''), that.getPoiOption(poiType, data, {
+                                'title': that.getPoiExt(poiType, data, 'title', point.lng + '|' + point.lat)
+                            })); // 创建信息窗口对象
+                            that.map.openInfoWindow(infoWindow, point);
                         });
 
                         this.map.addOverlay(marker);
