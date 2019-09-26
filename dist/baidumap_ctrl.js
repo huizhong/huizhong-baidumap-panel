@@ -233,7 +233,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 geohashName: 'geohash',
                 configName: 'config',
                 contentName: 'content',
-                enableMapClick: false
+                enableMapClick: false,
+                maskColor: 'rgba(255, 255, 255, 0.4)'
             };
 
             BaidumapCtrl = function (_MetricsPanelCtrl) {
@@ -689,7 +690,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     }
                                                     ctx.save();
                                                     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                                                    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                                                    if (that.panel.maskColor) {
+                                                        ctx.fillStyle = that.panel.maskColor;
+                                                    }
                                                     ctx.beginPath();
                                                     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                                                     ctx.closePath();

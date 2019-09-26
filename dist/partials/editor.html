@@ -119,14 +119,18 @@
 		<h5 class="section-heading">元素配置</h5>
 		<gf-form-switch class="gf-form" label="聚合标记点" label-class="width-10" checked="ctrl.panel.clusterPoint"  on-change="ctrl.refresh()">
 		</gf-form-switch>
+		<div class="gf-form">
+			<label class="gf-form-label width-12">画布蒙板颜色</label>
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.maskColor" ng-change="ctrl.refresh()" ng-model-onblur />
+		</div>
 	</div>
 	<div class="section gf-form-group">
 		<h5 class="section-heading">其它</h5>
 		<div class="gf-form">
 			<label class="gf-form-label width-10">默认配置</label>
 			<label>
-<textarea type="text" rows="30" cols="80"
-		  class="gf-form-input width-80 ng-pristine ng-untouched ng-valid ng-empty" ng-model="ctrl.panel.globalConfig" ng-change="ctrl.refresh()" placeholder="{...}" ng-model-onblur=""></textarea>
+                <textarea type="text" rows="30" cols="80"
+                          class="gf-form-input width-80 ng-pristine ng-untouched ng-valid ng-empty" ng-model="ctrl.panel.globalConfig" ng-change="ctrl.refresh()" placeholder="{...}" ng-model-onblur=""></textarea>
 			</label>
 		</div>
 	</div>
