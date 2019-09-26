@@ -292,19 +292,15 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         scontent += '<div class="infobox-footer">' + this.getPoiExt(poiType, data, 'desc') + '</div>';
         scontent += '<div class="infobox-footer-right"></div></div><div class="arrow"></div></div></a>';
 
-
-        const infoWindow = new BMap.InfoWindow(scontent); // 创建信息窗口对象
-
-
         marker.addEventListener('click', function () {
+            // const infoWindow = new BMap.InfoWindow(that.getPoiExt(poiType, data, 'content', '')); // 创建信息窗口对象
+
             const searchInfoWindow = new BMapLib.SearchInfoWindow(
                 that.map,
                 that.getPoiExt(poiType, data, 'content', ''),
                 that.getPoiOption(poiType, data,
                     {
                         title: '',
-                        width: 290,
-                        height: 105,
                         panel: 'panel', // 检索结果面板
                         enableAutoPan: true, // 自动平移
                         enableSendToPhone: false, // 是否启动发送到手机功能
@@ -317,6 +313,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 )
             );
             searchInfoWindow.open(point);
+            // that.map.openInfoWindow(infoWindow, point);
         });
 
         this.map.addOverlay(marker);
