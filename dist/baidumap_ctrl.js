@@ -606,7 +606,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         });
                                         var labelPoiTypes = ['label'];
                                         var linePoiTypes = ['polyline', 'polygon'];
-                                        var dotPoiTypes = ['circle', 'square', 'label'];
+                                        var dotPoiTypes = ['circle', 'square'];
                                         var canvasTypes = [].concat(labelPoiTypes, dotPoiTypes, linePoiTypes);
                                         if (canvasTypes.some(function (canvasType) {
                                             return shapeMap[canvasType];

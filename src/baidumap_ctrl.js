@@ -539,7 +539,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     });
                     const labelPoiTypes = ['label'];
                     const linePoiTypes = ['polyline', 'polygon'];
-                    const dotPoiTypes = ['circle', 'square', 'label'];
+                    const dotPoiTypes = ['circle', 'square'];
                     const canvasTypes = [...labelPoiTypes, ...dotPoiTypes, ...linePoiTypes];
                     if (canvasTypes.some(canvasType => shapeMap[canvasType])) {
                         that.map.addOverlay(new BMap.CanvasLayer({
