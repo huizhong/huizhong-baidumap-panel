@@ -69,15 +69,21 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
         return 'rgb(' + r + ',' + g + ',' + b + ',' + alpha + ')';
     }
 
+    function getFilterColor(originOption) {
+        var styleOption = {};
+        ['fillColor', 'strokeColor'].forEach(function (keyName) {
+            if (originOption[keyName]) {
+                styleOption[keyName] = getColor(originOption[keyName], 0.5);
+            }
+        });
+        return Object.assign({}, originOption, styleOption);
+    }
+
     function filterCtx(ctx, originOption) {
         var usePolyOption = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
 
-        var styleOption = Object.assign(usePolyOption ? getDefaultPolyOption() : {}, originOption);
-        ['fillColor', 'strokeColor'].forEach(function (keyName) {
-            if (styleOption[keyName]) {
-                styleOption[keyName] = getColor(styleOption[keyName], 0.5);
-            }
-        });
+        var sourceOption = Object.assign(usePolyOption ? getDefaultPolyOption() : {}, originOption);
+        var styleOption = getFilterColor(sourceOption);
         [['strokeWeight', 'lineWidth'], ['fillColor', 'fillStyle'], ['strokeColor', 'strokeStyle'], ['strokeOpacity', 'globalAlpha']].forEach(function (keyMap) {
             var _keyMap = _slicedToArray(keyMap, 2),
                 sourceName = _keyMap[0],
@@ -401,7 +407,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                             if (!clickPoint) {
                                 clickPoint = e.point;
                             }
-                            var infoWindow = new BMap.InfoWindow(that.getPoiContent(poiType, poiItem, defaultContent), that.getPoiOption(poiType, poiItem, {
+                            var infoWindow = new BMap.InfoWindow(that.getPoiContent(poiType, poiItem, defaultContent), that.getPoiConfig(poiType, poiItem, 'contentOption', {
                                 'title': that.getPoiConfig(poiType, poiItem, 'title', clickPoint.lng + '|' + clickPoint.lat)
                             })); // 创建信息窗口对象
                             that.map.openInfoWindow(infoWindow, clickPoint);
@@ -499,8 +505,11 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             return (a.poiIndex - b.poiIndex) * 1000000 + (a.gpsIndex - b.gpsIndex);
                                         });
                                         for (var translateIndex = 0; translateIndex < translatedItems.length; translateIndex++) {
+                                            var _pointTypeName = 'Point';
+
                                             var translatedItem = translatedItems[translateIndex];
-                                            var poiType = translatedItem.gps[that.panel.typeName];
+                                            var poiType = translatedItem.gps[that.panel.typeName] || _pointTypeName;
+
                                             var poiIndexKey = 'key_' + translatedItem.poiIndex;
                                             var pointItem = translatedItem.point;
                                             if (!(poiType in shapeMap)) {
@@ -519,6 +528,26 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             }
                                         }
                                         console.log('shapeMap', shapeMap);
+
+                                        var pointTypeName = 'Point';
+                                        if (shapeMap[pointTypeName]) {
+                                            var pointArray = shapeMap[pointTypeName];
+                                            var points = [];
+                                            pointArray.forEach(function (v) {
+                                                v.points.forEach(function (point) {
+                                                    point.poiData = v.poiData;
+                                                    points.push(point);
+                                                });
+                                            });
+                                            var pointCollection = new BMap.PointCollection(points, getFilterColor(that.getPoiTypeOption(pointTypeName)));
+                                            pointCollection.addEventListener('click', function (e) {
+                                                var poiData = e.point.poiData;
+                                                delete e.point[poiData];
+                                                that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)(e);
+                                            });
+                                            that.map.addOverlay(pointCollection);
+                                        }
+
                                         var heatPoiType = 'Heat';
                                         if (shapeMap[heatPoiType]) {
                                             var heatShapeList = shapeMap[heatPoiType];
@@ -542,24 +571,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             });
                                         }
 
-                                        var pointTypeName = 'Point';
-                                        if (shapeMap[pointTypeName]) {
-                                            var pointArray = shapeMap[pointTypeName];
-                                            var points = [];
-                                            pointArray.forEach(function (v) {
-                                                v.points.forEach(function (point) {
-                                                    point.poiData = v.poiData;
-                                                    points.push(point);
-                                                });
-                                            });
-                                            var pointCollection = new BMap.PointCollection(points, that.getPoiTypeOption(pointTypeName));
-                                            pointCollection.addEventListener('click', function (e) {
-                                                var poiData = e.point.poiData;
-                                                delete e.point[poiData];
-                                                that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)(e);
-                                            });
-                                            that.map.addOverlay(pointCollection);
-                                        }
                                         var labelTypeName = 'Label';
                                         if (shapeMap[labelTypeName]) {
                                             var labelArray = shapeMap[labelTypeName];
@@ -612,7 +623,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         ['Polyline', 'Polygon', 'Circle'].forEach(function (poiType) {
                                             if (shapeMap[poiType]) {
                                                 shapeMap[poiType].forEach(function (item) {
-                                                    var poiOption = Object.assign(getDefaultPolyOption(), that.getPoiOption(item.poiType, item.poiData));
+                                                    var poiOption = Object.assign(getDefaultPolyOption(), getFilterColor(that.getPoiOption(item.poiType, item.poiData)));
                                                     var circleRadius = that.getPoiConfig(item.poiType, item.poiData, 'radius', 20);
                                                     if (poiType === 'Circle') {
                                                         item.points.forEach(function (point) {

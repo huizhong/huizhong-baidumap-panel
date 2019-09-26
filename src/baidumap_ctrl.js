@@ -76,13 +76,19 @@ function getColor(orginBili, alpha) {
     return 'rgb(' + r + ',' + g + ',' + b + ',' + alpha + ')';
 }
 
-function filterCtx(ctx, originOption, usePolyOption = true) {
-    const styleOption = Object.assign(usePolyOption ? getDefaultPolyOption() : {}, originOption);
+function getFilterColor(originOption) {
+    const styleOption = {};
     ['fillColor', 'strokeColor'].forEach((keyName) => {
-        if (styleOption[keyName]) {
-            styleOption[keyName] = getColor(styleOption[keyName], 0.5);
+        if (originOption[keyName]) {
+            styleOption[keyName] = getColor(originOption[keyName], 0.5);
         }
     });
+    return Object.assign({}, originOption, styleOption);
+}
+
+function filterCtx(ctx, originOption, usePolyOption = true) {
+    const sourceOption = Object.assign(usePolyOption ? getDefaultPolyOption() : {}, originOption);
+    const styleOption = getFilterColor(sourceOption);
     [
         ['strokeWeight', 'lineWidth'],
         ['fillColor', 'fillStyle'],
@@ -271,7 +277,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 clickPoint = e.point;
             }
             const infoWindow = new BMap.InfoWindow(that.getPoiContent(poiType, poiItem, defaultContent),
-                that.getPoiOption(poiType, poiItem, {
+                that.getPoiConfig(poiType, poiItem, 'contentOption', {
                     'title': that.getPoiConfig(poiType, poiItem, 'title', clickPoint.lng + '|' + clickPoint.lat)
                 })
             ); // 创建信息窗口对象
@@ -421,8 +427,11 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         return ((a.poiIndex - b.poiIndex) * 1000000) + (a.gpsIndex - b.gpsIndex);
                     });
                     for (let translateIndex = 0; translateIndex < translatedItems.length; translateIndex++) {
+                        const pointTypeName = 'Point';
+
                         const translatedItem = translatedItems[translateIndex];
-                        const poiType = translatedItem.gps[that.panel.typeName];
+                        const poiType = translatedItem.gps[that.panel.typeName] || pointTypeName;
+
                         const poiIndexKey = 'key_' + translatedItem.poiIndex;
                         const pointItem = translatedItem.point;
                         if (!(poiType in shapeMap)) {
@@ -441,6 +450,26 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         }
                     }
                     console.log('shapeMap', shapeMap);
+
+                    const pointTypeName = 'Point';
+                    if (shapeMap[pointTypeName]) {
+                        const pointArray = shapeMap[pointTypeName];
+                        const points = [];
+                        pointArray.forEach((v) => {
+                            v.points.forEach((point) => {
+                                point.poiData = v.poiData;
+                                points.push(point);
+                            });
+                        });
+                        const pointCollection = new BMap.PointCollection(points, getFilterColor(that.getPoiTypeOption(pointTypeName)));
+                        pointCollection.addEventListener('click', (e) => {
+                            const poiData = e.point.poiData;
+                            delete e.point[poiData];
+                            that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)(e);
+                        });
+                        that.map.addOverlay(pointCollection);
+                    }
+
                     const heatPoiType = 'Heat';
                     if (shapeMap[heatPoiType]) {
                         const heatShapeList = shapeMap[heatPoiType];
@@ -468,24 +497,6 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         });
                     }
 
-                    const pointTypeName = 'Point';
-                    if (shapeMap[pointTypeName]) {
-                        const pointArray = shapeMap[pointTypeName];
-                        const points = [];
-                        pointArray.forEach((v) => {
-                            v.points.forEach((point) => {
-                                point.poiData = v.poiData;
-                                points.push(point);
-                            });
-                        });
-                        const pointCollection = new BMap.PointCollection(points, that.getPoiTypeOption(pointTypeName));
-                        pointCollection.addEventListener('click', (e) => {
-                            const poiData = e.point.poiData;
-                            delete e.point[poiData];
-                            that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)(e);
-                        });
-                        that.map.addOverlay(pointCollection);
-                    }
                     const labelTypeName = 'Label';
                     if (shapeMap[labelTypeName]) {
                         const labelArray = shapeMap[labelTypeName];
@@ -540,7 +551,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             shapeMap[poiType].forEach((item) => {
                                 const poiOption = Object.assign(
                                     getDefaultPolyOption(),
-                                    that.getPoiOption(item.poiType, item.poiData)
+                                    getFilterColor(that.getPoiOption(item.poiType, item.poiData))
                                 );
                                 const circleRadius = that.getPoiConfig(item.poiType, item.poiData, 'radius', 20);
                                 if (poiType === 'Circle') {
