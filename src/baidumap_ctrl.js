@@ -427,7 +427,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         }
                     }
                     console.log('shapeMap', shapeMap);
-                    const heatPoiType = 'heat';
+                    const heatPoiType = 'Heat';
                     if (shapeMap[heatPoiType]) {
                         const heatShapeList = shapeMap[heatPoiType];
                         const heatmapOverlay = new BMapLib.HeatmapOverlay(
@@ -435,7 +435,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 {
                                     radius: 20,
                                 },
-                                that.getPoiTypeOption('heat')
+                                that.getPoiTypeOption(heatPoiType)
                             ));
                         that.map.addOverlay(heatmapOverlay);
                         const dataList = [];
@@ -460,16 +460,33 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         const points = [];
                         pointArray.forEach((v) => {
                             v.points.forEach((point) => {
-                                point.x = 'x1';
+                                point.text = that.getPoiExt(pointTypeName, v.poiData, 'text', '');
                                 points.push(point);
                                 // that.addpoint(pointTypeName, point, BMap, v.poiData);
                             });
                         });
                         const pointCollection = new BMap.PointCollection(points, that.getPoiTypeOption(pointTypeName));
                         pointCollection.addEventListener('click', (e) => {
-                            alert('单击点的坐标为：' + e.point.lng + ',' + e.point.lat);  // 监听点击事件
+                            alert('单击点的坐标为：' + e.point.lng + ',' + e.point.lat + ', 内容为：' + e.point.text);  // 监听点击事件
                         });
                         that.map.addOverlay(pointCollection);
+                    }
+                    const labelTypeName = 'Label';
+                    if (shapeMap[labelTypeName]) {
+                        const labelArray = shapeMap[labelTypeName];
+                        labelArray.forEach((v) => {
+                            v.points.forEach((point) => {
+                                const labelText = that.getPoiExt(labelTypeName, v.poiData, 'text', '');
+                                const labelItem = new BMap.Label(labelText, {
+                                    position: point,
+                                    enableMassClear: that.getPoiExt(labelTypeName, v.poiData, 'enableMassClear', true)
+                                });
+                                that.map.addOverlay(labelItem);
+                                labelItem.setStyle(that.getPoiExt(labelTypeName, v.poiData, 'style', {}));
+                                labelItem.setTitle(that.getPoiExt(labelTypeName, v.poiData, 'title', ''));
+                                // that.addlabel(labelTypeName, label, BMap, v.poiData);
+                            });
+                        });
                     }
                     const markerTypeName = 'Marker';
                     if (shapeMap[markerTypeName]) {
@@ -520,9 +537,10 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             });
                         }
                     });
+                    const labelPoiTypes = ['label'];
                     const linePoiTypes = ['polyline', 'polygon'];
-                    const dotPoiTypes = ['circle', 'square'];
-                    const canvasTypes = [...dotPoiTypes, ...linePoiTypes];
+                    const dotPoiTypes = ['circle', 'square', 'label'];
+                    const canvasTypes = [...labelPoiTypes, ...dotPoiTypes, ...linePoiTypes];
                     if (canvasTypes.some(canvasType => shapeMap[canvasType])) {
                         that.map.addOverlay(new BMap.CanvasLayer({
                             paneName: 'vertexPane',
@@ -588,6 +606,22 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                                     ctx.globalAlpha = poiOption.fillOpacity;
                                                 }
                                                 ctx.fill();
+                                            }
+                                            ctx.restore();
+                                        });
+                                    }
+                                });
+                                labelPoiTypes.forEach((labelPoiType) => {
+                                    if (shapeMap[labelPoiType]) {
+                                        shapeMap[labelPoiType].forEach((item) => {
+                                            ctx.save();
+                                            ctx.beginPath();
+                                            const labelText = that.getPoiExt(labelPoiType, item.poiData, 'text');
+                                            const poiOption = that.getPoiOption(labelPoiType, item.poiData);
+                                            filterCtx(ctx, poiOption);
+                                            for (let pointIndex = 0; pointIndex < item.points.length; pointIndex++) {
+                                                const labelPoint = that.map.pointToPixel(item.points[pointIndex]);
+                                                ctx.fillText(labelText, labelPoint.x, labelPoint.y);
                                             }
                                             ctx.restore();
                                         });

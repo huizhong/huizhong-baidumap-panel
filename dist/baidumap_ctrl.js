@@ -499,12 +499,12 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             }
                                         }
                                         console.log('shapeMap', shapeMap);
-                                        var heatPoiType = 'heat';
+                                        var heatPoiType = 'Heat';
                                         if (shapeMap[heatPoiType]) {
                                             var heatShapeList = shapeMap[heatPoiType];
                                             var heatmapOverlay = new BMapLib.HeatmapOverlay(Object.assign({
                                                 radius: 20
-                                            }, that.getPoiTypeOption('heat')));
+                                            }, that.getPoiTypeOption(heatPoiType)));
                                             that.map.addOverlay(heatmapOverlay);
                                             var dataList = [];
                                             heatShapeList.forEach(function (v) {
@@ -528,16 +528,33 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             var points = [];
                                             pointArray.forEach(function (v) {
                                                 v.points.forEach(function (point) {
-                                                    point.x = 'x1';
+                                                    point.text = that.getPoiExt(pointTypeName, v.poiData, 'text', '');
                                                     points.push(point);
                                                     // that.addpoint(pointTypeName, point, BMap, v.poiData);
                                                 });
                                             });
                                             var pointCollection = new BMap.PointCollection(points, that.getPoiTypeOption(pointTypeName));
                                             pointCollection.addEventListener('click', function (e) {
-                                                alert('单击点的坐标为：' + e.point.lng + ',' + e.point.lat); // 监听点击事件
+                                                alert('单击点的坐标为：' + e.point.lng + ',' + e.point.lat + ', 内容为：' + e.point.text); // 监听点击事件
                                             });
                                             that.map.addOverlay(pointCollection);
+                                        }
+                                        var labelTypeName = 'Label';
+                                        if (shapeMap[labelTypeName]) {
+                                            var labelArray = shapeMap[labelTypeName];
+                                            labelArray.forEach(function (v) {
+                                                v.points.forEach(function (point) {
+                                                    var labelText = that.getPoiExt(labelTypeName, v.poiData, 'text', '');
+                                                    var labelItem = new BMap.Label(labelText, {
+                                                        position: point,
+                                                        enableMassClear: that.getPoiExt(labelTypeName, v.poiData, 'enableMassClear', true)
+                                                    });
+                                                    that.map.addOverlay(labelItem);
+                                                    labelItem.setStyle(that.getPoiExt(labelTypeName, v.poiData, 'style', {}));
+                                                    labelItem.setTitle(that.getPoiExt(labelTypeName, v.poiData, 'title', ''));
+                                                    // that.addlabel(labelTypeName, label, BMap, v.poiData);
+                                                });
+                                            });
                                         }
                                         var markerTypeName = 'Marker';
                                         if (shapeMap[markerTypeName]) {
@@ -585,9 +602,10 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 });
                                             }
                                         });
+                                        var labelPoiTypes = ['label'];
                                         var linePoiTypes = ['polyline', 'polygon'];
-                                        var dotPoiTypes = ['circle', 'square'];
-                                        var canvasTypes = [].concat(dotPoiTypes, linePoiTypes);
+                                        var dotPoiTypes = ['circle', 'square', 'label'];
+                                        var canvasTypes = [].concat(labelPoiTypes, dotPoiTypes, linePoiTypes);
                                         if (canvasTypes.some(function (canvasType) {
                                             return shapeMap[canvasType];
                                         })) {
@@ -654,6 +672,22 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                                         ctx.globalAlpha = poiOption.fillOpacity;
                                                                     }
                                                                     ctx.fill();
+                                                                }
+                                                                ctx.restore();
+                                                            });
+                                                        }
+                                                    });
+                                                    labelPoiTypes.forEach(function (labelPoiType) {
+                                                        if (shapeMap[labelPoiType]) {
+                                                            shapeMap[labelPoiType].forEach(function (item) {
+                                                                ctx.save();
+                                                                ctx.beginPath();
+                                                                var labelText = that.getPoiExt(labelPoiType, item.poiData, 'text');
+                                                                var poiOption = that.getPoiOption(labelPoiType, item.poiData);
+                                                                filterCtx(ctx, poiOption);
+                                                                for (var pointIndex = 0; pointIndex < item.points.length; pointIndex++) {
+                                                                    var labelPoint = that.map.pointToPixel(item.points[pointIndex]);
+                                                                    ctx.fillText(labelText, labelPoint.x, labelPoint.y);
                                                                 }
                                                                 ctx.restore();
                                                             });
