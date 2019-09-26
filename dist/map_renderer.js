@@ -24,7 +24,9 @@ System.register(['./css/leaflet.css!', './libs/baidumap.js'], function (_export,
                     console.log('start');
                     var elementId = 'mapid_' + ctrl.panel.id;
                     ctrl.BMap = BMap;
-                    ctrl.map = new BMap.Map(elementId);
+                    ctrl.map = new BMap.Map(elementId, {
+                        enableMapClick: ctrl.panel.enableMapClick
+                    });
                     ctrl.map.centerAndZoom(new BMap.Point(ctrl.panel.lng, ctrl.panel.lat), parseInt(ctrl.panel.initialZoom, 10));
                     ctrl.map.enableScrollWheelZoom();
                     ctrl.map.setMapStyle({ style: ctrl.panel.theme });
@@ -77,6 +79,11 @@ System.register(['./css/leaflet.css!', './libs/baidumap.js'], function (_export,
                         callback: function callback() {
                             ctrl.rectangleZoomTool.open();
                         }
+                    }, {
+                        text: '重置地图',
+                        callback: function callback() {
+                            ctrl.map.reset();
+                        }
                     }];
 
                     for (var menuIndex = 0; menuIndex < txtMenuItem.length; menuIndex++) {
@@ -87,14 +94,6 @@ System.register(['./css/leaflet.css!', './libs/baidumap.js'], function (_export,
                     ctrl.addNode(BMap);
                 });
             }
-
-            //ctrl.map.resize();
-
-            //if (ctrl.mapCenterMoved) ctrl.map.panToMapCenter();
-
-            //if (!ctrl.map.legend && ctrl.panel.showLegend) ctrl.map.createLegend();
-
-            //ctrl.map.drawCircles();
         }
     }
 

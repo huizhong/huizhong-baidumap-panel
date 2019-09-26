@@ -24,7 +24,9 @@ export default function link(scope, elem, attrs, ctrl) {
                     console.log('start');
                     const elementId = 'mapid_' + ctrl.panel.id;
                     ctrl.BMap = BMap;
-                    ctrl.map = new BMap.Map(elementId);
+                    ctrl.map = new BMap.Map(elementId, {
+                        enableMapClick: ctrl.panel.enableMapClick
+                    });
                     ctrl.map.centerAndZoom(new BMap.Point(ctrl.panel.lng, ctrl.panel.lat), parseInt(ctrl.panel.initialZoom, 10));
                     ctrl.map.enableScrollWheelZoom();
                     ctrl.map.setMapStyle({style: ctrl.panel.theme});
@@ -80,6 +82,11 @@ export default function link(scope, elem, attrs, ctrl) {
                             callback: function () {
                                 ctrl.rectangleZoomTool.open();
                             }
+                        }, {
+                            text: '重置地图',
+                            callback: function callback() {
+                                ctrl.map.reset();
+                            }
                         },
                     ];
 
@@ -91,13 +98,5 @@ export default function link(scope, elem, attrs, ctrl) {
                     ctrl.addNode(BMap);
                 });
         }
-
-        //ctrl.map.resize();
-
-        //if (ctrl.mapCenterMoved) ctrl.map.panToMapCenter();
-
-        //if (!ctrl.map.legend && ctrl.panel.showLegend) ctrl.map.createLegend();
-
-        //ctrl.map.drawCircles();
     }
 }
