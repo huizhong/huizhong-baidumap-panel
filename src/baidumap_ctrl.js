@@ -491,7 +491,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         const labelArray = shapeMap[labelTypeName];
                         labelArray.forEach((v) => {
                             v.points.forEach((point) => {
-                                const labelText = that.getPoiConfig(labelTypeName, v.poiData, 'text', '');
+                                const labelText = that.getPoiContent(labelTypeName, v.poiData);
                                 const labelItem = new BMap.Label(labelText, {
                                     position: point,
                                     enableMassClear: that.getPoiConfig(labelTypeName, v.poiData, 'enableMassClear', true)
@@ -546,13 +546,13 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 if (poiType === 'Circle') {
                                     item.points.forEach((point) => {
                                         const shape = new BMap[poiType](point, circleRadius, poiOption);
-                                        shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, point, item.poiData));
                                         that.map.addOverlay(shape);
+                                        shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, point, item.poiData));
                                     });
                                 } else {
                                     const shape = new BMap[poiType](item.points, poiOption);
-                                    shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, null, item.poiData));
                                     that.map.addOverlay(shape);
+                                    shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, null, item.poiData));
                                 }
                             });
                         }
@@ -637,7 +637,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         shapeMap[labelPoiType].forEach((item) => {
                                             ctx.save();
                                             ctx.beginPath();
-                                            const labelText = that.getPoiConfig(labelPoiType, item.poiData, 'text');
+                                            const labelText = that.getPoiContent(labelPoiType, item.poiData);
                                             const poiOption = that.getPoiOption(labelPoiType, item.poiData);
                                             filterCtx(ctx, poiOption, false);
                                             for (let pointIndex = 0; pointIndex < item.points.length; pointIndex++) {

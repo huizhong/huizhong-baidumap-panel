@@ -565,7 +565,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             var labelArray = shapeMap[labelTypeName];
                                             labelArray.forEach(function (v) {
                                                 v.points.forEach(function (point) {
-                                                    var labelText = that.getPoiConfig(labelTypeName, v.poiData, 'text', '');
+                                                    var labelText = that.getPoiContent(labelTypeName, v.poiData);
                                                     var labelItem = new BMap.Label(labelText, {
                                                         position: point,
                                                         enableMassClear: that.getPoiConfig(labelTypeName, v.poiData, 'enableMassClear', true)
@@ -617,13 +617,13 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     if (poiType === 'Circle') {
                                                         item.points.forEach(function (point) {
                                                             var shape = new BMap[poiType](point, circleRadius, poiOption);
-                                                            shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, point, item.poiData));
                                                             that.map.addOverlay(shape);
+                                                            shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, point, item.poiData));
                                                         });
                                                     } else {
                                                         var shape = new BMap[poiType](item.points, poiOption);
-                                                        shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, null, item.poiData));
                                                         that.map.addOverlay(shape);
+                                                        shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, null, item.poiData));
                                                     }
                                                 });
                                             }
@@ -709,7 +709,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                             shapeMap[labelPoiType].forEach(function (item) {
                                                                 ctx.save();
                                                                 ctx.beginPath();
-                                                                var labelText = that.getPoiConfig(labelPoiType, item.poiData, 'text');
+                                                                var labelText = that.getPoiContent(labelPoiType, item.poiData);
                                                                 var poiOption = that.getPoiOption(labelPoiType, item.poiData);
                                                                 filterCtx(ctx, poiOption, false);
                                                                 for (var pointIndex = 0; pointIndex < item.points.length; pointIndex++) {
