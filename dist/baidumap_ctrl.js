@@ -276,6 +276,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                     value: function getPoiExt(poiType, poiConfig, configName) {
                         var defaultValue = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '';
 
+                        if (!poiType) {
+                            return defaultValue;
+                        }
                         var extName = this.panel.extName;
                         if (poiConfig && extName in poiConfig && poiConfig[extName].length > 0) {
                             var extJson = JSON.parse(poiConfig[extName]);
@@ -368,12 +371,24 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         this.markers.splice(0, this.markers.length);
                         if (datas.length) {
                             this.data = datas;
-
                             this.map ? this.addNode(this.BMap) : this.render();
                         } else {
                             if (this.map) this.map.clearOverlays();
                             this.render();
                         }
+                    }
+                }, {
+                    key: 'getPoiInfoWindowHandler',
+                    value: function getPoiInfoWindowHandler(poiType, point, poiData) {
+                        var defaultContent = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '';
+
+                        var that = this;
+                        return function () {
+                            var infoWindow = new BMap.InfoWindow(that.getPoiExt(poiType, poiData, 'content', defaultContent), that.getPoiOption(poiType, poiData, {
+                                'title': that.getPoiExt(poiType, poiData, 'title', point.lng + '|' + point.lat)
+                            })); // 创建信息窗口对象
+                            that.map.openInfoWindow(infoWindow, point);
+                        };
                     }
                 }, {
                     key: 'addMarker',
@@ -406,12 +421,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         if (this.getPoiExt(poiType, data, 'enableDragging', false)) {
                             marker.enableDragging();
                         }
-                        marker.addEventListener('click', function () {
-                            var infoWindow = new BMap.InfoWindow(that.getPoiExt(poiType, data, 'content', ''), that.getPoiOption(poiType, data, {
-                                'title': that.getPoiExt(poiType, data, 'title', point.lng + '|' + point.lat)
-                            })); // 创建信息窗口对象
-                            that.map.openInfoWindow(infoWindow, point);
-                        });
+                        marker.addEventListener('click', this.getInfoWindowHandler(poiType, point, data));
 
                         this.map.addOverlay(marker);
                         if (this.getPoiExt(poiType, data, 'animation', false)) {
@@ -522,14 +532,16 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             var points = [];
                                             pointArray.forEach(function (v) {
                                                 v.points.forEach(function (point) {
-                                                    point.text = that.getPoiExt(pointTypeName, v.poiData, 'text', '');
+                                                    point.poiData = v.poiData;
                                                     points.push(point);
                                                     // that.addpoint(pointTypeName, point, BMap, v.poiData);
                                                 });
                                             });
                                             var pointCollection = new BMap.PointCollection(points, that.getPoiTypeOption(pointTypeName));
                                             pointCollection.addEventListener('click', function (e) {
-                                                alert('单击点的坐标为：' + e.point.lng + ',' + e.point.lat + ', 内容为：' + e.point.text); // 监听点击事件
+                                                var poiData = e.point.poiData;
+                                                delete e.point[poiData];
+                                                that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)();
                                             });
                                             that.map.addOverlay(pointCollection);
                                         }

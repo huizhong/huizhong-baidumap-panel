@@ -154,6 +154,9 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
     }
 
     getPoiExt(poiType, poiConfig, configName, defaultValue = '') {
+        if (!poiType) {
+            return defaultValue;
+        }
         const extName = this.panel.extName;
         if (poiConfig && extName in poiConfig && poiConfig[extName].length > 0) {
             const extJson = JSON.parse(poiConfig[extName]);
@@ -243,12 +246,23 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         this.markers.splice(0, this.markers.length);
         if (datas.length) {
             this.data = datas;
-
             this.map ? this.addNode(this.BMap) : this.render();
         } else {
             if (this.map) this.map.clearOverlays();
             this.render();
         }
+    }
+
+    getPoiInfoWindowHandler(poiType, point, poiData, defaultContent = '') {
+        const that = this;
+        return () => {
+            const infoWindow = new BMap.InfoWindow(that.getPoiExt(poiType, poiData, 'content', defaultContent),
+                that.getPoiOption(poiType, poiData, {
+                    'title': that.getPoiExt(poiType, poiData, 'title', point.lng + '|' + point.lat)
+                })
+            ); // 创建信息窗口对象
+            that.map.openInfoWindow(infoWindow, point);
+        };
     }
 
     addMarker(poiType, point, BMap, data) {
@@ -280,14 +294,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         if (this.getPoiExt(poiType, data, 'enableDragging', false)) {
             marker.enableDragging();
         }
-        marker.addEventListener('click', function () {
-            const infoWindow = new BMap.InfoWindow(that.getPoiExt(poiType, data, 'content', ''),
-                that.getPoiOption(poiType, data, {
-                    'title': that.getPoiExt(poiType, data, 'title', point.lng + '|' + point.lat)
-                })
-            ); // 创建信息窗口对象
-            that.map.openInfoWindow(infoWindow, point);
-        });
+        marker.addEventListener('click', this.getInfoWindowHandler(poiType, point, data));
 
         this.map.addOverlay(marker);
         if (this.getPoiExt(poiType, data, 'animation', false)) {
@@ -454,14 +461,15 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         const points = [];
                         pointArray.forEach((v) => {
                             v.points.forEach((point) => {
-                                point.text = that.getPoiExt(pointTypeName, v.poiData, 'text', '');
+                                point.poiData = v.poiData;
                                 points.push(point);
-                                // that.addpoint(pointTypeName, point, BMap, v.poiData);
                             });
                         });
                         const pointCollection = new BMap.PointCollection(points, that.getPoiTypeOption(pointTypeName));
                         pointCollection.addEventListener('click', (e) => {
-                            alert('单击点的坐标为：' + e.point.lng + ',' + e.point.lat + ', 内容为：' + e.point.text);  // 监听点击事件
+                            const poiData = e.point.poiData;
+                            delete e.point[poiData];
+                            that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)();
                         });
                         that.map.addOverlay(pointCollection);
                     }
