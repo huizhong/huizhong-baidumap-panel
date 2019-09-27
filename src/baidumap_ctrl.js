@@ -406,10 +406,14 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         const gpsList = poiList[poiIndex][that.panel.posName].split(';');
                         for (let gpsIndex = 0; gpsIndex < gpsList.length; gpsIndex++) {
                             const gpsStr = gpsList[gpsIndex];
-                            const [lng, lat] = gpsStr.split('|');
+                            let items = gpsStr.split('|');
+                            if (items.length === 1) {
+                                items = gpsStr.split(',');
+                            }
+                            const [lng, lat] = items;
                             const gpsItem = Object.assign({}, poiList[poiIndex]);
-                            gpsItem.lng = parseFloat(lng);
-                            gpsItem.lat = parseFloat(lat);
+                            gpsItem.lng = parseFloat(lng.trim());
+                            gpsItem.lat = parseFloat(lat.trim());
                             translateOne(poiIndex, gpsIndex, gpsItem, BMap);
                         }
                     }

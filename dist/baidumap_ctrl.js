@@ -893,15 +893,19 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             var gpsList = poiList[poiIndex][that.panel.posName].split(';');
                                             for (var gpsIndex = 0; gpsIndex < gpsList.length; gpsIndex++) {
                                                 var gpsStr = gpsList[gpsIndex];
+                                                var items = gpsStr.split('|');
+                                                if (items.length === 1) {
+                                                    items = gpsStr.split(',');
+                                                }
 
-                                                var _gpsStr$split = gpsStr.split('|'),
-                                                    _gpsStr$split2 = _slicedToArray(_gpsStr$split, 2),
-                                                    _lng = _gpsStr$split2[0],
-                                                    _lat = _gpsStr$split2[1];
+                                                var _items = items,
+                                                    _items2 = _slicedToArray(_items, 2),
+                                                    _lng = _items2[0],
+                                                    _lat = _items2[1];
 
                                                 var _gpsItem2 = Object.assign({}, poiList[poiIndex]);
-                                                _gpsItem2.lng = parseFloat(_lng);
-                                                _gpsItem2.lat = parseFloat(_lat);
+                                                _gpsItem2.lng = parseFloat(_lng.trim());
+                                                _gpsItem2.lat = parseFloat(_lat.trim());
                                                 translateOne(poiIndex, gpsIndex, _gpsItem2, BMap);
                                             }
                                         }
