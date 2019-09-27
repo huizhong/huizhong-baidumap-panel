@@ -330,6 +330,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         const that = this;
         const poiList = this.data;
         this.map.clearOverlays();
+        this.clickHandler = [];
         console.log(poiList);
         if (poiList) {
             const shapeMap = [];
@@ -574,108 +575,131 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     const linePoiTypes = ['polyline', 'polygon'];
                     const dotPoiTypes = ['circle', 'square', 'point'];
                     const canvasTypes = [...labelPoiTypes, ...dotPoiTypes, ...linePoiTypes];
+                    const canvasLayerUpdater = (checkPoint) => {
+                        let checkPixel = null;
+                        if (checkPoint) {
+                            checkPixel = that.map.pointToPixel(checkPoint);
+                        }
+                        const matchItems = [];
+                        const ctx = this.canvas.getContext('2d');
+                        if (!ctx) {
+                            return matchItems;
+                        }
+                        ctx.save();
+                        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                        if (that.panel.maskColor) {
+                            ctx.beginPath();
+                            ctx.fillStyle = that.panel.maskColor;
+                            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                            ctx.closePath();
+                        }
+                        ctx.restore();
+                        dotPoiTypes.forEach((poiType) => {
+                            if (shapeMap[poiType]) {
+                                shapeMap[poiType].forEach((item) => {
+                                    item.points.forEach((point) => {
+                                        ctx.save();
+                                        const isCircle = poiType === 'circle';
+                                        const isPoint = poiType === 'point';
+                                        const layerItem = {
+                                            lng: point.lng,
+                                            lat: point.lat,
+                                            size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' :
+                                                (isPoint ? 'size' : 'length'), isCircle ? 10 :
+                                                (isPoint ? 5 : 20)),
+                                        };
+                                        ctx.beginPath();
+                                        filterCtx(ctx, that.getPoiOption(poiType, item.poiData, isPoint ? {
+                                            'fillColor': getColor(that.getPoiConfig(poiType, item.poiData, 'color', 'blue'), 0.4)
+                                        } : {}));
+                                        const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
+                                            parseFloat(layerItem.lat), layerItem.size, !isCircle);
+                                        if (isPoint) {
+                                            ctx.arc(posRect.x, posRect.y, layerItem.size, 0, 2 * Math.PI);
+                                        } else if (isCircle) {
+                                            ctx.arc(posRect.x, posRect.y, posRect.w, 0, 2 * Math.PI);
+                                        } else {
+                                            ctx.rect(posRect.x, posRect.y, posRect.w, posRect.h);
+                                        }
+                                        if (checkPixel && ctx.isPointInPath(checkPixel.x, checkPixel.y)) {
+                                            matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                        }
+                                        ctx.closePath();
+                                        if (!isPoint) {
+                                            ctx.stroke();
+                                        }
+                                        ctx.fill();
+                                        ctx.restore();
+                                    });
+                                });
+                            }
+                        });
+                        linePoiTypes.forEach((poiType) => {
+                            if (shapeMap[poiType]) {
+                                shapeMap[poiType].forEach((item) => {
+                                    ctx.save();
+                                    ctx.beginPath();
+                                    const poiOption = that.getPoiOption(poiType, item.poiData);
+                                    filterCtx(ctx, poiOption);
+                                    const startPoint = that.map.pointToPixel(item.points[0]);
+                                    ctx.moveTo(startPoint.x, startPoint.y);
+                                    for (let pointIndex = 1; pointIndex < item.points.length; pointIndex++) {
+                                        const linePoint = that.map.pointToPixel(item.points[pointIndex]);
+                                        ctx.lineTo(linePoint.x, linePoint.y);
+                                    }
+                                    if (poiType === 'polyline') {
+                                        ctx.stroke();
+                                    } else if (poiType === 'polygon') {
+                                        ctx.closePath();
+                                        ctx.stroke();
+                                        if (poiOption.fillOpacity) {
+                                            ctx.globalAlpha = poiOption.fillOpacity;
+                                        }
+                                        ctx.fill();
+                                    }
+                                    if (checkPixel && ctx.isPointInPath(checkPixel.x, checkPixel.y)) {
+                                        matchItems.push([checkPoint, poiType, item.poiData, item.points]);
+                                    }
+                                    ctx.restore();
+                                });
+                            }
+                        });
+                        labelPoiTypes.forEach((poiType) => {
+                            if (shapeMap[poiType]) {
+                                shapeMap[poiType].forEach((item) => {
+                                    ctx.save();
+                                    ctx.beginPath();
+                                    const labelText = that.getPoiContent(poiType, item.poiData);
+                                    const poiOption = that.getPoiOption(poiType, item.poiData);
+                                    filterCtx(ctx, poiOption, false);
+                                    for (let pointIndex = 0; pointIndex < item.points.length; pointIndex++) {
+                                        ctx.beginPath();
+                                        const labelPoint = that.map.pointToPixel(item.points[pointIndex]);
+                                        ctx.fillText(labelText, labelPoint.x, labelPoint.y);
+                                        if (checkPixel && ctx.isPointInPath(checkPixel.x, checkPixel.y)) {
+                                            matchItems.push([checkPoint, poiType, item.poiData, item.points[pointIndex]]);
+                                        }
+                                    }
+                                    ctx.restore();
+                                });
+                            }
+                        });
+                        return matchItems;
+                    };
+
                     if (canvasTypes.some(canvasType => shapeMap[canvasType]) || that.panel.maskColor) {
                         that.map.addOverlay(new BMap.CanvasLayer({
                             paneName: 'mapPane',
                             zIndex: -999,
-                            update: function () {
-                                const ctx = this.canvas.getContext('2d');
-                                if (!ctx) {
-                                    return;
-                                }
-                                ctx.save();
-                                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                                if (that.panel.maskColor) {
-                                    ctx.beginPath();
-                                    ctx.fillStyle = that.panel.maskColor;
-                                    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                                    ctx.closePath();
-                                }
-                                ctx.restore();
-                                dotPoiTypes.forEach((poiType) => {
-                                    if (shapeMap[poiType]) {
-                                        shapeMap[poiType].forEach((item) => {
-                                            item.points.forEach((point) => {
-                                                ctx.save();
-                                                const isCircle = poiType === 'circle';
-                                                const isPoint = poiType === 'point';
-                                                const layerItem = {
-                                                    lng: point.lng,
-                                                    lat: point.lat,
-                                                    size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' :
-                                                        (isPoint ? 'size' : 'length'), isCircle ? 10 :
-                                                        (isPoint ? 3 : 20)),
-                                                };
-                                                ctx.beginPath();
-                                                filterCtx(ctx, that.getPoiOption(poiType, item.poiData, isPoint ? {
-                                                    'fillColor': getColor(that.getPoiConfig(poiType, item.poiData, 'color', 'blue'), 0.4)
-                                                } : {}));
-                                                const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
-                                                    parseFloat(layerItem.lat), layerItem.size, !isCircle);
-                                                if (isPoint) {
-                                                    ctx.arc(posRect.x, posRect.y, layerItem.size, 0, 2 * Math.PI);
-                                                } else if (isCircle) {
-                                                    ctx.arc(posRect.x, posRect.y, posRect.w, 0, 2 * Math.PI);
-                                                } else {
-                                                    ctx.rect(posRect.x, posRect.y, posRect.w, posRect.h);
-                                                }
-                                                ctx.closePath();
-                                                if (!isPoint) {
-                                                    ctx.stroke();
-                                                }
-                                                ctx.fill();
-                                                ctx.restore();
-                                            });
-                                        });
-                                    }
-                                });
-                                linePoiTypes.forEach((linePoiType) => {
-                                    if (shapeMap[linePoiType]) {
-                                        shapeMap[linePoiType].forEach((item) => {
-                                            ctx.save();
-                                            ctx.beginPath();
-                                            const poiOption = that.getPoiOption(linePoiType, item.poiData);
-                                            filterCtx(ctx, poiOption);
-                                            const startPoint = that.map.pointToPixel(item.points[0]);
-                                            ctx.moveTo(startPoint.x, startPoint.y);
-                                            for (let pointIndex = 1; pointIndex < item.points.length; pointIndex++) {
-                                                const linePoint = that.map.pointToPixel(item.points[pointIndex]);
-                                                ctx.lineTo(linePoint.x, linePoint.y);
-                                            }
-                                            if (linePoiType === 'polyline') {
-                                                ctx.stroke();
-                                            } else if (linePoiType === 'polygon') {
-                                                ctx.closePath();
-                                                ctx.stroke();
-                                                if (poiOption.fillOpacity) {
-                                                    ctx.globalAlpha = poiOption.fillOpacity;
-                                                }
-                                                ctx.fill();
-                                            }
-                                            ctx.restore();
-                                        });
-                                    }
-                                });
-                                labelPoiTypes.forEach((labelPoiType) => {
-                                    if (shapeMap[labelPoiType]) {
-                                        shapeMap[labelPoiType].forEach((item) => {
-                                            ctx.save();
-                                            ctx.beginPath();
-                                            const labelText = that.getPoiContent(labelPoiType, item.poiData);
-                                            const poiOption = that.getPoiOption(labelPoiType, item.poiData);
-                                            filterCtx(ctx, poiOption, false);
-                                            for (let pointIndex = 0; pointIndex < item.points.length; pointIndex++) {
-                                                const labelPoint = that.map.pointToPixel(item.points[pointIndex]);
-                                                ctx.fillText(labelText, labelPoint.x, labelPoint.y);
-                                            }
-                                            ctx.restore();
-                                        });
-                                    }
-                                });
-                            }
+                            update: canvasLayerUpdater()
                         }));
+                        that.clickHandler.push((event) => {
+                            const matchItems = canvasLayerUpdater(event.point);
+                            if (matchItems.length > 0) {
+                                that.getPoiInfoWindowHandler(matchItems[1], matchItems[0], matchItems[1])(event);
+                            }
+                        });
                     }
-
                 }
             }
         }

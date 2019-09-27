@@ -50,6 +50,13 @@ export default function link(scope, elem, attrs, ctrl) {
                         ctrl.panel.lng = center.lng;
                     });
 
+                    ctrl.map.addEventListener('click', function (event) {
+                        if (ctrl.clickHandler && ctrl.clickHandler.length > 0) {
+                            ctrl.clickHandler.forEach(handler => handler(event));
+                        }
+                        // alert(e.point.lng + ', ' + e.point.lat);
+                    });
+
                     // eslint-disable-next-line no-unused-expressions
                     setTimeout(function (e) {
                         ctrl.distanceTool = new BMapLib.DistanceTool(ctrl.map);

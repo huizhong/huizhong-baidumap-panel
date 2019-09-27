@@ -461,6 +461,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         var that = this;
                         var poiList = this.data;
                         this.map.clearOverlays();
+                        this.clickHandler = [];
                         console.log(poiList);
                         if (poiList) {
                             (function () {
@@ -491,6 +492,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                 };
 
                                 var translateCallback = function translateCallback(myPoiIndex, myGpsIndex, myGps, translatedData) {
+                                    var _this2 = this;
+
                                     var lng = translatedData.lng,
                                         lat = translatedData.lat;
 
@@ -645,105 +648,129 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         var linePoiTypes = ['polyline', 'polygon'];
                                         var dotPoiTypes = ['circle', 'square', 'point'];
                                         var canvasTypes = [].concat(labelPoiTypes, dotPoiTypes, linePoiTypes);
+                                        var canvasLayerUpdater = function canvasLayerUpdater(checkPoint) {
+                                            var checkPixel = null;
+                                            if (checkPoint) {
+                                                checkPixel = that.map.pointToPixel(checkPoint);
+                                            }
+                                            var matchItems = [];
+                                            var ctx = _this2.canvas.getContext('2d');
+                                            if (!ctx) {
+                                                return matchItems;
+                                            }
+                                            ctx.save();
+                                            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                                            if (that.panel.maskColor) {
+                                                ctx.beginPath();
+                                                ctx.fillStyle = that.panel.maskColor;
+                                                ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                                                ctx.closePath();
+                                            }
+                                            ctx.restore();
+                                            dotPoiTypes.forEach(function (poiType) {
+                                                if (shapeMap[poiType]) {
+                                                    shapeMap[poiType].forEach(function (item) {
+                                                        item.points.forEach(function (point) {
+                                                            ctx.save();
+                                                            var isCircle = poiType === 'circle';
+                                                            var isPoint = poiType === 'point';
+                                                            var layerItem = {
+                                                                lng: point.lng,
+                                                                lat: point.lat,
+                                                                size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' : isPoint ? 'size' : 'length', isCircle ? 10 : isPoint ? 5 : 20)
+                                                            };
+                                                            ctx.beginPath();
+                                                            filterCtx(ctx, that.getPoiOption(poiType, item.poiData, isPoint ? {
+                                                                'fillColor': getColor(that.getPoiConfig(poiType, item.poiData, 'color', 'blue'), 0.4)
+                                                            } : {}));
+                                                            var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isCircle);
+                                                            if (isPoint) {
+                                                                ctx.arc(posRect.x, posRect.y, layerItem.size, 0, 2 * Math.PI);
+                                                            } else if (isCircle) {
+                                                                ctx.arc(posRect.x, posRect.y, posRect.w, 0, 2 * Math.PI);
+                                                            } else {
+                                                                ctx.rect(posRect.x, posRect.y, posRect.w, posRect.h);
+                                                            }
+                                                            if (checkPixel && ctx.isPointInPath(checkPixel.x, checkPixel.y)) {
+                                                                matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                                            }
+                                                            ctx.closePath();
+                                                            if (!isPoint) {
+                                                                ctx.stroke();
+                                                            }
+                                                            ctx.fill();
+                                                            ctx.restore();
+                                                        });
+                                                    });
+                                                }
+                                            });
+                                            linePoiTypes.forEach(function (poiType) {
+                                                if (shapeMap[poiType]) {
+                                                    shapeMap[poiType].forEach(function (item) {
+                                                        ctx.save();
+                                                        ctx.beginPath();
+                                                        var poiOption = that.getPoiOption(poiType, item.poiData);
+                                                        filterCtx(ctx, poiOption);
+                                                        var startPoint = that.map.pointToPixel(item.points[0]);
+                                                        ctx.moveTo(startPoint.x, startPoint.y);
+                                                        for (var pointIndex = 1; pointIndex < item.points.length; pointIndex++) {
+                                                            var linePoint = that.map.pointToPixel(item.points[pointIndex]);
+                                                            ctx.lineTo(linePoint.x, linePoint.y);
+                                                        }
+                                                        if (poiType === 'polyline') {
+                                                            ctx.stroke();
+                                                        } else if (poiType === 'polygon') {
+                                                            ctx.closePath();
+                                                            ctx.stroke();
+                                                            if (poiOption.fillOpacity) {
+                                                                ctx.globalAlpha = poiOption.fillOpacity;
+                                                            }
+                                                            ctx.fill();
+                                                        }
+                                                        if (checkPixel && ctx.isPointInPath(checkPixel.x, checkPixel.y)) {
+                                                            matchItems.push([checkPoint, poiType, item.poiData, item.points]);
+                                                        }
+                                                        ctx.restore();
+                                                    });
+                                                }
+                                            });
+                                            labelPoiTypes.forEach(function (poiType) {
+                                                if (shapeMap[poiType]) {
+                                                    shapeMap[poiType].forEach(function (item) {
+                                                        ctx.save();
+                                                        ctx.beginPath();
+                                                        var labelText = that.getPoiContent(poiType, item.poiData);
+                                                        var poiOption = that.getPoiOption(poiType, item.poiData);
+                                                        filterCtx(ctx, poiOption, false);
+                                                        for (var pointIndex = 0; pointIndex < item.points.length; pointIndex++) {
+                                                            ctx.beginPath();
+                                                            var labelPoint = that.map.pointToPixel(item.points[pointIndex]);
+                                                            ctx.fillText(labelText, labelPoint.x, labelPoint.y);
+                                                            if (checkPixel && ctx.isPointInPath(checkPixel.x, checkPixel.y)) {
+                                                                matchItems.push([checkPoint, poiType, item.poiData, item.points[pointIndex]]);
+                                                            }
+                                                        }
+                                                        ctx.restore();
+                                                    });
+                                                }
+                                            });
+                                            return matchItems;
+                                        };
+
                                         if (canvasTypes.some(function (canvasType) {
                                             return shapeMap[canvasType];
                                         }) || that.panel.maskColor) {
                                             that.map.addOverlay(new BMap.CanvasLayer({
                                                 paneName: 'mapPane',
                                                 zIndex: -999,
-                                                update: function update() {
-                                                    var ctx = this.canvas.getContext('2d');
-                                                    if (!ctx) {
-                                                        return;
-                                                    }
-                                                    ctx.save();
-                                                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                                                    if (that.panel.maskColor) {
-                                                        ctx.beginPath();
-                                                        ctx.fillStyle = that.panel.maskColor;
-                                                        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                                                        ctx.closePath();
-                                                    }
-                                                    ctx.restore();
-                                                    dotPoiTypes.forEach(function (poiType) {
-                                                        if (shapeMap[poiType]) {
-                                                            shapeMap[poiType].forEach(function (item) {
-                                                                item.points.forEach(function (point) {
-                                                                    ctx.save();
-                                                                    var isCircle = poiType === 'circle';
-                                                                    var isPoint = poiType === 'point';
-                                                                    var layerItem = {
-                                                                        lng: point.lng,
-                                                                        lat: point.lat,
-                                                                        size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' : isPoint ? 'size' : 'length', isCircle ? 10 : isPoint ? 3 : 20)
-                                                                    };
-                                                                    ctx.beginPath();
-                                                                    filterCtx(ctx, that.getPoiOption(poiType, item.poiData, isPoint ? {
-                                                                        'fillColor': getColor(that.getPoiConfig(poiType, item.poiData, 'color', 'blue'), 0.4)
-                                                                    } : {}));
-                                                                    var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isCircle);
-                                                                    if (isPoint) {
-                                                                        ctx.arc(posRect.x, posRect.y, layerItem.size, 0, 2 * Math.PI);
-                                                                    } else if (isCircle) {
-                                                                        ctx.arc(posRect.x, posRect.y, posRect.w, 0, 2 * Math.PI);
-                                                                    } else {
-                                                                        ctx.rect(posRect.x, posRect.y, posRect.w, posRect.h);
-                                                                    }
-                                                                    ctx.closePath();
-                                                                    if (!isPoint) {
-                                                                        ctx.stroke();
-                                                                    }
-                                                                    ctx.fill();
-                                                                    ctx.restore();
-                                                                });
-                                                            });
-                                                        }
-                                                    });
-                                                    linePoiTypes.forEach(function (linePoiType) {
-                                                        if (shapeMap[linePoiType]) {
-                                                            shapeMap[linePoiType].forEach(function (item) {
-                                                                ctx.save();
-                                                                ctx.beginPath();
-                                                                var poiOption = that.getPoiOption(linePoiType, item.poiData);
-                                                                filterCtx(ctx, poiOption);
-                                                                var startPoint = that.map.pointToPixel(item.points[0]);
-                                                                ctx.moveTo(startPoint.x, startPoint.y);
-                                                                for (var pointIndex = 1; pointIndex < item.points.length; pointIndex++) {
-                                                                    var linePoint = that.map.pointToPixel(item.points[pointIndex]);
-                                                                    ctx.lineTo(linePoint.x, linePoint.y);
-                                                                }
-                                                                if (linePoiType === 'polyline') {
-                                                                    ctx.stroke();
-                                                                } else if (linePoiType === 'polygon') {
-                                                                    ctx.closePath();
-                                                                    ctx.stroke();
-                                                                    if (poiOption.fillOpacity) {
-                                                                        ctx.globalAlpha = poiOption.fillOpacity;
-                                                                    }
-                                                                    ctx.fill();
-                                                                }
-                                                                ctx.restore();
-                                                            });
-                                                        }
-                                                    });
-                                                    labelPoiTypes.forEach(function (labelPoiType) {
-                                                        if (shapeMap[labelPoiType]) {
-                                                            shapeMap[labelPoiType].forEach(function (item) {
-                                                                ctx.save();
-                                                                ctx.beginPath();
-                                                                var labelText = that.getPoiContent(labelPoiType, item.poiData);
-                                                                var poiOption = that.getPoiOption(labelPoiType, item.poiData);
-                                                                filterCtx(ctx, poiOption, false);
-                                                                for (var pointIndex = 0; pointIndex < item.points.length; pointIndex++) {
-                                                                    var labelPoint = that.map.pointToPixel(item.points[pointIndex]);
-                                                                    ctx.fillText(labelText, labelPoint.x, labelPoint.y);
-                                                                }
-                                                                ctx.restore();
-                                                            });
-                                                        }
-                                                    });
-                                                }
+                                                update: canvasLayerUpdater()
                                             }));
+                                            that.clickHandler.push(function (event) {
+                                                var matchItems = canvasLayerUpdater(event.point);
+                                                if (matchItems.length > 0) {
+                                                    that.getPoiInfoWindowHandler(matchItems[1], matchItems[0], matchItems[1])(event);
+                                                }
+                                            });
                                         }
                                     }
                                 };
@@ -822,10 +849,10 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 }, {
                     key: 'filterEmptyAndZeroValues',
                     value: function filterEmptyAndZeroValues(data) {
-                        var _this2 = this;
+                        var _this3 = this;
 
                         return _.filter(data, function (o) {
-                            return !(_this2.panel.hideEmpty && _.isNil(o.value)) && !(_this2.panel.hideZero && o.value === 0);
+                            return !(_this3.panel.hideEmpty && _.isNil(o.value)) && !(_this3.panel.hideZero && o.value === 0);
                         });
                     }
                 }, {
