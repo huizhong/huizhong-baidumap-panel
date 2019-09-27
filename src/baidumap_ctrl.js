@@ -39,7 +39,7 @@ const panelDefaults = {
     configName: 'config',
     contentName: 'content',
     enableMapClick: false,
-    maskColor: 'rgba(255, 255, 255, 0.4)'
+    maskColor: ''
 };
 
 
@@ -441,7 +441,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     var circle = new BMap.Circle(new BMap.Point(116.415157, 39.914004), 500, {
                         strokeColor: 'blue',
                         strokeWeight: 6,
-                        strokeOpacity: 0.5
+                        strokeOpacity: 0.5,
+                        enableClicking: true
                     }); //创建圆
                     map.addOverlay(circle);            //增加圆
                     circle.addEventListener('click', overlay_style);
@@ -610,7 +611,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     const linePoiTypes = ['polyline', 'polygon'];
                     const dotPoiTypes = ['circle', 'square'];
                     const canvasTypes = [...labelPoiTypes, ...dotPoiTypes, ...linePoiTypes];
-                    if (canvasTypes.some(canvasType => shapeMap[canvasType])) {
+                    if (canvasTypes.some(canvasType => shapeMap[canvasType]) || that.panel.maskColor) {
                         that.map.addOverlay(new BMap.CanvasLayer({
                             paneName: 'vertexPane',
                             zIndex: -1,
@@ -621,7 +622,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 }
                                 ctx.save();
                                 ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                                if (that.panel.maskColor && that.panel.maskColor.length > 0) {
+                                if (that.panel.maskColor) {
                                     ctx.beginPath();
                                     ctx.fillStyle = that.panel.maskColor;
                                     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
