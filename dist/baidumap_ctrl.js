@@ -444,7 +444,11 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                             if (!clickPoint) {
                                 clickPoint = e.point;
                             }
-                            var infoWindow = new BMap.InfoWindow(that.getPoiContent(poiType, poiItem, defaultContent), that.getPoiConfig(poiType, poiItem, 'contentOption', {
+                            var poiContent = that.getPoiContent(poiType, poiItem, defaultContent);
+                            if (!poiContent) {
+                                return;
+                            }
+                            var infoWindow = new BMap.InfoWindow(poiContent, that.getPoiConfig(poiType, poiItem, 'contentOption', {
                                 'title': that.getPoiConfig(poiType, poiItem, 'title', clickPoint.lng + '|' + clickPoint.lat)
                             })); // 创建信息窗口对象
                             that.map.openInfoWindow(infoWindow, clickPoint);

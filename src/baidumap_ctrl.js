@@ -320,7 +320,11 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
             if (!clickPoint) {
                 clickPoint = e.point;
             }
-            const infoWindow = new BMap.InfoWindow(that.getPoiContent(poiType, poiItem, defaultContent),
+            const poiContent = that.getPoiContent(poiType, poiItem, defaultContent);
+            if (!poiContent) {
+                return;
+            }
+            const infoWindow = new BMap.InfoWindow(poiContent,
                 that.getPoiConfig(poiType, poiItem, 'contentOption', {
                     'title': that.getPoiConfig(poiType, poiItem, 'title', clickPoint.lng + '|' + clickPoint.lat)
                 })
