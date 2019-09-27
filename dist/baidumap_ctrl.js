@@ -682,7 +682,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                                     filterCtx(ctx, that.getPoiOption(poiType, item.poiData));
                                                                     var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isCircle);
                                                                     if (isPoint) {
-                                                                        ctx.arc(layerItem.x, layerItem.y, layerItem.size, 0, 2 * Math.PI);
+                                                                        ctx.arc(posRect.x, posRect.y, layerItem.size, 0, 2 * Math.PI);
                                                                     } else if (isCircle) {
                                                                         ctx.arc(posRect.x, posRect.y, posRect.w, 0, 2 * Math.PI);
                                                                     } else {
