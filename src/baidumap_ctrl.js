@@ -132,6 +132,30 @@ function getDefaultPolyOption() {
     };
 }
 
+function isPointInCircle(checkPixel, circlePixel, circleRadius) {
+    return (checkPixel.x - circlePixel.x) * (checkPixel.x - circlePixel.x)
+        + (checkPixel.y - circlePixel.y) * (checkPixel.y - circlePixel.y)
+        <= circleRadius * circleRadius
+        ;
+}
+
+function isPointInRect(checkPixel, checkRect) {
+    return checkPixel.x >= checkRect.x
+        && checkPixel.x <= checkRect.x + checkRect.w
+        && checkPixel.y >= checkRect.y
+        && checkPixel.y >= checkRect.y + checkRect.h;
+}
+
+function isPointInPoly(checkPixel, polyPoints) {
+    let isIn = false;
+    for (let isIn = false, i = -1, l = polyPoints.length, j = l - 1; ++i < l; j = i) {
+        ((polyPoints[i].y <= checkPixel.y && checkPixel.y < polyPoints[j].y) || (polyPoints[j].y <= checkPixel.y && checkPixel.y < polyPoints[i].y))
+        && (checkPixel.x < (polyPoints[j].x - polyPoints[i].x) * (checkPixel.y - polyPoints[i].y) / (polyPoints[j].y - polyPoints[i].y) + polyPoints[i].x)
+        && (isIn = !isIn);
+    }
+    return isIn;
+}
+
 export default class BaidumapCtrl extends MetricsPanelCtrl {
     constructor($scope, $injector, contextSrv) {
         super($scope, $injector);
@@ -321,7 +345,6 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
             marker.setAnimation(BMAP_ANIMATION_BOUNCE); // 跳动的动画
         }
         marker.addEventListener('dragend', function (e) {
-            point = new BMap.Point(e.point.lng, e.point.lat);
             alert('当前位置：' + e.point.lng + ', ' + e.point.lat);
         });
     }
@@ -575,14 +598,58 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     const linePoiTypes = ['polyline', 'polygon'];
                     const dotPoiTypes = ['circle', 'square', 'point'];
                     const canvasTypes = [...labelPoiTypes, ...dotPoiTypes, ...linePoiTypes];
-                    const canvasLayerUpdater = (canvasLayer, checkPoint) => {
+                    const canvasLayerPointChecker = (checkPoint) => {
+                        const checkPixel = that.map.pointToPixel(checkPoint);
+                        const matchItems = [];
+                        dotPoiTypes.forEach((poiType) => {
+                            if (shapeMap[poiType]) {
+                                shapeMap[poiType].forEach((item) => {
+                                    item.points.forEach((point) => {
+                                        const isCircle = poiType === 'circle';
+                                        const isPoint = poiType === 'point';
+                                        const layerItem = {
+                                            lng: point.lng,
+                                            lat: point.lat,
+                                            size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' :
+                                                (isPoint ? 'size' : 'length'), isCircle ? 10 :
+                                                (isPoint ? 5 : 20)),
+                                        };
+                                        const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
+                                            parseFloat(layerItem.lat), layerItem.size, !isCircle);
+                                        if (isPoint) {
+                                            if (isPointInCircle(checkPixel, posRect, layerItem.size)) {
+                                                matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                            }
+                                        } else if (isCircle) {
+                                            if (isPointInCircle(checkPixel, posRect, posRect.w)) {
+                                                matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                            }
+                                        } else if (isPointInRect(checkPixel, posRect)) {
+                                            matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                        }
+                                    });
+                                });
+                            }
+                        });
+                        linePoiTypes.forEach((poiType) => {
+                            if (shapeMap[poiType]) {
+                                shapeMap[poiType].forEach((item) => {
+                                    if (poiType === 'polygon'
+                                        && isPointInPoly(checkPixel, item.points.map(p => that.map.pointToPixel(p)))
+                                    ) {
+                                        matchItems.push([checkPoint, poiType, item.poiData, item.points]);
+                                    }
+                                });
+                            }
+                        });
+                        return matchItems;
+                    };
+
+
+                    const canvasLayerUpdater = (canvasLayer) => {
                         const ctx = canvasLayer.canvas.getContext('2d');
                         if (!ctx) {
                             return [];
-                        }
-                        let checkPixel = null;
-                        if (checkPoint) {
-                            checkPixel = that.map.pointToPixel(checkPoint);
                         }
                         const matchItems = [];
                         ctx.save();
@@ -621,9 +688,6 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         } else {
                                             ctx.rect(posRect.x, posRect.y, posRect.w, posRect.h);
                                         }
-                                        if (checkPixel && ctx.isPointInPath(checkPixel.x, checkPixel.y)) {
-                                            matchItems.push([checkPoint, poiType, item.poiData, point]);
-                                        }
                                         ctx.closePath();
                                         if (!isPoint) {
                                             ctx.stroke();
@@ -657,9 +721,6 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         }
                                         ctx.fill();
                                     }
-                                    if (checkPixel && ctx.isPointInPath(checkPixel.x, checkPixel.y)) {
-                                        matchItems.push([checkPoint, poiType, item.poiData, item.points]);
-                                    }
                                     ctx.restore();
                                 });
                             }
@@ -676,9 +737,6 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         ctx.beginPath();
                                         const labelPoint = that.map.pointToPixel(item.points[pointIndex]);
                                         ctx.fillText(labelText, labelPoint.x, labelPoint.y);
-                                        if (checkPixel && ctx.isPointInPath(checkPixel.x, checkPixel.y)) {
-                                            matchItems.push([checkPoint, poiType, item.poiData, item.points[pointIndex]]);
-                                        }
                                     }
                                     ctx.restore();
                                 });
@@ -697,7 +755,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         });
                         that.map.addOverlay(canvasLayer);
                         that.clickHandler.push((event) => {
-                            const matchItems = canvasLayerUpdater(canvasLayer, event.point);
+                            const matchItems = canvasLayerPointChecker(event.point);
                             if (matchItems.length > 0) {
                                 that.getPoiInfoWindowHandler(matchItems[1], matchItems[0], matchItems[1])(event);
                             }

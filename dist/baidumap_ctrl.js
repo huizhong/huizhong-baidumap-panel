@@ -126,6 +126,22 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
         };
     }
 
+    function isPointInCircle(checkPixel, circlePixel, circleRadius) {
+        return (checkPixel.x - circlePixel.x) * (checkPixel.x - circlePixel.x) + (checkPixel.y - circlePixel.y) * (checkPixel.y - circlePixel.y) <= circleRadius * circleRadius;
+    }
+
+    function isPointInRect(checkPixel, checkRect) {
+        return checkPixel.x >= checkRect.x && checkPixel.x <= checkRect.x + checkRect.w && checkPixel.y >= checkRect.y && checkPixel.y >= checkRect.y + checkRect.h;
+    }
+
+    function isPointInPoly(checkPixel, polyPoints) {
+        var isIn = false;
+        for (var _isIn = false, i = -1, l = polyPoints.length, j = l - 1; ++i < l; j = i) {
+            (polyPoints[i].y <= checkPixel.y && checkPixel.y < polyPoints[j].y || polyPoints[j].y <= checkPixel.y && checkPixel.y < polyPoints[i].y) && checkPixel.x < (polyPoints[j].x - polyPoints[i].x) * (checkPixel.y - polyPoints[i].y) / (polyPoints[j].y - polyPoints[i].y) + polyPoints[i].x && (_isIn = !_isIn);
+        }
+        return isIn;
+    }
+
     return {
         setters: [function (_appPluginsSdk) {
             MetricsPanelCtrl = _appPluginsSdk.MetricsPanelCtrl;
@@ -451,7 +467,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                             marker.setAnimation(BMAP_ANIMATION_BOUNCE); // 跳动的动画
                         }
                         marker.addEventListener('dragend', function (e) {
-                            point = new BMap.Point(e.point.lng, e.point.lat);
                             alert('当前位置：' + e.point.lng + ', ' + e.point.lat);
                         });
                     }
@@ -646,14 +661,54 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         var linePoiTypes = ['polyline', 'polygon'];
                                         var dotPoiTypes = ['circle', 'square', 'point'];
                                         var canvasTypes = [].concat(labelPoiTypes, dotPoiTypes, linePoiTypes);
-                                        var canvasLayerUpdater = function canvasLayerUpdater(canvasLayer, checkPoint) {
+                                        var canvasLayerPointChecker = function canvasLayerPointChecker(checkPoint) {
+                                            var checkPixel = that.map.pointToPixel(checkPoint);
+                                            var matchItems = [];
+                                            dotPoiTypes.forEach(function (poiType) {
+                                                if (shapeMap[poiType]) {
+                                                    shapeMap[poiType].forEach(function (item) {
+                                                        item.points.forEach(function (point) {
+                                                            var isCircle = poiType === 'circle';
+                                                            var isPoint = poiType === 'point';
+                                                            var layerItem = {
+                                                                lng: point.lng,
+                                                                lat: point.lat,
+                                                                size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' : isPoint ? 'size' : 'length', isCircle ? 10 : isPoint ? 5 : 20)
+                                                            };
+                                                            var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isCircle);
+                                                            if (isPoint) {
+                                                                if (isPointInCircle(checkPixel, posRect, layerItem.size)) {
+                                                                    matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                                                }
+                                                            } else if (isCircle) {
+                                                                if (isPointInCircle(checkPixel, posRect, posRect.w)) {
+                                                                    matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                                                }
+                                                            } else if (isPointInRect(checkPixel, posRect)) {
+                                                                matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                                            }
+                                                        });
+                                                    });
+                                                }
+                                            });
+                                            linePoiTypes.forEach(function (poiType) {
+                                                if (shapeMap[poiType]) {
+                                                    shapeMap[poiType].forEach(function (item) {
+                                                        if (poiType === 'polygon' && isPointInPoly(checkPixel, item.points.map(function (p) {
+                                                            return that.map.pointToPixel(p);
+                                                        }))) {
+                                                            matchItems.push([checkPoint, poiType, item.poiData, item.points]);
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                            return matchItems;
+                                        };
+
+                                        var canvasLayerUpdater = function canvasLayerUpdater(canvasLayer) {
                                             var ctx = canvasLayer.canvas.getContext('2d');
                                             if (!ctx) {
                                                 return [];
-                                            }
-                                            var checkPixel = null;
-                                            if (checkPoint) {
-                                                checkPixel = that.map.pointToPixel(checkPoint);
                                             }
                                             var matchItems = [];
                                             ctx.save();
@@ -689,9 +744,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                             } else {
                                                                 ctx.rect(posRect.x, posRect.y, posRect.w, posRect.h);
                                                             }
-                                                            if (checkPixel && ctx.isPointInPath(checkPixel.x, checkPixel.y)) {
-                                                                matchItems.push([checkPoint, poiType, item.poiData, point]);
-                                                            }
                                                             ctx.closePath();
                                                             if (!isPoint) {
                                                                 ctx.stroke();
@@ -725,9 +777,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                             }
                                                             ctx.fill();
                                                         }
-                                                        if (checkPixel && ctx.isPointInPath(checkPixel.x, checkPixel.y)) {
-                                                            matchItems.push([checkPoint, poiType, item.poiData, item.points]);
-                                                        }
                                                         ctx.restore();
                                                     });
                                                 }
@@ -744,9 +793,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                             ctx.beginPath();
                                                             var labelPoint = that.map.pointToPixel(item.points[pointIndex]);
                                                             ctx.fillText(labelText, labelPoint.x, labelPoint.y);
-                                                            if (checkPixel && ctx.isPointInPath(checkPixel.x, checkPixel.y)) {
-                                                                matchItems.push([checkPoint, poiType, item.poiData, item.points[pointIndex]]);
-                                                            }
                                                         }
                                                         ctx.restore();
                                                     });
@@ -767,7 +813,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             });
                                             that.map.addOverlay(canvasLayer);
                                             that.clickHandler.push(function (event) {
-                                                var matchItems = canvasLayerUpdater(canvasLayer, event.point);
+                                                var matchItems = canvasLayerPointChecker(event.point);
                                                 if (matchItems.length > 0) {
                                                     that.getPoiInfoWindowHandler(matchItems[1], matchItems[0], matchItems[1])(event);
                                                 }
