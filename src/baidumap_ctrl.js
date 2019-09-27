@@ -143,17 +143,27 @@ function isPointInRect(checkPixel, checkRect) {
     return checkPixel.x >= checkRect.x
         && checkPixel.x <= checkRect.x + checkRect.w
         && checkPixel.y >= checkRect.y
-        && checkPixel.y >= checkRect.y + checkRect.h;
+        && checkPixel.y <= checkRect.y + checkRect.h;
 }
 
 function isPointInPoly(checkPixel, polyPoints) {
-    let isIn = false;
-    for (let isIn = false, i = -1, l = polyPoints.length, j = l - 1; ++i < l; j = i) {
-        ((polyPoints[i].y <= checkPixel.y && checkPixel.y < polyPoints[j].y) || (polyPoints[j].y <= checkPixel.y && checkPixel.y < polyPoints[i].y))
-        && (checkPixel.x < (polyPoints[j].x - polyPoints[i].x) * (checkPixel.y - polyPoints[i].y) / (polyPoints[j].y - polyPoints[i].y) + polyPoints[i].x)
-        && (isIn = !isIn);
+    const x = checkPixel.x;
+    const y = checkPixel.y;
+
+    let inside = false;
+    for (let i = 0, j = polyPoints.length - 1; i < polyPoints.length; j = i++) {
+        const xi = polyPoints[i].x;
+        const yi = polyPoints[i].y;
+        const xj = polyPoints[j].x;
+        const yj = polyPoints[j].y;
+
+        const intersect = ((yi > y) !== (yj > y))
+            && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        if (intersect) {
+            inside = !inside;
+        }
     }
-    return isIn;
+    return inside;
 }
 
 export default class BaidumapCtrl extends MetricsPanelCtrl {

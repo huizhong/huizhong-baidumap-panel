@@ -131,15 +131,26 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
     }
 
     function isPointInRect(checkPixel, checkRect) {
-        return checkPixel.x >= checkRect.x && checkPixel.x <= checkRect.x + checkRect.w && checkPixel.y >= checkRect.y && checkPixel.y >= checkRect.y + checkRect.h;
+        return checkPixel.x >= checkRect.x && checkPixel.x <= checkRect.x + checkRect.w && checkPixel.y >= checkRect.y && checkPixel.y <= checkRect.y + checkRect.h;
     }
 
     function isPointInPoly(checkPixel, polyPoints) {
-        var isIn = false;
-        for (var _isIn = false, i = -1, l = polyPoints.length, j = l - 1; ++i < l; j = i) {
-            (polyPoints[i].y <= checkPixel.y && checkPixel.y < polyPoints[j].y || polyPoints[j].y <= checkPixel.y && checkPixel.y < polyPoints[i].y) && checkPixel.x < (polyPoints[j].x - polyPoints[i].x) * (checkPixel.y - polyPoints[i].y) / (polyPoints[j].y - polyPoints[i].y) + polyPoints[i].x && (_isIn = !_isIn);
+        var x = checkPixel.x;
+        var y = checkPixel.y;
+
+        var inside = false;
+        for (var i = 0, j = polyPoints.length - 1; i < polyPoints.length; j = i++) {
+            var xi = polyPoints[i].x;
+            var yi = polyPoints[i].y;
+            var xj = polyPoints[j].x;
+            var yj = polyPoints[j].y;
+
+            var intersect = yi > y !== yj > y && x < (xj - xi) * (y - yi) / (yj - yi) + xi;
+            if (intersect) {
+                inside = !inside;
+            }
         }
-        return isIn;
+        return inside;
     }
 
     return {
