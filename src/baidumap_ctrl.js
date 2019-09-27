@@ -594,6 +594,26 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             });
                         }
                     });
+                    const centerPointTotal = [0, 0, 0];
+                    ['center'].forEach((poiType) => {
+                        if (poiType in shapeMap) {
+                            shapeMap[poiType].forEach((item) => {
+                                item.points.forEach((point) => {
+                                    centerPointTotal[0] += 1;
+                                    centerPointTotal[1] += point.lng;
+                                    centerPointTotal[2] += point.lat;
+                                });
+                            });
+                        }
+                    });
+                    if (centerPointTotal[0] > 0) {
+                        that.centerPoint = new BMap.Point(
+                            centerPointTotal[1] / centerPointTotal[0],
+                            centerPointTotal[2] / centerPointTotal[0],
+                        );
+                    } else {
+                        that.centerPoint = null;
+                    }
                     ['Polyline', 'Polygon', 'Circle'].forEach((poiType) => {
                         if (shapeMap[poiType]) {
                             shapeMap[poiType].forEach((item) => {
@@ -779,7 +799,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         });
                         that.map.addOverlay(canvasLayer);
                         that.clickHandler.push((event) => {
-                            const matchItems = canvasLayerPointChecker(event.point);
+                            let matchItems = canvasLayerPointChecker(event.point);
+                            matchItems = matchItems.filter(matchItem => that.getPoiContent(matchItem[1], matchItem[2]));
                             if (matchItems.length > 0) {
                                 const matchItem = matchItems[0];
                                 that.getPoiInfoWindowHandler(matchItem[1], event.point, matchItem[2])(event);

@@ -90,7 +90,11 @@ export default function link(scope, elem, attrs, ctrl) {
                         }, {
                             text: '重置地图',
                             callback: function callback() {
-                                ctrl.map.reset();
+                                if (ctrl.centerPoint) {
+                                    ctrl.map.panTo(ctrl.centerPoint);
+                                } else {
+                                    ctrl.map.reset();
+                                }
                             }
                         },
                     ];

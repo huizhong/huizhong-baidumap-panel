@@ -661,6 +661,23 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 });
                                             }
                                         });
+                                        var centerPointTotal = [0, 0, 0];
+                                        ['center'].forEach(function (poiType) {
+                                            if (poiType in shapeMap) {
+                                                shapeMap[poiType].forEach(function (item) {
+                                                    item.points.forEach(function (point) {
+                                                        centerPointTotal[0] += 1;
+                                                        centerPointTotal[1] += point.lng;
+                                                        centerPointTotal[2] += point.lat;
+                                                    });
+                                                });
+                                            }
+                                        });
+                                        if (centerPointTotal[0] > 0) {
+                                            that.centerPoint = new BMap.Point(centerPointTotal[1] / centerPointTotal[0], centerPointTotal[2] / centerPointTotal[0]);
+                                        } else {
+                                            that.centerPoint = null;
+                                        }
                                         ['Polyline', 'Polygon', 'Circle'].forEach(function (poiType) {
                                             if (shapeMap[poiType]) {
                                                 shapeMap[poiType].forEach(function (item) {
@@ -838,6 +855,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             that.map.addOverlay(canvasLayer);
                                             that.clickHandler.push(function (event) {
                                                 var matchItems = canvasLayerPointChecker(event.point);
+                                                matchItems = matchItems.filter(function (matchItem) {
+                                                    return that.getPoiContent(matchItem[1], matchItem[2]);
+                                                });
                                                 if (matchItems.length > 0) {
                                                     var matchItem = matchItems[0];
                                                     that.getPoiInfoWindowHandler(matchItem[1], event.point, matchItem[2])(event);

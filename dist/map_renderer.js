@@ -90,7 +90,11 @@ System.register(['./css/leaflet.css!', './libs/baidumap.js'], function (_export,
                     }, {
                         text: '重置地图',
                         callback: function callback() {
-                            ctrl.map.reset();
+                            if (ctrl.centerPoint) {
+                                ctrl.map.panTo(ctrl.centerPoint);
+                            } else {
+                                ctrl.map.reset();
+                            }
                         }
                     }];
 
