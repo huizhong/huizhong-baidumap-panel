@@ -675,8 +675,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                                     var layerItem = {
                                                                         lng: point.lng,
                                                                         lat: point.lat,
-                                                                        // eslint-disable-next-line no-nested-ternary
-                                                                        size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' : isPoint ? 'size' : 'length', 20)
+                                                                        size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' : isPoint ? 'size' : 'length', isCircle ? 10 : isPoint ? 5 : 20)
                                                                     };
                                                                     ctx.beginPath();
                                                                     filterCtx(ctx, that.getPoiOption(poiType, item.poiData));

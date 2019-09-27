@@ -1,4 +1,4 @@
-/* eslint-disable eqeqeq,id-length,no-inner-declarations,no-plusplus,no-mixed-operators,no-continue */
+/* eslint-disable eqeqeq,id-length,no-inner-declarations,no-plusplus,no-mixed-operators,no-continue,no-nested-ternary */
 /* eslint import/no-extraneous-dependencies: 0 */
 import {MetricsPanelCtrl} from 'app/plugins/sdk';
 import TimeSeries from 'app/core/time_series2';
@@ -602,9 +602,9 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                                 const layerItem = {
                                                     lng: point.lng,
                                                     lat: point.lat,
-                                                    // eslint-disable-next-line no-nested-ternary
                                                     size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' :
-                                                        (isPoint ? 'size' : 'length'), 20),
+                                                        (isPoint ? 'size' : 'length'), isCircle ? 10 :
+                                                        (isPoint ? 5 : 20)),
                                                 };
                                                 ctx.beginPath();
                                                 filterCtx(ctx, that.getPoiOption(poiType, item.poiData));
