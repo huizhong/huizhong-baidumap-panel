@@ -139,7 +139,16 @@ function isPointInCircle(checkPixel, circlePixel, circleRadius) {
         ;
 }
 
-function isPointInRect(checkPixel, checkRect) {
+function isPointInRect(checkPixel, sourceCheckRect) {
+    const checkRect = Object.assign({}, sourceCheckRect);
+    if (checkRect.w < 0) {
+        checkRect.x += checkRect.w;
+        checkRect.w *= -1;
+    }
+    if (checkRect.h < 0) {
+        checkRect.y += checkRect.h;
+        checkRect.h *= -1;
+    }
     return checkPixel.x >= checkRect.x
         && checkPixel.x <= checkRect.x + checkRect.w
         && checkPixel.y >= checkRect.y
@@ -710,47 +719,49 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     const canvasLayerPointChecker = (checkPoint) => {
                         const checkPixel = that.map.pointToPixel(checkPoint);
                         const matchItems = [];
-                        dotPoiTypes.reverse().forEach((poiType) => {
-                            if (shapeMap[poiType]) {
-                                shapeMap[poiType].forEach((item) => {
-                                    item.points.forEach((point) => {
-                                        const isCircle = poiType === 'circle';
-                                        const isPoint = poiType === 'point';
-                                        const layerItem = {
-                                            lng: point.lng,
-                                            lat: point.lat,
-                                            size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' :
-                                                (isPoint ? 'size' : 'length'), isCircle ? 10 :
-                                                (isPoint ? 5 : 20)),
-                                        };
-                                        const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
-                                            parseFloat(layerItem.lat), layerItem.size, !isCircle);
-                                        if (isPoint) {
-                                            if (isPointInCircle(checkPixel, posRect, layerItem.size)) {
+                        dotPoiTypes.reverse()
+                            .forEach((poiType) => {
+                                if (shapeMap[poiType]) {
+                                    shapeMap[poiType].forEach((item) => {
+                                        item.points.forEach((point) => {
+                                            const isCircle = poiType === 'circle';
+                                            const isPoint = poiType === 'point';
+                                            const layerItem = {
+                                                lng: point.lng,
+                                                lat: point.lat,
+                                                size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' :
+                                                    (isPoint ? 'size' : 'length'), isCircle ? 10 :
+                                                    (isPoint ? 5 : 20)),
+                                            };
+                                            const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
+                                                parseFloat(layerItem.lat), layerItem.size, !isCircle);
+                                            if (isPoint) {
+                                                if (isPointInCircle(checkPixel, posRect, layerItem.size)) {
+                                                    matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                                }
+                                            } else if (isCircle) {
+                                                if (isPointInCircle(checkPixel, posRect, posRect.w)) {
+                                                    matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                                }
+                                            } else if (isPointInRect(checkPixel, posRect)) {
                                                 matchItems.push([checkPoint, poiType, item.poiData, point]);
                                             }
-                                        } else if (isCircle) {
-                                            if (isPointInCircle(checkPixel, posRect, posRect.w)) {
-                                                matchItems.push([checkPoint, poiType, item.poiData, point]);
-                                            }
-                                        } else if (isPointInRect(checkPixel, posRect)) {
-                                            matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                        });
+                                    });
+                                }
+                            });
+                        linePoiTypes.reverse()
+                            .forEach((poiType) => {
+                                if (shapeMap[poiType]) {
+                                    shapeMap[poiType].forEach((item) => {
+                                        if (poiType === 'polygon'
+                                            && isPointInPoly(checkPixel, item.points.map(p => that.map.pointToPixel(p)))
+                                        ) {
+                                            matchItems.push([checkPoint, poiType, item.poiData, item.points]);
                                         }
                                     });
-                                });
-                            }
-                        });
-                        linePoiTypes.reverse().forEach((poiType) => {
-                            if (shapeMap[poiType]) {
-                                shapeMap[poiType].forEach((item) => {
-                                    if (poiType === 'polygon'
-                                        && isPointInPoly(checkPixel, item.points.map(p => that.map.pointToPixel(p)))
-                                    ) {
-                                        matchItems.push([checkPoint, poiType, item.poiData, item.points]);
-                                    }
-                                });
-                            }
-                        });
+                                }
+                            });
                         return matchItems;
                     };
 

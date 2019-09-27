@@ -130,7 +130,16 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
         return (checkPixel.x - circlePixel.x) * (checkPixel.x - circlePixel.x) + (checkPixel.y - circlePixel.y) * (checkPixel.y - circlePixel.y) <= circleRadius * circleRadius;
     }
 
-    function isPointInRect(checkPixel, checkRect) {
+    function isPointInRect(checkPixel, sourceCheckRect) {
+        var checkRect = Object.assign({}, sourceCheckRect);
+        if (checkRect.w < 0) {
+            checkRect.x += checkRect.w;
+            checkRect.w *= -1;
+        }
+        if (checkRect.h < 0) {
+            checkRect.y += checkRect.h;
+            checkRect.h *= -1;
+        }
         return checkPixel.x >= checkRect.x && checkPixel.x <= checkRect.x + checkRect.w && checkPixel.y >= checkRect.y && checkPixel.y <= checkRect.y + checkRect.h;
     }
 
