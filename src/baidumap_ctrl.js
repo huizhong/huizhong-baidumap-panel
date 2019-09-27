@@ -691,7 +691,9 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         const canvasLayer = new BMap.CanvasLayer({
                             paneName: 'mapPane',
                             zIndex: -999,
-                            update: canvasLayerUpdater(this)
+                            update: function () {
+                                canvasLayerUpdater(this);
+                            }
                         });
                         that.map.addOverlay(canvasLayer);
                         that.clickHandler.push((event) => {

@@ -761,7 +761,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             var canvasLayer = new BMap.CanvasLayer({
                                                 paneName: 'mapPane',
                                                 zIndex: -999,
-                                                update: canvasLayerUpdater(this)
+                                                update: function update() {
+                                                    canvasLayerUpdater(this);
+                                                }
                                             });
                                             that.map.addOverlay(canvasLayer);
                                             that.clickHandler.push(function (event) {
