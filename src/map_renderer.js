@@ -54,8 +54,7 @@ export default function link(scope, elem, attrs, ctrl) {
                         if (ctrl.clickHandler && ctrl.clickHandler.length > 0) {
                             ctrl.clickHandler.forEach(handler => handler(event));
                         }
-                        // alert(e.point.lng + ', ' + e.point.lat);
-                    });
+                    }, true);
 
                     // eslint-disable-next-line no-unused-expressions
                     setTimeout(function (e) {

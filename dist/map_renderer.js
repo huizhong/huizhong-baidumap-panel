@@ -56,8 +56,7 @@ System.register(['./css/leaflet.css!', './libs/baidumap.js'], function (_export,
                                 return handler(event);
                             });
                         }
-                        // alert(e.point.lng + ', ' + e.point.lat);
-                    });
+                    }, true);
 
                     // eslint-disable-next-line no-unused-expressions
                     setTimeout(function (e) {
