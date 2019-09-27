@@ -778,7 +778,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             const matchItems = canvasLayerPointChecker(event.point);
                             if (matchItems.length > 0) {
                                 const matchItem = matchItems[0];
-                                that.getPoiInfoWindowHandler(matchItem[1], event.point, matchItem[0])(event);
+                                that.getPoiInfoWindowHandler(matchItem[1], event.point, matchItem[2])(event);
                             }
                         });
                     }
