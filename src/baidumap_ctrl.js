@@ -575,16 +575,16 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     const linePoiTypes = ['polyline', 'polygon'];
                     const dotPoiTypes = ['circle', 'square', 'point'];
                     const canvasTypes = [...labelPoiTypes, ...dotPoiTypes, ...linePoiTypes];
-                    const canvasLayerUpdater = (checkPoint) => {
+                    const canvasLayerUpdater = (canvasLayer, checkPoint) => {
+                        const ctx = canvasLayer.canvas.getContext('2d');
+                        if (!ctx) {
+                            return [];
+                        }
                         let checkPixel = null;
                         if (checkPoint) {
                             checkPixel = that.map.pointToPixel(checkPoint);
                         }
                         const matchItems = [];
-                        const ctx = this.canvas.getContext('2d');
-                        if (!ctx) {
-                            return matchItems;
-                        }
                         ctx.save();
                         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                         if (that.panel.maskColor) {
@@ -688,13 +688,14 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     };
 
                     if (canvasTypes.some(canvasType => shapeMap[canvasType]) || that.panel.maskColor) {
-                        that.map.addOverlay(new BMap.CanvasLayer({
+                        const canvasLayer = new BMap.CanvasLayer({
                             paneName: 'mapPane',
                             zIndex: -999,
-                            update: canvasLayerUpdater()
-                        }));
+                            update: canvasLayerUpdater(this)
+                        });
+                        that.map.addOverlay(canvasLayer);
                         that.clickHandler.push((event) => {
-                            const matchItems = canvasLayerUpdater(event.point);
+                            const matchItems = canvasLayerUpdater(canvasLayer, event.point);
                             if (matchItems.length > 0) {
                                 that.getPoiInfoWindowHandler(matchItems[1], matchItems[0], matchItems[1])(event);
                             }

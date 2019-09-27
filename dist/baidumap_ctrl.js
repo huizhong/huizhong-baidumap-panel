@@ -492,8 +492,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                 };
 
                                 var translateCallback = function translateCallback(myPoiIndex, myGpsIndex, myGps, translatedData) {
-                                    var _this2 = this;
-
                                     var lng = translatedData.lng,
                                         lat = translatedData.lat;
 
@@ -648,16 +646,16 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         var linePoiTypes = ['polyline', 'polygon'];
                                         var dotPoiTypes = ['circle', 'square', 'point'];
                                         var canvasTypes = [].concat(labelPoiTypes, dotPoiTypes, linePoiTypes);
-                                        var canvasLayerUpdater = function canvasLayerUpdater(checkPoint) {
+                                        var canvasLayerUpdater = function canvasLayerUpdater(canvasLayer, checkPoint) {
+                                            var ctx = canvasLayer.canvas.getContext('2d');
+                                            if (!ctx) {
+                                                return [];
+                                            }
                                             var checkPixel = null;
                                             if (checkPoint) {
                                                 checkPixel = that.map.pointToPixel(checkPoint);
                                             }
                                             var matchItems = [];
-                                            var ctx = _this2.canvas.getContext('2d');
-                                            if (!ctx) {
-                                                return matchItems;
-                                            }
                                             ctx.save();
                                             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                                             if (that.panel.maskColor) {
@@ -760,13 +758,14 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         if (canvasTypes.some(function (canvasType) {
                                             return shapeMap[canvasType];
                                         }) || that.panel.maskColor) {
-                                            that.map.addOverlay(new BMap.CanvasLayer({
+                                            var canvasLayer = new BMap.CanvasLayer({
                                                 paneName: 'mapPane',
                                                 zIndex: -999,
-                                                update: canvasLayerUpdater()
-                                            }));
+                                                update: canvasLayerUpdater(this)
+                                            });
+                                            that.map.addOverlay(canvasLayer);
                                             that.clickHandler.push(function (event) {
-                                                var matchItems = canvasLayerUpdater(event.point);
+                                                var matchItems = canvasLayerUpdater(canvasLayer, event.point);
                                                 if (matchItems.length > 0) {
                                                     that.getPoiInfoWindowHandler(matchItems[1], matchItems[0], matchItems[1])(event);
                                                 }
@@ -849,10 +848,10 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 }, {
                     key: 'filterEmptyAndZeroValues',
                     value: function filterEmptyAndZeroValues(data) {
-                        var _this3 = this;
+                        var _this2 = this;
 
                         return _.filter(data, function (o) {
-                            return !(_this3.panel.hideEmpty && _.isNil(o.value)) && !(_this3.panel.hideZero && o.value === 0);
+                            return !(_this2.panel.hideEmpty && _.isNil(o.value)) && !(_this2.panel.hideZero && o.value === 0);
                         });
                     }
                 }, {
