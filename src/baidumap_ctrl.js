@@ -598,53 +598,6 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     const linePoiTypes = ['polyline', 'polygon'];
                     const dotPoiTypes = ['circle', 'square', 'point'];
                     const canvasTypes = [...labelPoiTypes, ...dotPoiTypes, ...linePoiTypes];
-                    const canvasLayerPointChecker = (checkPoint) => {
-                        const checkPixel = that.map.pointToPixel(checkPoint);
-                        const matchItems = [];
-                        dotPoiTypes.forEach((poiType) => {
-                            if (shapeMap[poiType]) {
-                                shapeMap[poiType].forEach((item) => {
-                                    item.points.forEach((point) => {
-                                        const isCircle = poiType === 'circle';
-                                        const isPoint = poiType === 'point';
-                                        const layerItem = {
-                                            lng: point.lng,
-                                            lat: point.lat,
-                                            size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' :
-                                                (isPoint ? 'size' : 'length'), isCircle ? 10 :
-                                                (isPoint ? 5 : 20)),
-                                        };
-                                        const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
-                                            parseFloat(layerItem.lat), layerItem.size, !isCircle);
-                                        if (isPoint) {
-                                            if (isPointInCircle(checkPixel, posRect, layerItem.size)) {
-                                                matchItems.push([checkPoint, poiType, item.poiData, point]);
-                                            }
-                                        } else if (isCircle) {
-                                            if (isPointInCircle(checkPixel, posRect, posRect.w)) {
-                                                matchItems.push([checkPoint, poiType, item.poiData, point]);
-                                            }
-                                        } else if (isPointInRect(checkPixel, posRect)) {
-                                            matchItems.push([checkPoint, poiType, item.poiData, point]);
-                                        }
-                                    });
-                                });
-                            }
-                        });
-                        linePoiTypes.forEach((poiType) => {
-                            if (shapeMap[poiType]) {
-                                shapeMap[poiType].forEach((item) => {
-                                    if (poiType === 'polygon'
-                                        && isPointInPoly(checkPixel, item.points.map(p => that.map.pointToPixel(p)))
-                                    ) {
-                                        matchItems.push([checkPoint, poiType, item.poiData, item.points]);
-                                    }
-                                });
-                            }
-                        });
-                        return matchItems;
-                    };
-
 
                     const canvasLayerUpdater = (canvasLayer) => {
                         const ctx = canvasLayer.canvas.getContext('2d');
@@ -745,6 +698,53 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         return matchItems;
                     };
 
+                    const canvasLayerPointChecker = (checkPoint) => {
+                        const checkPixel = that.map.pointToPixel(checkPoint);
+                        const matchItems = [];
+                        dotPoiTypes.forEach((poiType) => {
+                            if (shapeMap[poiType]) {
+                                shapeMap[poiType].forEach((item) => {
+                                    item.points.forEach((point) => {
+                                        const isCircle = poiType === 'circle';
+                                        const isPoint = poiType === 'point';
+                                        const layerItem = {
+                                            lng: point.lng,
+                                            lat: point.lat,
+                                            size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' :
+                                                (isPoint ? 'size' : 'length'), isCircle ? 10 :
+                                                (isPoint ? 5 : 20)),
+                                        };
+                                        const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
+                                            parseFloat(layerItem.lat), layerItem.size, !isCircle);
+                                        if (isPoint) {
+                                            if (isPointInCircle(checkPixel, posRect, layerItem.size)) {
+                                                matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                            }
+                                        } else if (isCircle) {
+                                            if (isPointInCircle(checkPixel, posRect, posRect.w)) {
+                                                matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                            }
+                                        } else if (isPointInRect(checkPixel, posRect)) {
+                                            matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                        }
+                                    });
+                                });
+                            }
+                        });
+                        linePoiTypes.forEach((poiType) => {
+                            if (shapeMap[poiType]) {
+                                shapeMap[poiType].forEach((item) => {
+                                    if (poiType === 'polygon'
+                                        && isPointInPoly(checkPixel, item.points.map(p => that.map.pointToPixel(p)))
+                                    ) {
+                                        matchItems.push([checkPoint, poiType, item.poiData, item.points]);
+                                    }
+                                });
+                            }
+                        });
+                        return matchItems;
+                    };
+
                     if (canvasTypes.some(canvasType => shapeMap[canvasType]) || that.panel.maskColor) {
                         const canvasLayer = new BMap.CanvasLayer({
                             paneName: 'mapPane',
@@ -757,7 +757,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         that.clickHandler.push((event) => {
                             const matchItems = canvasLayerPointChecker(event.point);
                             if (matchItems.length > 0) {
-                                that.getPoiInfoWindowHandler(matchItems[1], matchItems[0], matchItems[1])(event);
+                                const matchItem = matchItems[0];
+                                that.getPoiInfoWindowHandler(matchItem[1], event.point, matchItem[0])(event);
                             }
                         });
                     }
