@@ -507,7 +507,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             return (a.poiIndex - b.poiIndex) * 1000000 + (a.gpsIndex - b.gpsIndex);
                                         });
                                         for (var translateIndex = 0; translateIndex < translatedItems.length; translateIndex++) {
-                                            var _pointTypeName = 'Point';
+                                            var _pointTypeName = 'point';
 
                                             var translatedItem = translatedItems[translateIndex];
                                             var poiType = translatedItem.gps[that.panel.typeName] || _pointTypeName;
@@ -675,10 +675,12 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                                     var layerItem = {
                                                                         lng: point.lng,
                                                                         lat: point.lat,
-                                                                        size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' : isPoint ? 'size' : 'length', isCircle ? 10 : isPoint ? 5 : 20)
+                                                                        size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' : isPoint ? 'size' : 'length', isCircle ? 10 : isPoint ? 3 : 20)
                                                                     };
                                                                     ctx.beginPath();
-                                                                    filterCtx(ctx, that.getPoiOption(poiType, item.poiData));
+                                                                    filterCtx(ctx, that.getPoiOption(poiType, item.poiData, isPoint ? {
+                                                                        'fillColor': getColor(that.getPoiConfig(poiType, item.poiData, 'color', 'blue'), 0.4)
+                                                                    } : {}));
                                                                     var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isCircle);
                                                                     if (isPoint) {
                                                                         ctx.arc(posRect.x, posRect.y, layerItem.size, 0, 2 * Math.PI);
@@ -688,7 +690,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                                         ctx.rect(posRect.x, posRect.y, posRect.w, posRect.h);
                                                                     }
                                                                     ctx.closePath();
-                                                                    ctx.stroke();
+                                                                    if (!isPoint) {
+                                                                        ctx.stroke();
+                                                                    }
                                                                     ctx.fill();
                                                                     ctx.restore();
                                                                 });

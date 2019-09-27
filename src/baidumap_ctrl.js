@@ -429,7 +429,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         return ((a.poiIndex - b.poiIndex) * 1000000) + (a.gpsIndex - b.gpsIndex);
                     });
                     for (let translateIndex = 0; translateIndex < translatedItems.length; translateIndex++) {
-                        const pointTypeName = 'Point';
+                        const pointTypeName = 'point';
 
                         const translatedItem = translatedItems[translateIndex];
                         const poiType = translatedItem.gps[that.panel.typeName] || pointTypeName;
@@ -604,10 +604,12 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                                     lat: point.lat,
                                                     size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' :
                                                         (isPoint ? 'size' : 'length'), isCircle ? 10 :
-                                                        (isPoint ? 5 : 20)),
+                                                        (isPoint ? 3 : 20)),
                                                 };
                                                 ctx.beginPath();
-                                                filterCtx(ctx, that.getPoiOption(poiType, item.poiData));
+                                                filterCtx(ctx, that.getPoiOption(poiType, item.poiData, isPoint ? {
+                                                    'fillColor': getColor(that.getPoiConfig(poiType, item.poiData, 'color', 'blue'), 0.4)
+                                                } : {}));
                                                 const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
                                                     parseFloat(layerItem.lat), layerItem.size, !isCircle);
                                                 if (isPoint) {
@@ -618,7 +620,9 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                                     ctx.rect(posRect.x, posRect.y, posRect.w, posRect.h);
                                                 }
                                                 ctx.closePath();
-                                                ctx.stroke();
+                                                if (!isPoint) {
+                                                    ctx.stroke();
+                                                }
                                                 ctx.fill();
                                                 ctx.restore();
                                             });
