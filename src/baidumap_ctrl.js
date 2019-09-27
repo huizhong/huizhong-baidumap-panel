@@ -621,7 +621,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 }
                                 ctx.save();
                                 ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                                if (that.panel.maskColor) {
+                                if (that.panel.maskColor && that.panel.maskColor.length > 0) {
                                     ctx.fillStyle = that.panel.maskColor;
                                 }
                                 ctx.beginPath();

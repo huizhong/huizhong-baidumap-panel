@@ -690,7 +690,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     }
                                                     ctx.save();
                                                     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                                                    if (that.panel.maskColor) {
+                                                    if (that.panel.maskColor && that.panel.maskColor.length > 0) {
                                                         ctx.fillStyle = that.panel.maskColor;
                                                     }
                                                     ctx.beginPath();
