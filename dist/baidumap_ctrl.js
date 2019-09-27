@@ -661,49 +661,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         var linePoiTypes = ['polyline', 'polygon'];
                                         var dotPoiTypes = ['circle', 'square', 'point'];
                                         var canvasTypes = [].concat(labelPoiTypes, dotPoiTypes, linePoiTypes);
-                                        var canvasLayerPointChecker = function canvasLayerPointChecker(checkPoint) {
-                                            var checkPixel = that.map.pointToPixel(checkPoint);
-                                            var matchItems = [];
-                                            dotPoiTypes.forEach(function (poiType) {
-                                                if (shapeMap[poiType]) {
-                                                    shapeMap[poiType].forEach(function (item) {
-                                                        item.points.forEach(function (point) {
-                                                            var isCircle = poiType === 'circle';
-                                                            var isPoint = poiType === 'point';
-                                                            var layerItem = {
-                                                                lng: point.lng,
-                                                                lat: point.lat,
-                                                                size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' : isPoint ? 'size' : 'length', isCircle ? 10 : isPoint ? 5 : 20)
-                                                            };
-                                                            var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isCircle);
-                                                            if (isPoint) {
-                                                                if (isPointInCircle(checkPixel, posRect, layerItem.size)) {
-                                                                    matchItems.push([checkPoint, poiType, item.poiData, point]);
-                                                                }
-                                                            } else if (isCircle) {
-                                                                if (isPointInCircle(checkPixel, posRect, posRect.w)) {
-                                                                    matchItems.push([checkPoint, poiType, item.poiData, point]);
-                                                                }
-                                                            } else if (isPointInRect(checkPixel, posRect)) {
-                                                                matchItems.push([checkPoint, poiType, item.poiData, point]);
-                                                            }
-                                                        });
-                                                    });
-                                                }
-                                            });
-                                            linePoiTypes.forEach(function (poiType) {
-                                                if (shapeMap[poiType]) {
-                                                    shapeMap[poiType].forEach(function (item) {
-                                                        if (poiType === 'polygon' && isPointInPoly(checkPixel, item.points.map(function (p) {
-                                                            return that.map.pointToPixel(p);
-                                                        }))) {
-                                                            matchItems.push([checkPoint, poiType, item.poiData, item.points]);
-                                                        }
-                                                    });
-                                                }
-                                            });
-                                            return matchItems;
-                                        };
 
                                         var canvasLayerUpdater = function canvasLayerUpdater(canvasLayer) {
                                             var ctx = canvasLayer.canvas.getContext('2d');
@@ -801,6 +758,50 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             return matchItems;
                                         };
 
+                                        var canvasLayerPointChecker = function canvasLayerPointChecker(checkPoint) {
+                                            var checkPixel = that.map.pointToPixel(checkPoint);
+                                            var matchItems = [];
+                                            dotPoiTypes.forEach(function (poiType) {
+                                                if (shapeMap[poiType]) {
+                                                    shapeMap[poiType].forEach(function (item) {
+                                                        item.points.forEach(function (point) {
+                                                            var isCircle = poiType === 'circle';
+                                                            var isPoint = poiType === 'point';
+                                                            var layerItem = {
+                                                                lng: point.lng,
+                                                                lat: point.lat,
+                                                                size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' : isPoint ? 'size' : 'length', isCircle ? 10 : isPoint ? 5 : 20)
+                                                            };
+                                                            var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isCircle);
+                                                            if (isPoint) {
+                                                                if (isPointInCircle(checkPixel, posRect, layerItem.size)) {
+                                                                    matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                                                }
+                                                            } else if (isCircle) {
+                                                                if (isPointInCircle(checkPixel, posRect, posRect.w)) {
+                                                                    matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                                                }
+                                                            } else if (isPointInRect(checkPixel, posRect)) {
+                                                                matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                                            }
+                                                        });
+                                                    });
+                                                }
+                                            });
+                                            linePoiTypes.forEach(function (poiType) {
+                                                if (shapeMap[poiType]) {
+                                                    shapeMap[poiType].forEach(function (item) {
+                                                        if (poiType === 'polygon' && isPointInPoly(checkPixel, item.points.map(function (p) {
+                                                            return that.map.pointToPixel(p);
+                                                        }))) {
+                                                            matchItems.push([checkPoint, poiType, item.poiData, item.points]);
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                            return matchItems;
+                                        };
+
                                         if (canvasTypes.some(function (canvasType) {
                                             return shapeMap[canvasType];
                                         }) || that.panel.maskColor) {
@@ -815,7 +816,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             that.clickHandler.push(function (event) {
                                                 var matchItems = canvasLayerPointChecker(event.point);
                                                 if (matchItems.length > 0) {
-                                                    that.getPoiInfoWindowHandler(matchItems[1], matchItems[0], matchItems[1])(event);
+                                                    var matchItem = matchItems[0];
+                                                    that.getPoiInfoWindowHandler(matchItem[1], event.point, matchItem[0])(event);
                                                 }
                                             });
                                         }
