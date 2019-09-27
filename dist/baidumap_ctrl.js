@@ -542,11 +542,11 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 });
                                             });
                                             var pointCollection = new BMap.PointCollection(points, getFilterColor(that.getPoiTypeOption(pointTypeName)));
-                                            pointCollection.addEventListener('click', function (e) {
-                                                var poiData = e.point.poiData;
-                                                delete e.point[poiData];
-                                                that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)(e);
-                                            });
+                                            // pointCollection.addEventListener('click', (e) => {
+                                            //     const poiData = e.point.poiData;
+                                            //     delete e.point[poiData];
+                                            //     that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)(e);
+                                            // });
                                             that.map.addOverlay(pointCollection);
                                         }
 

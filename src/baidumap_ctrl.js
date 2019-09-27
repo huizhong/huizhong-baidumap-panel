@@ -464,11 +464,11 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             });
                         });
                         const pointCollection = new BMap.PointCollection(points, getFilterColor(that.getPoiTypeOption(pointTypeName)));
-                        pointCollection.addEventListener('click', (e) => {
-                            const poiData = e.point.poiData;
-                            delete e.point[poiData];
-                            that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)(e);
-                        });
+                        // pointCollection.addEventListener('click', (e) => {
+                        //     const poiData = e.point.poiData;
+                        //     delete e.point[poiData];
+                        //     that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)(e);
+                        // });
                         that.map.addOverlay(pointCollection);
                     }
 
