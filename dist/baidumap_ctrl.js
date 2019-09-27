@@ -121,7 +121,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
             strokeWeight: 3,
             strokeOpacity: 0.6,
             strokeColor: 'blue',
-            fillColor: 'white',
+            fillColor: 'red',
             fillOpacity: 0.4
         };
     }
@@ -531,6 +531,25 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         }
                                         console.log('shapeMap', shapeMap);
 
+                                        var pointTypeName = 'Point';
+                                        if (shapeMap[pointTypeName]) {
+                                            var pointArray = shapeMap[pointTypeName];
+                                            var points = [];
+                                            pointArray.forEach(function (v) {
+                                                v.points.forEach(function (point) {
+                                                    point.poiData = v.poiData;
+                                                    points.push(point);
+                                                });
+                                            });
+                                            var pointCollection = new BMap.PointCollection(points, getFilterColor(that.getPoiTypeOption(pointTypeName)));
+                                            pointCollection.addEventListener('click', function (e) {
+                                                var poiData = e.point.poiData;
+                                                delete e.point[poiData];
+                                                that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)(e);
+                                            });
+                                            that.map.addOverlay(pointCollection);
+                                        }
+
                                         var heatPoiType = 'Heat';
                                         if (shapeMap[heatPoiType]) {
                                             var heatShapeList = shapeMap[heatPoiType];
@@ -624,7 +643,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         });
                                         var labelPoiTypes = ['label'];
                                         var linePoiTypes = ['polyline', 'polygon'];
-                                        var dotPoiTypes = ['circle', 'square'];
+                                        var dotPoiTypes = ['circle', 'square', 'point'];
                                         var canvasTypes = [].concat(labelPoiTypes, dotPoiTypes, linePoiTypes);
                                         if (canvasTypes.some(function (canvasType) {
                                             return shapeMap[canvasType];
@@ -652,15 +671,19 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                                 item.points.forEach(function (point) {
                                                                     ctx.save();
                                                                     var isCircle = poiType === 'circle';
+                                                                    var isPoint = poiType === 'point';
                                                                     var layerItem = {
                                                                         lng: point.lng,
                                                                         lat: point.lat,
-                                                                        size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' : 'length', 20)
+                                                                        // eslint-disable-next-line no-nested-ternary
+                                                                        size: that.getPoiConfig(poiType, item.poiData, isCircle ? 'radius' : isPoint ? 'size' : 'length', 20)
                                                                     };
                                                                     ctx.beginPath();
                                                                     filterCtx(ctx, that.getPoiOption(poiType, item.poiData));
                                                                     var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isCircle);
-                                                                    if (isCircle) {
+                                                                    if (isPoint) {
+                                                                        ctx.arc(layerItem.x, layerItem.y, layerItem.size, 0, 2 * Math.PI);
+                                                                    } else if (isCircle) {
                                                                         ctx.arc(posRect.x, posRect.y, posRect.w, 0, 2 * Math.PI);
                                                                     } else {
                                                                         ctx.rect(posRect.x, posRect.y, posRect.w, posRect.h);
@@ -718,25 +741,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     });
                                                 }
                                             }));
-                                        }
-
-                                        var pointTypeName = 'Point';
-                                        if (shapeMap[pointTypeName]) {
-                                            var pointArray = shapeMap[pointTypeName];
-                                            var points = [];
-                                            pointArray.forEach(function (v) {
-                                                v.points.forEach(function (point) {
-                                                    point.poiData = v.poiData;
-                                                    points.push(point);
-                                                });
-                                            });
-                                            var pointCollection = new BMap.PointCollection(points, getFilterColor(that.getPoiTypeOption(pointTypeName)));
-                                            pointCollection.addEventListener('click', function (e) {
-                                                var poiData = e.point.poiData;
-                                                delete e.point[poiData];
-                                                that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)(e);
-                                            });
-                                            that.map.addOverlay(pointCollection);
                                         }
                                     }
                                 };
