@@ -529,7 +529,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                     });
 
                                     if (translatedItems.length === rawLength) {
-
                                         translatedItems.sort(function (a, b) {
                                             return (a.poiIndex - b.poiIndex) * 1000000 + (a.gpsIndex - b.gpsIndex);
                                         });
@@ -772,7 +771,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         var canvasLayerPointChecker = function canvasLayerPointChecker(checkPoint) {
                                             var checkPixel = that.map.pointToPixel(checkPoint);
                                             var matchItems = [];
-                                            dotPoiTypes.forEach(function (poiType) {
+                                            dotPoiTypes.reverse().forEach(function (poiType) {
                                                 if (shapeMap[poiType]) {
                                                     shapeMap[poiType].forEach(function (item) {
                                                         item.points.forEach(function (point) {
@@ -799,7 +798,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     });
                                                 }
                                             });
-                                            linePoiTypes.forEach(function (poiType) {
+                                            linePoiTypes.reverse().forEach(function (poiType) {
                                                 if (shapeMap[poiType]) {
                                                     shapeMap[poiType].forEach(function (item) {
                                                         if (poiType === 'polygon' && isPointInPoly(checkPixel, item.points.map(function (p) {

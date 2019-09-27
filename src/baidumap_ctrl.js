@@ -458,7 +458,6 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 });
 
                 if (translatedItems.length === rawLength) {
-
                     translatedItems.sort(function (a, b) {
                         return ((a.poiIndex - b.poiIndex) * 1000000) + (a.gpsIndex - b.gpsIndex);
                     });
@@ -711,7 +710,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     const canvasLayerPointChecker = (checkPoint) => {
                         const checkPixel = that.map.pointToPixel(checkPoint);
                         const matchItems = [];
-                        dotPoiTypes.forEach((poiType) => {
+                        dotPoiTypes.reverse().forEach((poiType) => {
                             if (shapeMap[poiType]) {
                                 shapeMap[poiType].forEach((item) => {
                                     item.points.forEach((point) => {
@@ -741,7 +740,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 });
                             }
                         });
-                        linePoiTypes.forEach((poiType) => {
+                        linePoiTypes.reverse().forEach((poiType) => {
                             if (shapeMap[poiType]) {
                                 shapeMap[poiType].forEach((item) => {
                                     if (poiType === 'polygon'
