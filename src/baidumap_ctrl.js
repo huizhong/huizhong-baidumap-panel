@@ -622,11 +622,11 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 ctx.save();
                                 ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                                 if (that.panel.maskColor && that.panel.maskColor.length > 0) {
+                                    ctx.beginPath();
                                     ctx.fillStyle = that.panel.maskColor;
+                                    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                                    ctx.closePath();
                                 }
-                                ctx.beginPath();
-                                ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                                ctx.closePath();
                                 ctx.restore();
                                 dotPoiTypes.forEach((poiType) => {
                                     if (shapeMap[poiType]) {

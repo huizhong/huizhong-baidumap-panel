@@ -691,11 +691,11 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     ctx.save();
                                                     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                                                     if (that.panel.maskColor && that.panel.maskColor.length > 0) {
+                                                        ctx.beginPath();
                                                         ctx.fillStyle = that.panel.maskColor;
+                                                        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                                                        ctx.closePath();
                                                     }
-                                                    ctx.beginPath();
-                                                    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                                                    ctx.closePath();
                                                     ctx.restore();
                                                     dotPoiTypes.forEach(function (poiType) {
                                                         if (shapeMap[poiType]) {
