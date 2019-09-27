@@ -453,24 +453,6 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     }
                     console.log('shapeMap', shapeMap);
 
-                    const pointTypeName = 'Point';
-                    if (shapeMap[pointTypeName]) {
-                        const pointArray = shapeMap[pointTypeName];
-                        const points = [];
-                        pointArray.forEach((v) => {
-                            v.points.forEach((point) => {
-                                point.poiData = v.poiData;
-                                points.push(point);
-                            });
-                        });
-                        const pointCollection = new BMap.PointCollection(points, getFilterColor(that.getPoiTypeOption(pointTypeName)));
-                        // pointCollection.addEventListener('click', (e) => {
-                        //     const poiData = e.point.poiData;
-                        //     delete e.point[poiData];
-                        //     that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)(e);
-                        // });
-                        that.map.addOverlay(pointCollection);
-                    }
 
                     const heatPoiType = 'Heat';
                     if (shapeMap[heatPoiType]) {
@@ -665,6 +647,25 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 });
                             }
                         }));
+                    }
+
+                    const pointTypeName = 'Point';
+                    if (shapeMap[pointTypeName]) {
+                        const pointArray = shapeMap[pointTypeName];
+                        const points = [];
+                        pointArray.forEach((v) => {
+                            v.points.forEach((point) => {
+                                point.poiData = v.poiData;
+                                points.push(point);
+                            });
+                        });
+                        const pointCollection = new BMap.PointCollection(points, getFilterColor(that.getPoiTypeOption(pointTypeName)));
+                        pointCollection.addEventListener('click', (e) => {
+                            const poiData = e.point.poiData;
+                            delete e.point[poiData];
+                            that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)(e);
+                        });
+                        that.map.addOverlay(pointCollection);
                     }
                 }
             }

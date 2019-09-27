@@ -531,25 +531,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         }
                                         console.log('shapeMap', shapeMap);
 
-                                        var pointTypeName = 'Point';
-                                        if (shapeMap[pointTypeName]) {
-                                            var pointArray = shapeMap[pointTypeName];
-                                            var points = [];
-                                            pointArray.forEach(function (v) {
-                                                v.points.forEach(function (point) {
-                                                    point.poiData = v.poiData;
-                                                    points.push(point);
-                                                });
-                                            });
-                                            var pointCollection = new BMap.PointCollection(points, getFilterColor(that.getPoiTypeOption(pointTypeName)));
-                                            // pointCollection.addEventListener('click', (e) => {
-                                            //     const poiData = e.point.poiData;
-                                            //     delete e.point[poiData];
-                                            //     that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)(e);
-                                            // });
-                                            that.map.addOverlay(pointCollection);
-                                        }
-
                                         var heatPoiType = 'Heat';
                                         if (shapeMap[heatPoiType]) {
                                             var heatShapeList = shapeMap[heatPoiType];
@@ -737,6 +718,25 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     });
                                                 }
                                             }));
+                                        }
+
+                                        var pointTypeName = 'Point';
+                                        if (shapeMap[pointTypeName]) {
+                                            var pointArray = shapeMap[pointTypeName];
+                                            var points = [];
+                                            pointArray.forEach(function (v) {
+                                                v.points.forEach(function (point) {
+                                                    point.poiData = v.poiData;
+                                                    points.push(point);
+                                                });
+                                            });
+                                            var pointCollection = new BMap.PointCollection(points, getFilterColor(that.getPoiTypeOption(pointTypeName)));
+                                            pointCollection.addEventListener('click', function (e) {
+                                                var poiData = e.point.poiData;
+                                                delete e.point[poiData];
+                                                that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)(e);
+                                            });
+                                            that.map.addOverlay(pointCollection);
                                         }
                                     }
                                 };
