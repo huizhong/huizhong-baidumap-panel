@@ -31,6 +31,8 @@ const panelDefaults = {
     traffic: false,
     clusterPoint: false,
     globalConfig: '',
+    enableMapClick: false,
+
     typeName: 'type',
     lngName: 'longitude',
     latName: 'latitude',
@@ -38,7 +40,22 @@ const panelDefaults = {
     geohashName: 'geohash',
     configName: 'config',
     contentName: 'content',
-    enableMapClick: false,
+
+    circleName: 'circle',
+    squareName: 'square',
+    polygonName: 'polygon',
+    polylineName: 'polyline',
+    pointName: 'point',
+    labelName: 'label',
+    bdLabelName: 'Label',
+    bdPolylineName: 'Polyline',
+    bdPolygonName: 'Polygon',
+    bdCircleName: 'Circle',
+    bdMarkerName: 'Marker',
+    bdRidingRouteName: 'RidingRoute',
+    bdWalkingRouteName: 'WalkingRoute',
+    bdDrivingRouteName: 'DrivingRoute',
+    bdHeatRouteName: 'Heat',
     maskColor: ''
 };
 
@@ -479,7 +496,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         return ((a.poiIndex - b.poiIndex) * 1000000) + (a.gpsIndex - b.gpsIndex);
                     });
                     for (let translateIndex = 0; translateIndex < translatedItems.length; translateIndex++) {
-                        const pointTypeName = 'point';
+                        const pointTypeName = that.panel.pointName;
 
                         const translatedItem = translatedItems[translateIndex];
                         const poiType = translatedItem.gps[that.panel.typeName] || pointTypeName;
@@ -522,7 +539,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         that.map.addOverlay(pointCollection);
                     }
 
-                    const heatPoiType = 'Heat';
+                    const heatPoiType = that.panel.bdHeatRouteName;
                     if (shapeMap[heatPoiType]) {
                         const heatShapeList = shapeMap[heatPoiType];
                         const heatmapOverlay = new BMapLib.HeatmapOverlay(
@@ -549,7 +566,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         });
                     }
 
-                    const labelTypeName = 'Label';
+                    const labelTypeName = that.panel.bdLabelName;
                     if (shapeMap[labelTypeName]) {
                         const labelArray = shapeMap[labelTypeName];
                         labelArray.forEach((v) => {
@@ -567,7 +584,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             });
                         });
                     }
-                    const markerTypeName = 'Marker';
+                    const markerTypeName = that.panel.bdMarkerName;
                     if (shapeMap[markerTypeName]) {
                         const markerArray = shapeMap[markerTypeName];
                         markerArray.forEach((v) => {
@@ -582,12 +599,16 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         }
                     }
 
-                    ['RidingRoute', 'DrivingRoute', 'WalkingRoute'].forEach((poiType) => {
+                    [that.panel.bdRidingRouteName, that.panel.bdDrivingRouteName, that.panel.bdWalkingRouteName].forEach((poiType) => {
                         if (poiType in shapeMap) {
+                            const poiTypeMap = {};
+                            poiTypeMap[that.panel.bdRidingRouteName] = 'RidingRoute';
+                            poiTypeMap[that.panel.bdDrivingRouteName] = 'DrivingRoute';
+                            poiTypeMap[that.panel.bdWalkingRouteName] = 'WalkingRoute';
                             shapeMap[poiType].forEach((item) => {
                                 const points = item.points;
                                 for (let pointIndex = 0; pointIndex < points.length - 1; pointIndex++) {
-                                    const driving = new BMap[poiType](that.map, {
+                                    const driving = new BMap[poiTypeMap[poiType]](that.map, {
                                         renderOptions: {
                                             map: that.map,
                                             autoViewport: false
@@ -618,17 +639,21 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     } else {
                         that.centerPoint = null;
                     }
-                    ['Polyline', 'Polygon', 'Circle'].forEach((poiType) => {
+                    [that.panel.bdPolylineName, that.panel.bdPolygonName, that.panel.bdCircleName].forEach((poiType) => {
                         if (shapeMap[poiType]) {
+                            const poiTypeMap = {};
+                            poiTypeMap[that.panel.bdPolylineName] = 'Polyline';
+                            poiTypeMap[that.panel.bdPolygonName] = 'Polygon';
+                            poiTypeMap[that.panel.bdCircleName] = 'Circle';
                             shapeMap[poiType].forEach((item) => {
                                 const poiOption = Object.assign(
                                     getDefaultPolyOption(),
                                     getFilterColor(that.getPoiOption(item.poiType, item.poiData))
                                 );
                                 const circleRadius = that.getPoiConfig(item.poiType, item.poiData, 'radius', 20);
-                                if (poiType === 'Circle') {
+                                if (poiType === that.panel.bdCircleName) {
                                     item.points.forEach((point) => {
-                                        const shape = new BMap[poiType](point, circleRadius, poiOption);
+                                        const shape = new BMap[poiTypeMap[poiType]](point, circleRadius, poiOption);
                                         that.map.addOverlay(shape);
                                         shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, point, item.poiData));
                                     });
@@ -640,9 +665,9 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             });
                         }
                     });
-                    const labelPoiTypes = ['label'];
-                    const linePoiTypes = ['polyline', 'polygon'];
-                    const dotPoiTypes = ['circle', 'square', 'point'];
+                    const labelPoiTypes = [that.panel.labelName];
+                    const linePoiTypes = [that.panel.polylineName, that.panel.polygonName];
+                    const dotPoiTypes = [that.panel.circleName, that.panel.squareName, that.panel.pointName];
                     const canvasTypes = [...labelPoiTypes, ...dotPoiTypes, ...linePoiTypes];
 
                     const canvasLayerUpdater = (canvasLayer) => {
@@ -665,8 +690,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 shapeMap[poiType].forEach((item) => {
                                     item.points.forEach((point) => {
                                         ctx.save();
-                                        const isCircle = poiType === 'circle';
-                                        const isPoint = poiType === 'point';
+                                        const isCircle = poiType === that.panel.circleName;
+                                        const isPoint = poiType === that.panel.pointName;
                                         const layerItem = {
                                             lng: point.lng,
                                             lat: point.lat,
@@ -710,9 +735,9 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         const linePoint = that.map.pointToPixel(item.points[pointIndex]);
                                         ctx.lineTo(linePoint.x, linePoint.y);
                                     }
-                                    if (poiType === 'polyline') {
+                                    if (poiType === that.panel.polylineName) {
                                         ctx.stroke();
-                                    } else if (poiType === 'polygon') {
+                                    } else if (poiType === that.panel.polygonName) {
                                         ctx.closePath();
                                         ctx.stroke();
                                         if (poiOption.fillOpacity) {
@@ -752,8 +777,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 if (shapeMap[poiType]) {
                                     shapeMap[poiType].forEach((item) => {
                                         item.points.forEach((point) => {
-                                            const isCircle = poiType === 'circle';
-                                            const isPoint = poiType === 'point';
+                                            const isCircle = poiType === that.panel.circleName;
+                                            const isPoint = poiType === that.panel.pointName;
                                             const layerItem = {
                                                 lng: point.lng,
                                                 lat: point.lat,
@@ -782,7 +807,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             .forEach((poiType) => {
                                 if (shapeMap[poiType]) {
                                     shapeMap[poiType].forEach((item) => {
-                                        if (poiType === 'polygon'
+                                        if (poiType === that.panel.polygonName
                                             && isPointInPoly(checkPixel, item.points.map(p => that.map.pointToPixel(p)))
                                         ) {
                                             matchItems.push([checkPoint, poiType, item.poiData, item.points]);

@@ -116,6 +116,69 @@
 		</div>
 	</div>
 	<div class="section gf-form-group">
+		<h5 class="section-heading">类型名称</h5>
+		<div class="gf-form">
+			<label class="gf-form-label width-12">点</label>
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.pointName" ng-change="ctrl.refresh()" ng-model-onblur />
+		</div>
+		<div class="gf-form">
+			<label class="gf-form-label width-12">圏</label>
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.circleName" ng-change="ctrl.refresh()" ng-model-onblur />
+		</div>
+		<div class="gf-form">
+			<label class="gf-form-label width-12">方块</label>
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.squareName" ng-change="ctrl.refresh()" ng-model-onblur />
+		</div>
+		<div class="gf-form">
+			<label class="gf-form-label width-12">折线</label>
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.polylineName" ng-change="ctrl.refresh()" ng-model-onblur />
+		</div>
+		<div class="gf-form">
+			<label class="gf-form-label width-12">多边形</label>
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.polygonName" ng-change="ctrl.refresh()" ng-model-onblur />
+		</div>
+		<div class="gf-form">
+			<label class="gf-form-label width-12">文字</label>
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.labelName" ng-change="ctrl.refresh()" ng-model-onblur />
+		</div>
+		<div class="gf-form">
+			<label class="gf-form-label width-12">热力图（百度库）</label>
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.bdHeatRouteName" ng-change="ctrl.refresh()" ng-model-onblur />
+		</div>
+		<div class="gf-form">
+			<label class="gf-form-label width-12">标记（百度API）</label>
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.bdMarkerName" ng-change="ctrl.refresh()" ng-model-onblur />
+		</div>
+		<div class="gf-form">
+			<label class="gf-form-label width-12">圏（百度API）</label>
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.bdCircleName" ng-change="ctrl.refresh()" ng-model-onblur />
+		</div>
+		<div class="gf-form">
+			<label class="gf-form-label width-12">折线（百度API）</label>
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.bdPolylineName" ng-change="ctrl.refresh()" ng-model-onblur />
+		</div>
+		<div class="gf-form">
+			<label class="gf-form-label width-12">多边形（百度API）</label>
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.bdPolygonName" ng-change="ctrl.refresh()" ng-model-onblur />
+		</div>
+		<div class="gf-form">
+			<label class="gf-form-label width-12">文字（百度API）</label>
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.bdLabelName" ng-change="ctrl.refresh()" ng-model-onblur />
+		</div>
+		<div class="gf-form">
+			<label class="gf-form-label width-12">步行导航（百度API）</label>
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.bdWalkingRouteName" ng-change="ctrl.refresh()" ng-model-onblur />
+		</div>
+		<div class="gf-form">
+			<label class="gf-form-label width-12">骑行导航（百度API）</label>
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.bdRidingRouteName" ng-change="ctrl.refresh()" ng-model-onblur />
+		</div>
+		<div class="gf-form">
+			<label class="gf-form-label width-12">驾车导航（百度API）</label>
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.bdDrivingRouteName" ng-change="ctrl.refresh()" ng-model-onblur />
+		</div>
+	</div>
+	<div class="section gf-form-group">
 		<h5 class="section-heading">元素配置</h5>
 		<gf-form-switch class="gf-form" label="聚合标记点" label-class="width-10" checked="ctrl.panel.clusterPoint"  on-change="ctrl.refresh()">
 		</gf-form-switch>

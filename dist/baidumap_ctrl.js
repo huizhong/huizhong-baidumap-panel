@@ -262,6 +262,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 traffic: false,
                 clusterPoint: false,
                 globalConfig: '',
+                enableMapClick: false,
+
                 typeName: 'type',
                 lngName: 'longitude',
                 latName: 'latitude',
@@ -269,7 +271,22 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 geohashName: 'geohash',
                 configName: 'config',
                 contentName: 'content',
-                enableMapClick: false,
+
+                circleName: 'circle',
+                squareName: 'square',
+                polygonName: 'polygon',
+                polylineName: 'polyline',
+                pointName: 'point',
+                labelName: 'label',
+                bdLabelName: 'Label',
+                bdPolylineName: 'Polyline',
+                bdPolygonName: 'Polygon',
+                bdCircleName: 'Circle',
+                bdMarkerName: 'Marker',
+                bdRidingRouteName: 'RidingRoute',
+                bdWalkingRouteName: 'WalkingRoute',
+                bdDrivingRouteName: 'DrivingRoute',
+                bdHeatRouteName: 'Heat',
                 maskColor: ''
             };
 
@@ -546,7 +563,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             return (a.poiIndex - b.poiIndex) * 1000000 + (a.gpsIndex - b.gpsIndex);
                                         });
                                         for (var translateIndex = 0; translateIndex < translatedItems.length; translateIndex++) {
-                                            var _pointTypeName = 'point';
+                                            var _pointTypeName = that.panel.pointName;
 
                                             var translatedItem = translatedItems[translateIndex];
                                             var poiType = translatedItem.gps[that.panel.typeName] || _pointTypeName;
@@ -589,7 +606,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             that.map.addOverlay(pointCollection);
                                         }
 
-                                        var heatPoiType = 'Heat';
+                                        var heatPoiType = that.panel.bdHeatRouteName;
                                         if (shapeMap[heatPoiType]) {
                                             var heatShapeList = shapeMap[heatPoiType];
                                             var heatmapOverlay = new BMapLib.HeatmapOverlay(Object.assign({
@@ -612,7 +629,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             });
                                         }
 
-                                        var labelTypeName = 'Label';
+                                        var labelTypeName = that.panel.bdLabelName;
                                         if (shapeMap[labelTypeName]) {
                                             var labelArray = shapeMap[labelTypeName];
                                             labelArray.forEach(function (v) {
@@ -630,7 +647,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 });
                                             });
                                         }
-                                        var markerTypeName = 'Marker';
+                                        var markerTypeName = that.panel.bdMarkerName;
                                         if (shapeMap[markerTypeName]) {
                                             var markerArray = shapeMap[markerTypeName];
                                             markerArray.forEach(function (v) {
@@ -645,12 +662,16 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             }
                                         }
 
-                                        ['RidingRoute', 'DrivingRoute', 'WalkingRoute'].forEach(function (poiType) {
+                                        [that.panel.bdRidingRouteName, that.panel.bdDrivingRouteName, that.panel.bdWalkingRouteName].forEach(function (poiType) {
                                             if (poiType in shapeMap) {
+                                                var poiTypeMap = {};
+                                                poiTypeMap[that.panel.bdRidingRouteName] = 'RidingRoute';
+                                                poiTypeMap[that.panel.bdDrivingRouteName] = 'DrivingRoute';
+                                                poiTypeMap[that.panel.bdWalkingRouteName] = 'WalkingRoute';
                                                 shapeMap[poiType].forEach(function (item) {
                                                     var points = item.points;
                                                     for (var pointIndex = 0; pointIndex < points.length - 1; pointIndex++) {
-                                                        var driving = new BMap[poiType](that.map, {
+                                                        var driving = new BMap[poiTypeMap[poiType]](that.map, {
                                                             renderOptions: {
                                                                 map: that.map,
                                                                 autoViewport: false
@@ -678,14 +699,18 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         } else {
                                             that.centerPoint = null;
                                         }
-                                        ['Polyline', 'Polygon', 'Circle'].forEach(function (poiType) {
+                                        [that.panel.bdPolylineName, that.panel.bdPolygonName, that.panel.bdCircleName].forEach(function (poiType) {
                                             if (shapeMap[poiType]) {
+                                                var poiTypeMap = {};
+                                                poiTypeMap[that.panel.bdPolylineName] = 'Polyline';
+                                                poiTypeMap[that.panel.bdPolygonName] = 'Polygon';
+                                                poiTypeMap[that.panel.bdCircleName] = 'Circle';
                                                 shapeMap[poiType].forEach(function (item) {
                                                     var poiOption = Object.assign(getDefaultPolyOption(), getFilterColor(that.getPoiOption(item.poiType, item.poiData)));
                                                     var circleRadius = that.getPoiConfig(item.poiType, item.poiData, 'radius', 20);
-                                                    if (poiType === 'Circle') {
+                                                    if (poiType === that.panel.bdCircleName) {
                                                         item.points.forEach(function (point) {
-                                                            var shape = new BMap[poiType](point, circleRadius, poiOption);
+                                                            var shape = new BMap[poiTypeMap[poiType]](point, circleRadius, poiOption);
                                                             that.map.addOverlay(shape);
                                                             shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, point, item.poiData));
                                                         });
@@ -697,9 +722,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 });
                                             }
                                         });
-                                        var labelPoiTypes = ['label'];
-                                        var linePoiTypes = ['polyline', 'polygon'];
-                                        var dotPoiTypes = ['circle', 'square', 'point'];
+                                        var labelPoiTypes = [that.panel.labelName];
+                                        var linePoiTypes = [that.panel.polylineName, that.panel.polygonName];
+                                        var dotPoiTypes = [that.panel.circleName, that.panel.squareName, that.panel.pointName];
                                         var canvasTypes = [].concat(labelPoiTypes, dotPoiTypes, linePoiTypes);
 
                                         var canvasLayerUpdater = function canvasLayerUpdater(canvasLayer) {
@@ -722,8 +747,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     shapeMap[poiType].forEach(function (item) {
                                                         item.points.forEach(function (point) {
                                                             ctx.save();
-                                                            var isCircle = poiType === 'circle';
-                                                            var isPoint = poiType === 'point';
+                                                            var isCircle = poiType === that.panel.circleName;
+                                                            var isPoint = poiType === that.panel.pointName;
                                                             var layerItem = {
                                                                 lng: point.lng,
                                                                 lat: point.lat,
@@ -764,9 +789,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                             var linePoint = that.map.pointToPixel(item.points[pointIndex]);
                                                             ctx.lineTo(linePoint.x, linePoint.y);
                                                         }
-                                                        if (poiType === 'polyline') {
+                                                        if (poiType === that.panel.polylineName) {
                                                             ctx.stroke();
-                                                        } else if (poiType === 'polygon') {
+                                                        } else if (poiType === that.panel.polygonName) {
                                                             ctx.closePath();
                                                             ctx.stroke();
                                                             if (poiOption.fillOpacity) {
@@ -805,8 +830,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 if (shapeMap[poiType]) {
                                                     shapeMap[poiType].forEach(function (item) {
                                                         item.points.forEach(function (point) {
-                                                            var isCircle = poiType === 'circle';
-                                                            var isPoint = poiType === 'point';
+                                                            var isCircle = poiType === that.panel.circleName;
+                                                            var isPoint = poiType === that.panel.pointName;
                                                             var layerItem = {
                                                                 lng: point.lng,
                                                                 lat: point.lat,
@@ -831,7 +856,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             linePoiTypes.reverse().forEach(function (poiType) {
                                                 if (shapeMap[poiType]) {
                                                     shapeMap[poiType].forEach(function (item) {
-                                                        if (poiType === 'polygon' && isPointInPoly(checkPixel, item.points.map(function (p) {
+                                                        if (poiType === that.panel.polygonName && isPointInPoly(checkPixel, item.points.map(function (p) {
                                                             return that.map.pointToPixel(p);
                                                         }))) {
                                                             matchItems.push([checkPoint, poiType, item.poiData, item.points]);
