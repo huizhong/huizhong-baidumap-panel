@@ -28,12 +28,12 @@ System.register([], function (_export, _context) {
         document.head.appendChild(fileElement);
     }
 
-    function waitLoading(checkValue, fun, checkTime, maxTime) {
-        if (checkValue && maxTime > checkTime) {
-            fun();
+    function waitLoading(checkFun, runFun, checkTime, maxTime) {
+        if (checkFun() && maxTime > checkTime) {
+            runFun();
         } else {
             setTimeout(function () {
-                return waitLoading(checkValue, fun, checkTime, maxTime - checkTime);
+                return waitLoading(checkFun, runFun, checkTime, maxTime - checkTime);
             }, checkTime);
         }
     }
@@ -41,7 +41,9 @@ System.register([], function (_export, _context) {
     function MP(ak) {
         return new Promise(function (resolve, reject) {
             loadJsFile('http://api.map.baidu.com/api?v=3.0&ak=' + ak + '&callback=init', reject);
-            waitLoading(BMap, function () {
+            waitLoading(function () {
+                return typeof BMap !== 'undefined';
+            }, function () {
                 loadJsFile('http://api.map.baidu.com/library/TextIconOverlay/1.2/src/TextIconOverlay_min.js', reject);
                 loadJsFile('http://api.map.baidu.com/library/MarkerClusterer/1.2/src/MarkerClusterer_min.js', reject);
                 loadJsFile('http://api.map.baidu.com/library/Heatmap/2.0/src/Heatmap_min.js', reject);
@@ -50,7 +52,9 @@ System.register([], function (_export, _context) {
 
                 loadJsFile('http://api.map.baidu.com/library/TrafficControl/1.4/src/TrafficControl_min.js', reject);
                 loadCssFile('http://api.map.baidu.com/library/TrafficControl/1.4/src/TrafficControl_min.css', reject);
-                waitLoading(BMapLib, function () {
+                waitLoading(function () {
+                    return typeof BMapLib !== 'undefined';
+                }, function () {
                     resolve(BMap);
                 }, 100, 60000);
             }, 100, 60000);
