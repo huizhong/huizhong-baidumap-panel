@@ -42,7 +42,7 @@ export function MP(ak) {
             loadCssFile('http://api.map.baidu.com/library/TrafficControl/1.4/src/TrafficControl_min.css', reject);
             waitLoading(() => (typeof (BMapLib) !== 'undefined'), () => {
                 resolve(BMap);
-            }, 100, 60000, 300);
-        }, 100, 60000, 300);
+            }, 100, 60000, 100);
+        }, 100, 60000, 100);
     });
 }
