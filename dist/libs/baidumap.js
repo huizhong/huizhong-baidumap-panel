@@ -57,8 +57,8 @@ System.register([], function (_export, _context) {
                     return typeof BMapLib !== 'undefined';
                 }, function () {
                     resolve(BMap);
-                }, 100, 60000, 300);
-            }, 100, 60000, 300);
+                }, 100, 60000, 100);
+            }, 100, 60000, 100);
         });
     }
 
