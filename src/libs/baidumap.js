@@ -19,11 +19,12 @@ function loadCssFile(fileName, reject = null) {
     document.head.appendChild(fileElement);
 }
 
-function waitLoading(checkFun, runFun, checkTime, maxTime) {
+function waitLoading(checkFun, runFun, checkTime, maxTime, delayTime) {
     if (checkFun() && maxTime > checkTime) {
+        setTimeout(runFun(), delayTime);
         runFun();
     } else {
-        setTimeout(() => waitLoading(checkFun, runFun, checkTime, maxTime - checkTime), checkTime);
+        setTimeout(() => waitLoading(checkFun, runFun, checkTime, maxTime - checkTime, delayTime), checkTime);
     }
 }
 
@@ -41,7 +42,7 @@ export function MP(ak) {
             loadCssFile('http://api.map.baidu.com/library/TrafficControl/1.4/src/TrafficControl_min.css', reject);
             waitLoading(() => (typeof (BMapLib) !== 'undefined'), () => {
                 resolve(BMap);
-            }, 100, 60000);
-        }, 100, 60000);
+            }, 100, 60000, 300);
+        }, 100, 60000, 300);
     });
 }

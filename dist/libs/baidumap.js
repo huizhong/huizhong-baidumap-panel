@@ -28,12 +28,13 @@ System.register([], function (_export, _context) {
         document.head.appendChild(fileElement);
     }
 
-    function waitLoading(checkFun, runFun, checkTime, maxTime) {
+    function waitLoading(checkFun, runFun, checkTime, maxTime, delayTime) {
         if (checkFun() && maxTime > checkTime) {
+            setTimeout(runFun(), delayTime);
             runFun();
         } else {
             setTimeout(function () {
-                return waitLoading(checkFun, runFun, checkTime, maxTime - checkTime);
+                return waitLoading(checkFun, runFun, checkTime, maxTime - checkTime, delayTime);
             }, checkTime);
         }
     }
@@ -56,8 +57,8 @@ System.register([], function (_export, _context) {
                     return typeof BMapLib !== 'undefined';
                 }, function () {
                     resolve(BMap);
-                }, 100, 60000);
-            }, 100, 60000);
+                }, 100, 60000, 300);
+            }, 100, 60000, 300);
         });
     }
 
