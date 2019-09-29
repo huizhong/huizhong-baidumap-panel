@@ -287,6 +287,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 bdWalkingRouteName: 'WalkingRoute',
                 bdDrivingRouteName: 'DrivingRoute',
                 bdHeatRouteName: 'Heat',
+                centerName: 'center',
                 maskColor: ''
             };
 
@@ -683,7 +684,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             }
                                         });
                                         var centerPointTotal = [0, 0, 0];
-                                        ['center'].forEach(function (poiType) {
+                                        [that.panel.centerName].forEach(function (poiType) {
                                             if (poiType in shapeMap) {
                                                 shapeMap[poiType].forEach(function (item) {
                                                     item.points.forEach(function (point) {

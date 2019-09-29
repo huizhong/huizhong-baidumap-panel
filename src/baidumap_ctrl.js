@@ -56,6 +56,7 @@ const panelDefaults = {
     bdWalkingRouteName: 'WalkingRoute',
     bdDrivingRouteName: 'DrivingRoute',
     bdHeatRouteName: 'Heat',
+    centerName: 'center',
     maskColor: ''
 };
 
@@ -620,7 +621,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         }
                     });
                     const centerPointTotal = [0, 0, 0];
-                    ['center'].forEach((poiType) => {
+                    [that.panel.centerName].forEach((poiType) => {
                         if (poiType in shapeMap) {
                             shapeMap[poiType].forEach((item) => {
                                 item.points.forEach((point) => {
