@@ -31,7 +31,7 @@ function waitLoading(checkFun, runFun, checkTime, maxTime, delayTime) {
 export function MP(ak) {
     return new Promise((resolve, reject) => {
         loadJsFile('http://api.map.baidu.com/api?v=3.0&ak=' + ak + '&callback=init', reject);
-        waitLoading(() => (typeof (BMap) !== 'undefined'), () => {
+        waitLoading(() => (typeof (BMap) !== 'undefined' && typeof (BMap.Map) !== 'undefined'), () => {
             loadJsFile('http://api.map.baidu.com/library/TextIconOverlay/1.2/src/TextIconOverlay_min.js', reject);
             loadJsFile('http://api.map.baidu.com/library/MarkerClusterer/1.2/src/MarkerClusterer_min.js', reject);
             loadJsFile('http://api.map.baidu.com/library/Heatmap/2.0/src/Heatmap_min.js', reject);

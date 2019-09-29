@@ -43,7 +43,7 @@ System.register([], function (_export, _context) {
         return new Promise(function (resolve, reject) {
             loadJsFile('http://api.map.baidu.com/api?v=3.0&ak=' + ak + '&callback=init', reject);
             waitLoading(function () {
-                return typeof BMap !== 'undefined';
+                return typeof BMap !== 'undefined' && typeof BMap.Map !== 'undefined';
             }, function () {
                 loadJsFile('http://api.map.baidu.com/library/TextIconOverlay/1.2/src/TextIconOverlay_min.js', reject);
                 loadJsFile('http://api.map.baidu.com/library/MarkerClusterer/1.2/src/MarkerClusterer_min.js', reject);
