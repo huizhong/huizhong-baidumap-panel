@@ -641,7 +641,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             centerPointLatTotal / centerPointCount,
                         );
                     } else {
-                        that.centerPoint = new BMap.Point(that.pan.panel, that.panel.lat);
+                        that.centerPoint = new BMap.Point(that.panel.panel, that.panel.lat);
                     }
                     if (that.panel.autoFocusCenterDistance >= 0
                         && that.map.getDistance(lastCenterPoint, that.centerPoint) > that.panel.autoFocusCenterDistance) {
