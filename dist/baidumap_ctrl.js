@@ -292,8 +292,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 maskColor: '',
 
                 contentOption: 'contentOption',
-                infoTitle: 'title',
-                heatCount: 'count',
+                contentTitle: 'contentTitle',
+                heatCount: 'heatCount',
+                heatMax: 'heatMax',
                 labelStyle: 'labelStyle',
                 labelTitle: 'labelTitle',
                 circleRadius: 'radius',
@@ -484,7 +485,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                 return;
                             }
                             var infoWindow = new BMap.InfoWindow(poiContent, that.getPoiConfig(poiType, poiItem, that.panel.contentOption, {
-                                'title': that.getPoiConfig(poiType, poiItem, that.panel.infoTitle, clickPoint.lng + '|' + clickPoint.lat)
+                                'title': that.getPoiConfig(poiType, poiItem, that.panel.contentTitle, clickPoint.lng + '|' + clickPoint.lat)
                             })); // 创建信息窗口对象
                             that.map.openInfoWindow(infoWindow, clickPoint);
                         };
@@ -643,7 +644,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             });
                                             heatmapOverlay.setDataSet({
                                                 data: dataList,
-                                                max: that.getPoiTypeConfig(heatPoiType, 'max', 100)
+                                                max: that.getPoiTypeConfig(heatPoiType, that.panel.heatMax, 100)
                                             });
                                         }
 
