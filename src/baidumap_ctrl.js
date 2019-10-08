@@ -660,7 +660,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         that.centerPoint = new BMap.Point(that.panel.lng, that.panel.lat);
                     }
                     if (that.panel.autoFocusCenterDistance >= 0
-                        && that.map.getDistance(lastCenterPoint, that.centerPoint) > that.panel.autoFocusCenterDistance) {
+                        && (!lastCenterPoint || that.map.getDistance(lastCenterPoint, that.centerPoint) > that.panel.autoFocusCenterDistance)) {
                         that.panToCenterPoint();
                     }
                     [that.panel.bdPolylineName, that.panel.bdPolygonName, that.panel.bdCircleName].forEach((poiType) => {

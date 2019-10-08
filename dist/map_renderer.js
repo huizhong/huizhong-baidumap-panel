@@ -91,7 +91,7 @@ System.register(['./css/leaflet.css!', './libs/baidumap.js'], function (_export,
                             ctrl.panToCenterPoint();
                         }
                     }, {
-                        text: '重置位置和比例尺',
+                        text: '重置地图',
                         callback: function callback() {
                             ctrl.map.reset();
                         }

@@ -722,7 +722,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         } else {
                                             that.centerPoint = new BMap.Point(that.panel.lng, that.panel.lat);
                                         }
-                                        if (that.panel.autoFocusCenterDistance >= 0 && that.map.getDistance(lastCenterPoint, that.centerPoint) > that.panel.autoFocusCenterDistance) {
+                                        if (that.panel.autoFocusCenterDistance >= 0 && (!lastCenterPoint || that.map.getDistance(lastCenterPoint, that.centerPoint) > that.panel.autoFocusCenterDistance)) {
                                             that.panToCenterPoint();
                                         }
                                         [that.panel.bdPolylineName, that.panel.bdPolygonName, that.panel.bdCircleName].forEach(function (poiType) {

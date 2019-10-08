@@ -91,7 +91,7 @@ export default function link(scope, elem, attrs, ctrl) {
                                 ctrl.panToCenterPoint();
                             }
                         }, {
-                            text: '重置位置和比例尺',
+                            text: '重置地图',
                             callback: function callback() {
                                 ctrl.map.reset();
                             }
