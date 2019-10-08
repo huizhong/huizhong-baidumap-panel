@@ -245,7 +245,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 ak: 'QKCqsdHBbGxBnNbvUwWdUEBjonk7jUj6',
                 maxDataPoints: 1,
                 theme: 'normal',
-                mapCenter: 'center',
+                mapCenter: 'custom',
                 lat: 39.968539,
                 lng: 116.497856,
                 initialZoom: 14,
@@ -704,7 +704,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         if (centerPointCount > 0) {
                                             that.centerPoint = new BMap.Point(centerPointLngTotal / centerPointCount, centerPointLatTotal / centerPointCount);
                                         } else {
-                                            that.centerPoint = new BMap.Point(that.panel.panel, that.panel.lat);
+                                            that.centerPoint = new BMap.Point(that.panel.lng, that.panel.lat);
                                         }
                                         if (that.panel.autoFocusCenterDistance >= 0 && that.map.getDistance(lastCenterPoint, that.centerPoint) > that.panel.autoFocusCenterDistance) {
                                             that.panToCenterPoint();
