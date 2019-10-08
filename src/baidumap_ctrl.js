@@ -250,7 +250,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         if (!poiType) {
             return defaultValue;
         }
-        if (poiItem && configKey in poiItem && poiItem[configKey].length > 0) {
+        if (poiItem && configKey in poiItem) {
             return poiItem[configKey];
         }
         const configName = this.panel.configName;

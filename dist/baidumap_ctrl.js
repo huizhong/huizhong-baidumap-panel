@@ -368,7 +368,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         if (!poiType) {
                             return defaultValue;
                         }
-                        if (poiItem && configKey in poiItem && poiItem[configKey].length > 0) {
+                        if (poiItem && configKey in poiItem) {
                             return poiItem[configKey];
                         }
                         var configName = this.panel.configName;
