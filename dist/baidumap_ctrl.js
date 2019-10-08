@@ -245,9 +245,11 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 ak: 'QKCqsdHBbGxBnNbvUwWdUEBjonk7jUj6',
                 maxDataPoints: 1,
                 theme: 'normal',
+                mapCenter: 'center',
                 lat: 39.968539,
                 lng: 116.497856,
                 initialZoom: 14,
+                autoFocusCenterDistance: 10000,
                 valueName: 'current',
                 locationData: 'json result',
                 gpsType: '百度坐标系',
@@ -683,22 +685,29 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 });
                                             }
                                         });
-                                        var centerPointTotal = [0, 0, 0];
+                                        var lastCenterPoint = that.centerPoint;
+                                        var centerPointCount = 0,
+                                            centerPointLngTotal = 0,
+                                            centerPointLatTotal = 0;
+
                                         [that.panel.centerName].forEach(function (poiType) {
                                             if (poiType in shapeMap) {
                                                 shapeMap[poiType].forEach(function (item) {
                                                     item.points.forEach(function (point) {
-                                                        centerPointTotal[0] += 1;
-                                                        centerPointTotal[1] += point.lng;
-                                                        centerPointTotal[2] += point.lat;
+                                                        centerPointCount += 1;
+                                                        centerPointLngTotal += point.lng;
+                                                        centerPointLatTotal += point.lat;
                                                     });
                                                 });
                                             }
                                         });
-                                        if (centerPointTotal[0] > 0) {
-                                            that.centerPoint = new BMap.Point(centerPointTotal[1] / centerPointTotal[0], centerPointTotal[2] / centerPointTotal[0]);
+                                        if (centerPointCount > 0) {
+                                            that.centerPoint = new BMap.Point(centerPointLngTotal / centerPointCount, centerPointLatTotal / centerPointCount);
                                         } else {
-                                            that.centerPoint = null;
+                                            that.centerPoint = new BMap.Point(that.pan.panel, that.panel.lat);
+                                        }
+                                        if (that.panel.autoFocusCenterDistance >= 0 && that.map.getDistance(lastCenterPoint, that.centerPoint) > that.panel.autoFocusCenterDistance) {
+                                            that.panToCenterPoint();
                                         }
                                         [that.panel.bdPolylineName, that.panel.bdPolygonName, that.panel.bdCircleName].forEach(function (poiType) {
                                             if (shapeMap[poiType]) {
@@ -966,6 +975,13 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                     _loop(i);
                                 }
                             })();
+                        }
+                    }
+                }, {
+                    key: 'panToCenterPoint',
+                    value: function panToCenterPoint() {
+                        if (this.centerPoint) {
+                            this.map.panTo(this.centerPoint);
                         }
                     }
                 }, {

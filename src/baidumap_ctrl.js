@@ -14,9 +14,11 @@ const panelDefaults = {
     ak: 'QKCqsdHBbGxBnNbvUwWdUEBjonk7jUj6',
     maxDataPoints: 1,
     theme: 'normal',
+    mapCenter: 'center',
     lat: 39.968539,
     lng: 116.497856,
     initialZoom: 14,
+    autoFocusCenterDistance: 10000,
     valueName: 'current',
     locationData: 'json result',
     gpsType: '百度坐标系',
@@ -620,25 +622,30 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             });
                         }
                     });
-                    const centerPointTotal = [0, 0, 0];
+                    const lastCenterPoint = that.centerPoint;
+                    let [centerPointCount, centerPointLngTotal, centerPointLatTotal] = [0, 0, 0];
                     [that.panel.centerName].forEach((poiType) => {
                         if (poiType in shapeMap) {
                             shapeMap[poiType].forEach((item) => {
                                 item.points.forEach((point) => {
-                                    centerPointTotal[0] += 1;
-                                    centerPointTotal[1] += point.lng;
-                                    centerPointTotal[2] += point.lat;
+                                    centerPointCount += 1;
+                                    centerPointLngTotal += point.lng;
+                                    centerPointLatTotal += point.lat;
                                 });
                             });
                         }
                     });
-                    if (centerPointTotal[0] > 0) {
+                    if (centerPointCount > 0) {
                         that.centerPoint = new BMap.Point(
-                            centerPointTotal[1] / centerPointTotal[0],
-                            centerPointTotal[2] / centerPointTotal[0],
+                            centerPointLngTotal / centerPointCount,
+                            centerPointLatTotal / centerPointCount,
                         );
                     } else {
-                        that.centerPoint = null;
+                        that.centerPoint = new BMap.Point(that.pan.panel, that.panel.lat);
+                    }
+                    if (that.panel.autoFocusCenterDistance >= 0
+                        && that.map.getDistance(lastCenterPoint, that.centerPoint) > that.panel.autoFocusCenterDistance) {
+                        that.panToCenterPoint();
                     }
                     [that.panel.bdPolylineName, that.panel.bdPolygonName, that.panel.bdCircleName].forEach((poiType) => {
                         if (shapeMap[poiType]) {
@@ -839,6 +846,12 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     }
                 }
             }
+        }
+    }
+
+    panToCenterPoint() {
+        if (this.centerPoint) {
+            this.map.panTo(this.centerPoint);
         }
     }
 

@@ -86,13 +86,14 @@ System.register(['./css/leaflet.css!', './libs/baidumap.js'], function (_export,
                             ctrl.rectangleZoomTool.open();
                         }
                     }, {
-                        text: '重置地图',
+                        text: '移到中心点',
                         callback: function callback() {
-                            if (ctrl.centerPoint) {
-                                ctrl.map.panTo(ctrl.centerPoint);
-                            } else {
-                                ctrl.map.reset();
-                            }
+                            ctrl.panToCenterPoint();
+                        }
+                    }, {
+                        text: '重置位置和比例尺',
+                        callback: function callback() {
+                            ctrl.map.reset();
                         }
                     }];
 
