@@ -3,12 +3,12 @@
 Grafana的百度地图插件，基于WorldMap修改。主要的可视化功能有：更换AK.添加/删除控件.更换主题.更改地图级别，测距工具、实时交通流量图等。
 支持十多种形式的数据图形标注。
 
-![Baidumap](https://raw.githubusercontent.com/shcolo/grafana-baidumap-panel/master/src/images/baidumap.png)
+![Baidumap](https://raw.githubusercontent.com/huizhong/grafana-baidumap-panel/master/src/images/demo.png)
 
 ## Run
 ### Development
 ```bush
-git clone https://github.com/shcolo/grafana-baidumap-panel.git
+git clone https://github.com/huizhong/grafana-baidumap-panel.git
 npm install
 ```
 ### Production(Build)
@@ -18,7 +18,7 @@ grunt
 
 ### 添加数据示例代码
 
-数据源mysql，Location Data：json result
+数据源mysql，数据格式：Table
 
 示例
 
@@ -37,13 +37,14 @@ select
 now() as time, 
 116.483749  as longitude,
 39.991654  as latitude,
-"<h2>我是点击显示内容，支持文本和HTML</h2>" as content,
-'{"content":"我是一个点","size":5}' as config
+"<h2>我是点击显示内容，支持文本和HTML。数据字段内优化</h2>" as content,
+'{"content":"配置字段里也OK，但被外面的content覆盖了","size":5}' as config
 ```
 
-支持还有其它类型混合配置
+支持还有多类型混合配置
 
 ```SQL
+
 
 
 select
@@ -59,14 +60,14 @@ select
 now() as time, 
 'Marker' as type,
 '116.484538|39.991283' as pos,
-'{"content":"设备编号xxx","option":{"title":"设备类型xxx", "searchTypes":[]},"desc":"设备描述xxx","icon":3,"label":"自定义图标0~9"}' as config
+'{"content":"设备编号xxx","title":"设备类型xxx", "markerIcon":3,"markerLabel":"自定义图标0~9"}' as config
 
 union
 
 select
 now() as time, 
 'RidingRoute' as type,
-'116.479702|39.991890;116.481088|39.995819;116.473447|39.994073;116.494455|39.986754' as pos,
+'116.46929557951906, 39.98472588655271;116.4840996543235, 39.984504750311906;116.49308270942328, 39.99533957763744' as pos,
 '{"option":{"strokeColor":"red"}}' as config
 union
 
@@ -75,7 +76,7 @@ select
 now() as time, 
 'Heat' as type,
 '116.487777|39.992133;116.492202|39.990220' as pos,
-'{"count":50}' as config
+'{"heatCount":50}' as config
 
 
 ```
@@ -92,12 +93,12 @@ now() as time,
 自定义图标和动画
 ```sql
 
+
 select
 now() as time, 
 'Marker' as type,
- '116.490502' as longitude,
- '39.988408' as latitude,
-'{"name":"设备编号xxx","type":"设备类型xxx","desc":"设备描述xxx","icon":"public/plugins/grafana-baidumap-panel/images/bike.png","animation":true}' as config
+ '116.490502,39.988408' as pos,
+'{"content":"设备编号xxx","markerIcon":"public/plugins/grafana-baidumap-panel/images/bike.png","markerAnimation":true}' as config
 
 ```
 
@@ -107,13 +108,13 @@ now() as time,
 select
 now() as time, 
 'polygon' as type,
-'ppolygon' as content,
+'我是点击内容' as content,
 '116.485023|39.995332;116.484538|39.991283;116.483927|39.985900;116.490502|39.988408;116.490646|39.991946;116.485400|39.995442' as pos,
 '{"option":{"strokeColor":"red", "fillColor":"blue", "strokeWeight":8,"strokeOpacity":0.5,"fillOpacity":0.1}}' as config
 
 ```
 
-支持文本显示,content（优先）或者config都支持。
+支持文本显示,content字段（优先）或者config内部字段都支持。
 ```sql
 select
 now() as time, 
@@ -123,7 +124,7 @@ now() as time,
 '{"content":"哈哈哈哈哈哈哈哈哈哈哈哈", "option":{"font":"24px STheiti, SimHei"}}' as config
 ```
 
-还可以增加中心点，方便自动定位
+还可以增加中心点，方便自动定位。针对需要切换城市的场景，可以在设置页面配置自动定位的范围。
 ```sql
 select now() as time,
 'center' as type,
@@ -136,18 +137,18 @@ select now() as time,
 ```json
 {
     "Marker":{
-        "label":"默认说明",
-        "enableDragging": true
+        "markerLabel":"默认说明",
+        "markerEnableDragging": true
      },
     "square":{
-        "size":100
+        "length":100
     },
     "circle": {
-        "alpha": 0.3
+        "fillOpacity": 0.3
     },
     "Heat": {
-        "count": 3,
-        "max": 120,
+        "heatCount": 3,
+        "heatMax": 120,
         "option":{
             "radius": 150
         }

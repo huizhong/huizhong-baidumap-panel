@@ -61,8 +61,9 @@ const panelDefaults = {
     maskColor: '',
 
     contentOption: 'contentOption',
-    infoTitle: 'title',
-    heatCount: 'count',
+    contentTitle: 'contentTitle',
+    heatCount: 'heatCount',
+    heatMax: 'heatMax',
     labelStyle: 'labelStyle',
     labelTitle: 'labelTitle',
     circleRadius: 'radius',
@@ -361,7 +362,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
             }
             const infoWindow = new BMap.InfoWindow(poiContent,
                 that.getPoiConfig(poiType, poiItem, that.panel.contentOption, {
-                    'title': that.getPoiConfig(poiType, poiItem, that.panel.infoTitle, clickPoint.lng + '|' + clickPoint.lat)
+                    'title': that.getPoiConfig(poiType, poiItem, that.panel.contentTitle, clickPoint.lng + '|' + clickPoint.lat)
                 })
             ); // 创建信息窗口对象
             that.map.openInfoWindow(infoWindow, clickPoint);
@@ -580,7 +581,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         });
                         heatmapOverlay.setDataSet({
                             data: dataList,
-                            max: that.getPoiTypeConfig(heatPoiType, 'max', 100)
+                            max: that.getPoiTypeConfig(heatPoiType, that.panel.heatMax, 100)
                         });
                     }
 

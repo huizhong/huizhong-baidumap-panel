@@ -130,7 +130,7 @@
 		</div>
 		<div class="gf-form">
 			<label class="gf-form-label width-12">信息窗口标题</label>
-			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.infoTitle" ng-change="ctrl.refresh()" ng-model-onblur />
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.contentTitle" ng-change="ctrl.refresh()" ng-model-onblur />
 		</div>
 		<div class="gf-form">
 			<label class="gf-form-label width-12">信息窗口内容</label>
@@ -143,6 +143,10 @@
 		<div class="gf-form">
 			<label class="gf-form-label width-12">热力图点数</label>
 			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.heatCount" ng-change="ctrl.refresh()" ng-model-onblur />
+		</div>
+		<div class="gf-form">
+			<label class="gf-form-label width-12">热力图最大值</label>
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.heatMax" ng-change="ctrl.refresh()" ng-model-onblur />
 		</div>
 		<div class="gf-form">
 			<label class="gf-form-label width-12">文字样式</label>
