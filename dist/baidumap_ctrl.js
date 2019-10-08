@@ -716,7 +716,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                             shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, point, item.poiData));
                                                         });
                                                     } else {
-                                                        var shape = new BMap[poiType](item.points, poiOption);
+                                                        var shape = new BMap[poiTypeMap[poiType]](item.points, poiOption);
                                                         that.map.addOverlay(shape);
                                                         shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, null, item.poiData));
                                                     }
@@ -724,8 +724,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             }
                                         });
                                         var labelPoiTypes = [that.panel.labelName];
-                                        var linePoiTypes = [that.panel.polylineName, that.panel.polygonName];
-                                        var dotPoiTypes = [that.panel.circleName, that.panel.squareName, that.panel.pointName];
+                                        var linePoiTypes = [that.panel.polygonName, that.panel.polylineName];
+                                        var dotPoiTypes = [that.panel.squareName, that.panel.circleName, that.panel.pointName];
                                         var canvasTypes = [].concat(labelPoiTypes, dotPoiTypes, linePoiTypes);
 
                                         var canvasLayerUpdater = function canvasLayerUpdater(canvasLayer) {
@@ -743,6 +743,33 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 ctx.closePath();
                                             }
                                             ctx.restore();
+                                            linePoiTypes.forEach(function (poiType) {
+                                                if (shapeMap[poiType]) {
+                                                    shapeMap[poiType].forEach(function (item) {
+                                                        ctx.save();
+                                                        ctx.beginPath();
+                                                        var poiOption = that.getPoiOption(poiType, item.poiData);
+                                                        filterCtx(ctx, poiOption);
+                                                        var startPoint = that.map.pointToPixel(item.points[0]);
+                                                        ctx.moveTo(startPoint.x, startPoint.y);
+                                                        for (var pointIndex = 1; pointIndex < item.points.length; pointIndex++) {
+                                                            var linePoint = that.map.pointToPixel(item.points[pointIndex]);
+                                                            ctx.lineTo(linePoint.x, linePoint.y);
+                                                        }
+                                                        if (poiType === that.panel.polylineName) {
+                                                            ctx.stroke();
+                                                        } else if (poiType === that.panel.polygonName) {
+                                                            ctx.closePath();
+                                                            ctx.stroke();
+                                                            if (poiOption.fillOpacity) {
+                                                                ctx.globalAlpha = poiOption.fillOpacity;
+                                                            }
+                                                            ctx.fill();
+                                                        }
+                                                        ctx.restore();
+                                                    });
+                                                }
+                                            });
                                             dotPoiTypes.forEach(function (poiType) {
                                                 if (shapeMap[poiType]) {
                                                     shapeMap[poiType].forEach(function (item) {
@@ -774,33 +801,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                             ctx.fill();
                                                             ctx.restore();
                                                         });
-                                                    });
-                                                }
-                                            });
-                                            linePoiTypes.forEach(function (poiType) {
-                                                if (shapeMap[poiType]) {
-                                                    shapeMap[poiType].forEach(function (item) {
-                                                        ctx.save();
-                                                        ctx.beginPath();
-                                                        var poiOption = that.getPoiOption(poiType, item.poiData);
-                                                        filterCtx(ctx, poiOption);
-                                                        var startPoint = that.map.pointToPixel(item.points[0]);
-                                                        ctx.moveTo(startPoint.x, startPoint.y);
-                                                        for (var pointIndex = 1; pointIndex < item.points.length; pointIndex++) {
-                                                            var linePoint = that.map.pointToPixel(item.points[pointIndex]);
-                                                            ctx.lineTo(linePoint.x, linePoint.y);
-                                                        }
-                                                        if (poiType === that.panel.polylineName) {
-                                                            ctx.stroke();
-                                                        } else if (poiType === that.panel.polygonName) {
-                                                            ctx.closePath();
-                                                            ctx.stroke();
-                                                            if (poiOption.fillOpacity) {
-                                                                ctx.globalAlpha = poiOption.fillOpacity;
-                                                            }
-                                                            ctx.fill();
-                                                        }
-                                                        ctx.restore();
                                                     });
                                                 }
                                             });

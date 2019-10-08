@@ -659,7 +659,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, point, item.poiData));
                                     });
                                 } else {
-                                    const shape = new BMap[poiType](item.points, poiOption);
+                                    const shape = new BMap[poiTypeMap[poiType]](item.points, poiOption);
                                     that.map.addOverlay(shape);
                                     shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, null, item.poiData));
                                 }
@@ -667,8 +667,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                         }
                     });
                     const labelPoiTypes = [that.panel.labelName];
-                    const linePoiTypes = [that.panel.polylineName, that.panel.polygonName];
-                    const dotPoiTypes = [that.panel.circleName, that.panel.squareName, that.panel.pointName];
+                    const linePoiTypes = [that.panel.polygonName, that.panel.polylineName];
+                    const dotPoiTypes = [that.panel.squareName, that.panel.circleName, that.panel.pointName];
                     const canvasTypes = [...labelPoiTypes, ...dotPoiTypes, ...linePoiTypes];
 
                     const canvasLayerUpdater = (canvasLayer) => {
@@ -686,6 +686,33 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             ctx.closePath();
                         }
                         ctx.restore();
+                        linePoiTypes.forEach((poiType) => {
+                            if (shapeMap[poiType]) {
+                                shapeMap[poiType].forEach((item) => {
+                                    ctx.save();
+                                    ctx.beginPath();
+                                    const poiOption = that.getPoiOption(poiType, item.poiData);
+                                    filterCtx(ctx, poiOption);
+                                    const startPoint = that.map.pointToPixel(item.points[0]);
+                                    ctx.moveTo(startPoint.x, startPoint.y);
+                                    for (let pointIndex = 1; pointIndex < item.points.length; pointIndex++) {
+                                        const linePoint = that.map.pointToPixel(item.points[pointIndex]);
+                                        ctx.lineTo(linePoint.x, linePoint.y);
+                                    }
+                                    if (poiType === that.panel.polylineName) {
+                                        ctx.stroke();
+                                    } else if (poiType === that.panel.polygonName) {
+                                        ctx.closePath();
+                                        ctx.stroke();
+                                        if (poiOption.fillOpacity) {
+                                            ctx.globalAlpha = poiOption.fillOpacity;
+                                        }
+                                        ctx.fill();
+                                    }
+                                    ctx.restore();
+                                });
+                            }
+                        });
                         dotPoiTypes.forEach((poiType) => {
                             if (shapeMap[poiType]) {
                                 shapeMap[poiType].forEach((item) => {
@@ -720,33 +747,6 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         ctx.fill();
                                         ctx.restore();
                                     });
-                                });
-                            }
-                        });
-                        linePoiTypes.forEach((poiType) => {
-                            if (shapeMap[poiType]) {
-                                shapeMap[poiType].forEach((item) => {
-                                    ctx.save();
-                                    ctx.beginPath();
-                                    const poiOption = that.getPoiOption(poiType, item.poiData);
-                                    filterCtx(ctx, poiOption);
-                                    const startPoint = that.map.pointToPixel(item.points[0]);
-                                    ctx.moveTo(startPoint.x, startPoint.y);
-                                    for (let pointIndex = 1; pointIndex < item.points.length; pointIndex++) {
-                                        const linePoint = that.map.pointToPixel(item.points[pointIndex]);
-                                        ctx.lineTo(linePoint.x, linePoint.y);
-                                    }
-                                    if (poiType === that.panel.polylineName) {
-                                        ctx.stroke();
-                                    } else if (poiType === that.panel.polygonName) {
-                                        ctx.closePath();
-                                        ctx.stroke();
-                                        if (poiOption.fillOpacity) {
-                                            ctx.globalAlpha = poiOption.fillOpacity;
-                                        }
-                                        ctx.fill();
-                                    }
-                                    ctx.restore();
                                 });
                             }
                         });
