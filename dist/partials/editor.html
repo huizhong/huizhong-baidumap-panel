@@ -3,7 +3,7 @@
 		<h5 class="section-heading">配置地图显示</h5>
 		<div class="gf-form">
 			<label class="gf-form-label width-10">设置百度AK</label>
-			<input type="text" class="input-small gf-form-input width-20" ng-model="ctrl.panel.ak" ng-change="ctrl.setAK()"
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.ak" ng-change="ctrl.setAK()"
 			 placeholder="" ng-model-onblur />
 		</div>
 		<div class="gf-form">
@@ -12,25 +12,17 @@
 				<select class="input-small gf-form-input" ng-model="ctrl.panel.theme" ng-options="t for t in [ 'normal', 'light', 'dark', 'redalert', 'googlelite', 'grassgreen', 'midnight', 'pink', 'darkgreen', 'bluish', 'grayscale',
 				'hardedge' ]" ng-change="ctrl.setStyle()"></select>
 			</div>
-      <div class="gf-form" ng-show="ctrl.panel.mapCenter === 'custom'">
-        <input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.lat" ng-change="ctrl.setNewMapCenter()" ng-model-onblur />
-        <input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.lng" ng-change="ctrl.setNewMapCenter()" ng-model-onblur />
-      </div>
-		</div>
-		<div class="gf-form">
-			<label class="gf-form-label width-10">初始放大级别</label>
-			<input type="number" class="input-small gf-form-input width-10" ng-model="ctrl.panel.initialZoom" ng-change="ctrl.setZoom()" placeholder="1" ng-model-onblur />
-		</div>
-		<div class="gf-form">
-			<label class="gf-form-label width-10">调整位置的最小距离</label>
-			<input type="number" class="input-small gf-form-input width-10" ng-model="ctrl.panel.autoFocusCenterDistance" ng-change="ctrl.panToCenterPoint()" placeholder="1" ng-model-onblur />
+			<div class="gf-form">
+				<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.lat"
+					   ng-change="ctrl.setNewMapCenter()" ng-model-onblur/>
+				<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.lng"
+					   ng-change="ctrl.setNewMapCenter()" ng-model-onblur/>
+			</div>
 		</div>
     <gf-form-switch class="gf-form"
       label="导航" label-class="width-10"
       checked="ctrl.panel.navigation" on-change="ctrl.navigationControl()">
     </gf-form-switch>
-		<gf-form-switch class="gf-form" label="底图可点击" label-class="width-10" checked="ctrl.panel.enableMapClick" on-change="ctrl.refresh()">
-		</gf-form-switch>
 		<gf-form-switch class="gf-form" label="比例尺" label-class="width-10" checked="ctrl.panel.scale" on-change="ctrl.scaleControl()">
 		</gf-form-switch>
 		<gf-form-switch class="gf-form" label="缩略图" label-class="width-10" checked="ctrl.panel.overviewMap" on-change="ctrl.overviewMapControl()">
@@ -41,7 +33,26 @@
 		</gf-form-switch>
 	</div>
 	<div class="section gf-form-group">
-	  <h5 class="section-heading">配置地图数据展示</h5>
+		<h5 class="section-heading">元素配置</h5>
+		<div class="gf-form">
+			<label class="gf-form-label width-10">初始放大级别</label>
+			<input type="number" class="input-small gf-form-input width-10" ng-model="ctrl.panel.initialZoom" ng-change="ctrl.setZoom()" placeholder="1" ng-model-onblur />
+		</div>
+		<div class="gf-form">
+			<label class="gf-form-label width-10">调整位置的最小距离</label>
+			<input type="number" class="input-small gf-form-input width-10" ng-model="ctrl.panel.autoFocusCenterDistance" ng-change="ctrl.panToCenterPoint()" placeholder="1" ng-model-onblur />
+		</div>
+		<gf-form-switch class="gf-form" label="底图可点击" label-class="width-10" checked="ctrl.panel.enableMapClick" on-change="ctrl.refresh()">
+		</gf-form-switch>
+		<gf-form-switch class="gf-form" label="聚合标记点" label-class="width-10" checked="ctrl.panel.clusterPoint"  on-change="ctrl.refresh()">
+		</gf-form-switch>
+		<div class="gf-form">
+			<label class="gf-form-label width-12">画布蒙板颜色</label>
+			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.maskColor" ng-change="ctrl.refresh()" ng-model-onblur />
+		</div>
+	</div>
+	<div class="section gf-form-group">
+	  <h5 class="section-heading">数据格式</h5>
 <!--		<div class="gf-form">-->
 <!--			<label class="gf-form-label width-12">数据格式</label>-->
 <!--			<div class="gf-form-select-wrapper max-width-10">-->
@@ -105,15 +116,6 @@
 		<div class="gf-form">
 			<label class="gf-form-label width-12">经纬度列表字段名称</label>
 			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.posName" ng-change="ctrl.refresh()" ng-model-onblur />
-		</div>
-	</div>
-	<div class="section gf-form-group">
-		<h5 class="section-heading">元素配置</h5>
-		<gf-form-switch class="gf-form" label="聚合标记点" label-class="width-10" checked="ctrl.panel.clusterPoint"  on-change="ctrl.refresh()">
-		</gf-form-switch>
-		<div class="gf-form">
-			<label class="gf-form-label width-12">画布蒙板颜色</label>
-			<input type="text" class="input-small gf-form-input width-10" ng-model="ctrl.panel.maskColor" ng-change="ctrl.refresh()" ng-model-onblur />
 		</div>
 	</div>
 	<div class="section gf-form-group">
