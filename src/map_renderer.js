@@ -30,15 +30,15 @@ export default function link(scope, elem, attrs, ctrl) {
                     // }
                     );
                     ctrl.map.centerAndZoom(new BMap.Point(ctrl.panel.lng, ctrl.panel.lat), parseInt(ctrl.panel.initialZoom, 10));
-                    ctrl.map.enableScrollWheelZoom();
+                    // ctrl.map.enableScrollWheelZoom();
                     // ctrl.map.setMapStyle({style: ctrl.panel.theme});
 
                     ctrl.navigationSwitch = new BMap.NavigationControl();
                     ctrl.scaleSwitch = new BMap.ScaleControl();
                     // ctrl.mapTypeSwitch = new BMap.MapTypeControl();
 
-                    if (ctrl.panel.navigation === true) ctrl.map.addControl(ctrl.navigationSwitch);
-                    if (ctrl.panel.scale === true) ctrl.map.addControl(ctrl.scaleSwitch);
+                    // if (ctrl.panel.navigation === true) ctrl.map.addControl(ctrl.navigationSwitch);
+                    // if (ctrl.panel.scale === true) ctrl.map.addControl(ctrl.scaleSwitch);
                     // if (ctrl.panel.overviewMap === true) ctrl.map.addControl(ctrl.overviewMapSwitch);
                     // if (ctrl.panel.mapType === true) ctrl.map.addControl(ctrl.mapTypeSwitch);
                     //
@@ -100,7 +100,7 @@ export default function link(scope, elem, attrs, ctrl) {
                     //     menu.addItem(new BMap.MenuItem(txtMenuItem[menuIndex].text, txtMenuItem[menuIndex].callback, 100));
                     // }
                     // ctrl.map.addContextMenu(menu);
-                    ctrl.addNode(BMap);
+                    // ctrl.addNode(BMap);
                 });
         }
     }
