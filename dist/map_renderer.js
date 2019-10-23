@@ -31,16 +31,16 @@ System.register(['./css/leaflet.css!', './libs/baidumap.js'], function (_export,
                     // ctrl.map.enableScrollWheelZoom();
                     // ctrl.map.setMapStyle({style: ctrl.panel.theme});
 
-                    ctrl.navigationSwitch = new BMap.NavigationControl();
-                    ctrl.scaleSwitch = new BMap.ScaleControl();
+                    // ctrl.navigationSwitch = new BMap.NavigationControl();
+                    // ctrl.scaleSwitch = new BMap.ScaleControl();
                     // ctrl.overviewMapSwitch = new BMap.OverviewMapControl({
                     //     isOpen: true,
                     //     anchor: BMAP_ANCHOR_BOTTOM_RIGHT
                     // });
                     // ctrl.mapTypeSwitch = new BMap.MapTypeControl();
 
-                    if (ctrl.panel.navigation === true) ctrl.map.addControl(ctrl.navigationSwitch);
-                    if (ctrl.panel.scale === true) ctrl.map.addControl(ctrl.scaleSwitch);
+                    // if (ctrl.panel.navigation === true) ctrl.map.addControl(ctrl.navigationSwitch);
+                    // if (ctrl.panel.scale === true) ctrl.map.addControl(ctrl.scaleSwitch);
                     // if (ctrl.panel.overviewMap === true) ctrl.map.addControl(ctrl.overviewMapSwitch);
                     // if (ctrl.panel.mapType === true) ctrl.map.addControl(ctrl.mapTypeSwitch);
 
