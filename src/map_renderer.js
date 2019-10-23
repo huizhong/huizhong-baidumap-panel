@@ -24,37 +24,35 @@ export default function link(scope, elem, attrs, ctrl) {
                     console.log('start');
                     const elementId = 'mapid_' + ctrl.panel.id;
                     ctrl.BMap = BMap;
-                    ctrl.map = new BMap.Map(elementId, {
-                        enableMapClick: ctrl.panel.enableMapClick
-                    });
+                    ctrl.map = new BMap.Map(elementId
+                        // , {
+                        // enableMapClick: ctrl.panel.enableMapClick
+                    // }
+                    );
                     ctrl.map.centerAndZoom(new BMap.Point(ctrl.panel.lng, ctrl.panel.lat), parseInt(ctrl.panel.initialZoom, 10));
-                    ctrl.map.enableScrollWheelZoom();
-                    ctrl.map.setMapStyle({style: ctrl.panel.theme});
+                    // ctrl.map.enableScrollWheelZoom();
+                    // ctrl.map.setMapStyle({style: ctrl.panel.theme});
 
                     ctrl.navigationSwitch = new BMap.NavigationControl();
                     ctrl.scaleSwitch = new BMap.ScaleControl();
-                    ctrl.overviewMapSwitch = new BMap.OverviewMapControl({
-                        isOpen: true,
-                        anchor: BMAP_ANCHOR_BOTTOM_RIGHT
-                    });
-                    ctrl.mapTypeSwitch = new BMap.MapTypeControl();
+                    // ctrl.mapTypeSwitch = new BMap.MapTypeControl();
 
-                    if (ctrl.panel.navigation === true) ctrl.map.addControl(ctrl.navigationSwitch);
-                    if (ctrl.panel.scale === true) ctrl.map.addControl(ctrl.scaleSwitch);
-                    if (ctrl.panel.overviewMap === true) ctrl.map.addControl(ctrl.overviewMapSwitch);
-                    if (ctrl.panel.mapType === true) ctrl.map.addControl(ctrl.mapTypeSwitch);
-
-                    ctrl.map.addEventListener('dragend', function () {
-                        const center = ctrl.map.getCenter();
-                        ctrl.panel.lat = center.lat;
-                        ctrl.panel.lng = center.lng;
-                    });
-
-                    ctrl.map.addEventListener('click', function (event) {
-                        if (ctrl.clickHandler && ctrl.clickHandler.length > 0) {
-                            ctrl.clickHandler.forEach(handler => handler(event));
-                        }
-                    }, true);
+                    // if (ctrl.panel.navigation === true) ctrl.map.addControl(ctrl.navigationSwitch);
+                    // if (ctrl.panel.scale === true) ctrl.map.addControl(ctrl.scaleSwitch);
+                    // if (ctrl.panel.overviewMap === true) ctrl.map.addControl(ctrl.overviewMapSwitch);
+                    // if (ctrl.panel.mapType === true) ctrl.map.addControl(ctrl.mapTypeSwitch);
+                    //
+                    // ctrl.map.addEventListener('dragend', function () {
+                    //     const center = ctrl.map.getCenter();
+                    //     ctrl.panel.lat = center.lat;
+                    //     ctrl.panel.lng = center.lng;
+                    // });
+                    //
+                    // ctrl.map.addEventListener('click', function (event) {
+                    //     if (ctrl.clickHandler && ctrl.clickHandler.length > 0) {
+                    //         ctrl.clickHandler.forEach(handler => handler(event));
+                    //     }
+                    // }, true);
 
                     // eslint-disable-next-line no-unused-expressions
                     // ctrl.distanceTool = new BMapLib.DistanceTool(ctrl.map);
@@ -102,7 +100,7 @@ export default function link(scope, elem, attrs, ctrl) {
                     //     menu.addItem(new BMap.MenuItem(txtMenuItem[menuIndex].text, txtMenuItem[menuIndex].callback, 100));
                     // }
                     // ctrl.map.addContextMenu(menu);
-                    ctrl.addNode(BMap);
+                    // ctrl.addNode(BMap);
                 });
         }
     }
