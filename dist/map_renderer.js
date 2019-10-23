@@ -101,7 +101,7 @@ System.register(['./css/leaflet.css!', './libs/baidumap.js'], function (_export,
                         menu.addItem(new BMap.MenuItem(txtMenuItem[menuIndex].text, txtMenuItem[menuIndex].callback, 100));
                     }
                     ctrl.map.addContextMenu(menu);
-                    ctrl.addNode(BMap);
+                    // ctrl.addNode(BMap);
                 });
             }
         }

@@ -102,7 +102,7 @@ export default function link(scope, elem, attrs, ctrl) {
                         menu.addItem(new BMap.MenuItem(txtMenuItem[menuIndex].text, txtMenuItem[menuIndex].callback, 100));
                     }
                     ctrl.map.addContextMenu(menu);
-                    ctrl.addNode(BMap);
+                    // ctrl.addNode(BMap);
                 });
         }
     }
