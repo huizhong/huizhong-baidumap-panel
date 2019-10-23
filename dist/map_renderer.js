@@ -28,8 +28,8 @@ System.register(['./css/leaflet.css!', './libs/baidumap.js'], function (_export,
                         enableMapClick: ctrl.panel.enableMapClick
                     });
                     ctrl.map.centerAndZoom(new BMap.Point(ctrl.panel.lng, ctrl.panel.lat), parseInt(ctrl.panel.initialZoom, 10));
-                    ctrl.map.enableScrollWheelZoom();
-                    ctrl.map.setMapStyle({ style: ctrl.panel.theme });
+                    // ctrl.map.enableScrollWheelZoom();
+                    // ctrl.map.setMapStyle({style: ctrl.panel.theme});
 
                     ctrl.navigationSwitch = new BMap.NavigationControl();
                     ctrl.scaleSwitch = new BMap.ScaleControl();
