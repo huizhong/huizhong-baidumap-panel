@@ -44,17 +44,17 @@ export default function link(scope, elem, attrs, ctrl) {
                     // if (ctrl.panel.overviewMap === true) ctrl.map.addControl(ctrl.overviewMapSwitch);
                     // if (ctrl.panel.mapType === true) ctrl.map.addControl(ctrl.mapTypeSwitch);
 
-                    ctrl.map.addEventListener('dragend', function () {
-                        const center = ctrl.map.getCenter();
-                        ctrl.panel.lat = center.lat;
-                        ctrl.panel.lng = center.lng;
-                    });
-
-                    ctrl.map.addEventListener('click', function (event) {
-                        if (ctrl.clickHandler && ctrl.clickHandler.length > 0) {
-                            ctrl.clickHandler.forEach(handler => handler(event));
-                        }
-                    }, true);
+                    // ctrl.map.addEventListener('dragend', function () {
+                    //     const center = ctrl.map.getCenter();
+                    //     ctrl.panel.lat = center.lat;
+                    //     ctrl.panel.lng = center.lng;
+                    // });
+                    //
+                    // ctrl.map.addEventListener('click', function (event) {
+                    //     if (ctrl.clickHandler && ctrl.clickHandler.length > 0) {
+                    //         ctrl.clickHandler.forEach(handler => handler(event));
+                    //     }
+                    // }, true);
 
                     // eslint-disable-next-line no-unused-expressions
                     // ctrl.distanceTool = new BMapLib.DistanceTool(ctrl.map);
