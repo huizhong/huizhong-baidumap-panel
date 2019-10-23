@@ -57,20 +57,20 @@ export default function link(scope, elem, attrs, ctrl) {
                     }, true);
 
                     // eslint-disable-next-line no-unused-expressions
-                    // ctrl.distanceTool = new BMapLib.DistanceTool(ctrl.map);
-                    // ctrl.rectangleZoomTool = new BMapLib.RectangleZoom(ctrl.map, {
-                    //     followText: '拖拽鼠标进行操作',
-                    //     autoClose: true
-                    // });
-                    //
-                    // ctrl.trafficSwitch = new BMapLib.TrafficControl({
-                    //     showPanel: false, // 是否显示路况提示面板
-                    // });
-                    // ctrl.trafficSwitch.setOffset(new BMap.Size(10, 40));
-                    // // ctrl.trafficSwitch.setAnchor(BMAP_ANCHOR_BOTTOM_RIGHT);
-                    // if (ctrl.panel.traffic === true) {
-                    //     ctrl.map.addControl(ctrl.trafficSwitch);
-                    // }
+                    ctrl.distanceTool = new BMapLib.DistanceTool(ctrl.map);
+                    ctrl.rectangleZoomTool = new BMapLib.RectangleZoom(ctrl.map, {
+                        followText: '拖拽鼠标进行操作',
+                        autoClose: true
+                    });
+
+                    ctrl.trafficSwitch = new BMapLib.TrafficControl({
+                        showPanel: false, // 是否显示路况提示面板
+                    });
+                    ctrl.trafficSwitch.setOffset(new BMap.Size(10, 40));
+                    // ctrl.trafficSwitch.setAnchor(BMAP_ANCHOR_BOTTOM_RIGHT);
+                    if (ctrl.panel.traffic === true) {
+                        ctrl.map.addControl(ctrl.trafficSwitch);
+                    }
 
                     const menu = new BMap.ContextMenu();
                     const txtMenuItem = [
