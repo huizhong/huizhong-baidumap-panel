@@ -53,11 +53,15 @@ System.register([], function (_export, _context) {
                 //
                 // loadJsFile('http://api.map.baidu.com/library/TrafficControl/1.4/src/TrafficControl_min.js', reject);
                 // loadCssFile('http://api.map.baidu.com/library/TrafficControl/1.4/src/TrafficControl_min.css', reject);
-                waitLoading(function () {
-                    return typeof BMapLib !== 'undefined' && typeof BMapLib.HeatmapOverlay !== 'undefined' && typeof BMapLib.MarkerClusterer !== 'undefined' && typeof BMapLib.DistanceTool !== 'undefined' && typeof BMapLib.RectangleZoom !== 'undefined' && typeof BMapLib.TrafficControl !== 'undefined';
-                }, function () {
-                    resolve(BMap);
-                }, 100, 60000, 500);
+                // waitLoading(() => (typeof (BMapLib) !== 'undefined')
+                //     && (typeof (BMapLib.HeatmapOverlay) !== 'undefined')
+                //     && (typeof (BMapLib.MarkerClusterer) !== 'undefined')
+                //     && (typeof (BMapLib.DistanceTool) !== 'undefined')
+                //     && (typeof (BMapLib.RectangleZoom) !== 'undefined')
+                //     && (typeof (BMapLib.TrafficControl) !== 'undefined')
+                //     , () => {
+                resolve(BMap);
+                // }, 100, 60000, 500);
             }, 100, 60000, 500);
         });
     }
