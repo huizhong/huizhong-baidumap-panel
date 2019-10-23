@@ -45,14 +45,14 @@ System.register([], function (_export, _context) {
             waitLoading(function () {
                 return typeof BMap !== 'undefined' && typeof BMap.Map !== 'undefined';
             }, function () {
-                // loadJsFile('http://api.map.baidu.com/library/TextIconOverlay/1.2/src/TextIconOverlay_min.js', reject);
-                // loadJsFile('http://api.map.baidu.com/library/MarkerClusterer/1.2/src/MarkerClusterer_min.js', reject);
-                // loadJsFile('http://api.map.baidu.com/library/Heatmap/2.0/src/Heatmap_min.js', reject);
-                // loadJsFile('http://api.map.baidu.com/library/DistanceTool/1.2/src/DistanceTool_min.js', reject);
-                // loadJsFile('http://api.map.baidu.com/library/RectangleZoom/1.2/src/RectangleZoom_min.js', reject);
-                //
-                // loadJsFile('http://api.map.baidu.com/library/TrafficControl/1.4/src/TrafficControl_min.js', reject);
-                // loadCssFile('http://api.map.baidu.com/library/TrafficControl/1.4/src/TrafficControl_min.css', reject);
+                loadJsFile('http://api.map.baidu.com/library/TextIconOverlay/1.2/src/TextIconOverlay_min.js', reject);
+                loadJsFile('http://api.map.baidu.com/library/MarkerClusterer/1.2/src/MarkerClusterer_min.js', reject);
+                loadJsFile('http://api.map.baidu.com/library/Heatmap/2.0/src/Heatmap_min.js', reject);
+                loadJsFile('http://api.map.baidu.com/library/DistanceTool/1.2/src/DistanceTool_min.js', reject);
+                loadJsFile('http://api.map.baidu.com/library/RectangleZoom/1.2/src/RectangleZoom_min.js', reject);
+
+                loadJsFile('http://api.map.baidu.com/library/TrafficControl/1.4/src/TrafficControl_min.js', reject);
+                loadCssFile('http://api.map.baidu.com/library/TrafficControl/1.4/src/TrafficControl_min.css', reject);
                 waitLoading(function () {
                     return typeof BMapLib !== 'undefined' && typeof BMapLib.HeatmapOverlay !== 'undefined' && typeof BMapLib.MarkerClusterer !== 'undefined' && typeof BMapLib.DistanceTool !== 'undefined' && typeof BMapLib.RectangleZoom !== 'undefined' && typeof BMapLib.TrafficControl !== 'undefined';
                 }, function () {
