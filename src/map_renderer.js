@@ -57,51 +57,51 @@ export default function link(scope, elem, attrs, ctrl) {
                     }, true);
 
                     // eslint-disable-next-line no-unused-expressions
-                    ctrl.distanceTool = new BMapLib.DistanceTool(ctrl.map);
-                    ctrl.rectangleZoomTool = new BMapLib.RectangleZoom(ctrl.map, {
-                        followText: '拖拽鼠标进行操作',
-                        autoClose: true
-                    });
+                    // ctrl.distanceTool = new BMapLib.DistanceTool(ctrl.map);
+                    // ctrl.rectangleZoomTool = new BMapLib.RectangleZoom(ctrl.map, {
+                    //     followText: '拖拽鼠标进行操作',
+                    //     autoClose: true
+                    // });
 
-                    ctrl.trafficSwitch = new BMapLib.TrafficControl({
-                        showPanel: false, // 是否显示路况提示面板
-                    });
-                    ctrl.trafficSwitch.setOffset(new BMap.Size(10, 40));
-                    // ctrl.trafficSwitch.setAnchor(BMAP_ANCHOR_BOTTOM_RIGHT);
-                    if (ctrl.panel.traffic === true) {
-                        ctrl.map.addControl(ctrl.trafficSwitch);
-                    }
+                    // ctrl.trafficSwitch = new BMapLib.TrafficControl({
+                    //     showPanel: false, // 是否显示路况提示面板
+                    // });
+                    // ctrl.trafficSwitch.setOffset(new BMap.Size(10, 40));
+                    // // ctrl.trafficSwitch.setAnchor(BMAP_ANCHOR_BOTTOM_RIGHT);
+                    // if (ctrl.panel.traffic === true) {
+                    //     ctrl.map.addControl(ctrl.trafficSwitch);
+                    // }
 
-                    const menu = new BMap.ContextMenu();
-                    const txtMenuItem = [
-                        {
-                            text: '测距',
-                            callback: function () {
-                                ctrl.distanceTool.open();
-                            }
-                        },
-                        {
-                            text: '拉框放大',
-                            callback: function () {
-                                ctrl.rectangleZoomTool.open();
-                            }
-                        }, {
-                            text: '移到中心点',
-                            callback: function callback() {
-                                ctrl.panToCenterPoint();
-                            }
-                        }, {
-                            text: '重置地图',
-                            callback: function callback() {
-                                ctrl.map.reset();
-                            }
-                        },
-                    ];
+                    // const menu = new BMap.ContextMenu();
+                    // const txtMenuItem = [
+                    //     {
+                    //         text: '测距',
+                    //         callback: function () {
+                    //             ctrl.distanceTool.open();
+                    //         }
+                    //     },
+                    //     {
+                    //         text: '拉框放大',
+                    //         callback: function () {
+                    //             ctrl.rectangleZoomTool.open();
+                    //         }
+                    //     }, {
+                    //         text: '移到中心点',
+                    //         callback: function callback() {
+                    //             ctrl.panToCenterPoint();
+                    //         }
+                    //     }, {
+                    //         text: '重置地图',
+                    //         callback: function callback() {
+                    //             ctrl.map.reset();
+                    //         }
+                    //     },
+                    // ];
 
-                    for (let menuIndex = 0; menuIndex < txtMenuItem.length; menuIndex++) {
-                        menu.addItem(new BMap.MenuItem(txtMenuItem[menuIndex].text, txtMenuItem[menuIndex].callback, 100));
-                    }
-                    ctrl.map.addContextMenu(menu);
+                    // for (let menuIndex = 0; menuIndex < txtMenuItem.length; menuIndex++) {
+                    //     menu.addItem(new BMap.MenuItem(txtMenuItem[menuIndex].text, txtMenuItem[menuIndex].callback, 100));
+                    // }
+                    // ctrl.map.addContextMenu(menu);
                     ctrl.addNode(BMap);
                 });
         }
