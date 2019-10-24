@@ -425,55 +425,53 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
 
             for (let i = 0; i < poiList.length; i++) {
                 const poiIndex = i;
-                setTimeout(function () {
-                    if (poiList[poiIndex] && poiList[poiIndex][that.panel.lngName]
-                        && poiList[poiIndex][that.panel.latName]
-                        && poiList[poiIndex][that.panel.lngName] > 0
-                        && poiList[poiIndex][that.panel.latName] > 0
-                    ) {
+                if (poiList[poiIndex] && poiList[poiIndex][that.panel.lngName]
+                    && poiList[poiIndex][that.panel.latName]
+                    && poiList[poiIndex][that.panel.lngName] > 0
+                    && poiList[poiIndex][that.panel.latName] > 0
+                ) {
+                    const gpsItem = Object.assign({}, poiList[poiIndex]);
+                    gpsItem.lng = parseFloat(poiList[poiIndex][that.panel.lngName]);
+                    gpsItem.lat = parseFloat(poiList[poiIndex][that.panel.latName]);
+                    translateOne(poiIndex, 0, gpsItem, BMap);
+                } else if (poiList[poiIndex][that.panel.geohashName] && poiList[poiIndex][that.panel.geohashName].length > 0) {
+                    const {longitude: lng, latitude: lat} = decodeGeoHash(poiList[poiIndex][that.panel.geohashName]);
+                    const gpsItem = Object.assign({}, poiList[poiIndex], {lng, lat});
+                    translateOne(poiIndex, 0, gpsItem, BMap);
+                } else if (poiList[poiIndex][that.panel.posName] && poiList[poiIndex][that.panel.posName].length > 0) {
+                    const gpsList = poiList[poiIndex][that.panel.posName].split(';');
+                    for (let gpsIndex = 0; gpsIndex < gpsList.length; gpsIndex++) {
+                        const gpsStr = gpsList[gpsIndex];
+                        let items = gpsStr.split('|');
+                        if (items.length === 1) {
+                            items = gpsStr.split(',');
+                        }
+                        const [lng, lat] = items;
                         const gpsItem = Object.assign({}, poiList[poiIndex]);
-                        gpsItem.lng = parseFloat(poiList[poiIndex][that.panel.lngName]);
-                        gpsItem.lat = parseFloat(poiList[poiIndex][that.panel.latName]);
-                        translateOne(poiIndex, 0, gpsItem, BMap);
-                    } else if (poiList[poiIndex][that.panel.geohashName] && poiList[poiIndex][that.panel.geohashName].length > 0) {
-                        const {longitude: lng, latitude: lat} = decodeGeoHash(poiList[poiIndex][that.panel.geohashName]);
-                        const gpsItem = Object.assign({}, poiList[poiIndex], {lng, lat});
-                        translateOne(poiIndex, 0, gpsItem, BMap);
-                    } else if (poiList[poiIndex][that.panel.posName] && poiList[poiIndex][that.panel.posName].length > 0) {
-                        const gpsList = poiList[poiIndex][that.panel.posName].split(';');
-                        for (let gpsIndex = 0; gpsIndex < gpsList.length; gpsIndex++) {
-                            const gpsStr = gpsList[gpsIndex];
-                            let items = gpsStr.split('|');
-                            if (items.length === 1) {
-                                items = gpsStr.split(',');
-                            }
-                            const [lng, lat] = items;
-                            const gpsItem = Object.assign({}, poiList[poiIndex]);
-                            gpsItem.lng = parseFloat(lng.trim());
-                            gpsItem.lat = parseFloat(lat.trim());
-                            translateOne(poiIndex, gpsIndex, gpsItem, BMap);
-                        }
+                        gpsItem.lng = parseFloat(lng.trim());
+                        gpsItem.lat = parseFloat(lat.trim());
+                        translateOne(poiIndex, gpsIndex, gpsItem, BMap);
                     }
-                    if (sourcePointList.length > 0) {
-                        const convertor = new BMap.Convertor();
-                        const groupSize = 10;
-                        for (let groupIndex = 0; groupIndex < sourcePointList.length; groupIndex += groupSize) {
-                            const pointList = [];
-                            for (let pointIndex = 0; pointIndex < groupSize && pointIndex + groupIndex < sourcePointList.length; pointIndex++) {
-                                pointList.push(sourcePointList[groupIndex + pointIndex]);
-                            }
-                            convertor.translate(pointList, getMapSourceId(), 5, (result) => {
-                                if (result.status === 0) {
-                                    for (let index = 0; index < result.points.length; index++) {
-                                        callbackList[groupIndex + index](result.points[index]);
-                                    }
-                                } else {
-                                    console.error('gps translate error', pointList);
-                                }
-                            });
-                        }
+                }
+            }
+            if (sourcePointList.length > 0) {
+                const convertor = new BMap.Convertor();
+                const groupSize = 10;
+                for (let groupIndex = 0; groupIndex < sourcePointList.length; groupIndex += groupSize) {
+                    const pointList = [];
+                    for (let pointIndex = 0; pointIndex < groupSize && pointIndex + groupIndex < sourcePointList.length; pointIndex++) {
+                        pointList.push(sourcePointList[groupIndex + pointIndex]);
                     }
-                }, 10);
+                    convertor.translate(pointList, getMapSourceId(), 5, (result) => {
+                        if (result.status === 0) {
+                            for (let index = 0; index < result.points.length; index++) {
+                                callbackList[groupIndex + index](result.points[index]);
+                            }
+                        } else {
+                            console.error('gps translate error', pointList);
+                        }
+                    });
+                }
             }
 
             function getMapSourceId() {
