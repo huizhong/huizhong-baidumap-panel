@@ -769,7 +769,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         }
                                         ctx.closePath();
                                         if (!isPoint) {
-                                            if (that.getPoiConfig(poiType, item.poiData, that.panel.isStroke, true)) {
+                                            if (that.getPoiConfig(poiType, item.poiData, that.panel.isStroke, false)) {
                                                 ctx.stroke();
                                             }
                                         }

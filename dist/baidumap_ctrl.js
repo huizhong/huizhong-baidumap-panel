@@ -825,7 +825,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                             }
                                                             ctx.closePath();
                                                             if (!isPoint) {
-                                                                if (that.getPoiConfig(poiType, item.poiData, that.panel.isStroke, true)) {
+                                                                if (that.getPoiConfig(poiType, item.poiData, that.panel.isStroke, false)) {
                                                                     ctx.stroke();
                                                                 }
                                                             }
