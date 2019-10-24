@@ -4,7 +4,6 @@ import {MetricsPanelCtrl} from 'app/plugins/sdk';
 import TimeSeries from 'app/core/time_series2';
 import kbn from 'app/core/utils/kbn';
 import gpsHelper from './gps_helper';
-const {gpsToBaidu, chinaToBaidu} = gpsHelper;
 
 import _ from 'lodash';
 import mapRenderer from './map_renderer';
@@ -501,9 +500,9 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     if (sourceGpsId === 5) {
                         newGps = {lng: gps.lng, lat: gps.lat};
                     } else if (sourceGpsId === 11) {
-                        newGps = gpsToBaidu(gps.lat, gps.lng);
+                        newGps = gpsHelper.gpsToBaidu(gps.lat, gps.lng);
                     } else if (sourceGpsId === 13) {
-                        newGps = chinaToBaidu(gps.lat, gps.lng);
+                        newGps = gpsHelper.chinaToBaidu(gps.lat, gps.lng);
                     }
                     setTimeout(function () {
                         translateCallback(poiIndex, gpsIndex, gps, newGps);

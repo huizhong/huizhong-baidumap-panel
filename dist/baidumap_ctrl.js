@@ -3,7 +3,7 @@
 System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn', './gps_helper', 'lodash', './map_renderer', './data_formatter', './geohash'], function (_export, _context) {
     "use strict";
 
-    var MetricsPanelCtrl, TimeSeries, kbn, gpsHelper, _, mapRenderer, DataFormatter, decodeGeoHash, _typeof, _createClass, _slicedToArray, gpsToBaidu, chinaToBaidu, panelDefaults, BaidumapCtrl;
+    var MetricsPanelCtrl, TimeSeries, kbn, gpsHelper, _, mapRenderer, DataFormatter, decodeGeoHash, _typeof, _createClass, _slicedToArray, panelDefaults, BaidumapCtrl;
 
     function _classCallCheck(instance, Constructor) {
         if (!(instance instanceof Constructor)) {
@@ -243,8 +243,6 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 };
             }();
 
-            gpsToBaidu = gpsHelper.gpsToBaidu;
-            chinaToBaidu = gpsHelper.chinaToBaidu;
             panelDefaults = {
                 ak: 'QKCqsdHBbGxBnNbvUwWdUEBjonk7jUj6',
                 maxDataPoints: 1,
@@ -568,9 +566,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         if (sourceGpsId === 5) {
                                             newGps = { lng: gps.lng, lat: gps.lat };
                                         } else if (sourceGpsId === 11) {
-                                            newGps = gpsToBaidu(gps.lat, gps.lng);
+                                            newGps = gpsHelper.gpsToBaidu(gps.lat, gps.lng);
                                         } else if (sourceGpsId === 13) {
-                                            newGps = chinaToBaidu(gps.lat, gps.lng);
+                                            newGps = gpsHelper.chinaToBaidu(gps.lat, gps.lng);
                                         }
                                         setTimeout(function () {
                                             translateCallback(poiIndex, gpsIndex, gps, newGps);
