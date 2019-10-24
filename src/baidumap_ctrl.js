@@ -409,20 +409,430 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         });
     }
 
+
+    getMapSourceId() {
+        const sourceGps = this.panel.gpsType;
+        let sourceGpsId = 5;
+        if (sourceGps === 'WGS84') {
+            sourceGpsId = 1;
+        } else if (sourceGps === 'GCJ02') {
+            sourceGpsId = 3;
+        } else if (sourceGps === 'WGS84（离线计算）') {
+            sourceGpsId = 11;
+        } else if (sourceGps === 'GCJ02（离线计算）') {
+            sourceGpsId = 13;
+        }
+        return sourceGpsId;
+    }
+
     addNode(BMap) {
         const that = this;
         const poiList = this.data;
         this.map.clearOverlays();
         this.clickHandler = [];
+
+        const shapeMap = [];
+        const sourcePointList = [];
+        const callbackList = [];
+
+        let rawLength = 0;
+        const translatedItems = [];
+
+        function translateCallback(myPoiIndex, myGpsIndex, myGps, translatedData) {
+            const {lng, lat} = translatedData;
+            translatedItems.push({
+                poiIndex: myPoiIndex,
+                gpsIndex: myGpsIndex,
+                point: new BMap.Point(lng, lat),
+                gps: myGps,
+            });
+
+            if (translatedItems.length === rawLength) {
+                translatedItems.sort(function (a, b) {
+                    return ((a.poiIndex - b.poiIndex) * 1000000) + (a.gpsIndex - b.gpsIndex);
+                });
+                for (let translateIndex = 0; translateIndex < translatedItems.length; translateIndex++) {
+                    const pointTypeName = that.panel.pointName;
+
+                    const translatedItem = translatedItems[translateIndex];
+                    const poiType = translatedItem.gps[that.panel.typeName] || pointTypeName;
+
+                    const poiIndexKey = 'key_' + translatedItem.poiIndex;
+                    const pointItem = translatedItem.point;
+                    if (!(poiType in shapeMap)) {
+                        shapeMap[poiType] = [];
+                    }
+                    const shapeList = shapeMap[poiType];
+                    if (shapeList.length > 0 && shapeList[shapeList.length - 1].poiIndexKey === poiIndexKey) {
+                        shapeList[shapeList.length - 1].points.push(pointItem);
+                    } else {
+                        shapeList.push({
+                            poiIndexKey: poiIndexKey,
+                            poiType: poiType,
+                            poiData: translatedItem.gps,
+                            points: [pointItem]
+                        });
+                    }
+                }
+                console.log('shapeMap', shapeMap);
+
+                const pointTypeName = 'Point';
+                if (shapeMap[pointTypeName]) {
+                    const pointArray = shapeMap[pointTypeName];
+                    const points = [];
+                    pointArray.forEach((v) => {
+                        v.points.forEach((point) => {
+                            point.poiData = v.poiData;
+                            points.push(point);
+                        });
+                    });
+                    const pointCollection = new BMap.PointCollection(points, getFilterColor(that.getPoiTypeOption(pointTypeName)));
+                    pointCollection.addEventListener('click', (e) => {
+                        const poiData = e.point.poiData;
+                        delete e.point[poiData];
+                        that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)(e);
+                    });
+                    that.map.addOverlay(pointCollection);
+                }
+
+                const heatPoiType = that.panel.bdHeatRouteName;
+                if (shapeMap[heatPoiType]) {
+                    const heatShapeList = shapeMap[heatPoiType];
+                    const heatmapOverlay = new BMapLib.HeatmapOverlay(
+                        Object.assign(
+                            {
+                                radius: 20,
+                            },
+                            that.getPoiTypeOption(heatPoiType)
+                        ));
+                    that.map.addOverlay(heatmapOverlay);
+                    const dataList = [];
+                    heatShapeList.forEach((v) => {
+                        v.points.forEach((point) => {
+                            dataList.push(({
+                                lng: point.lng,
+                                lat: point.lat,
+                                count: that.getPoiConfig(heatPoiType, v.poiData, that.panel.heatCount, 1)
+                            }));
+                        });
+                    });
+                    heatmapOverlay.setDataSet({
+                        data: dataList,
+                        max: that.getPoiTypeConfig(heatPoiType, that.panel.heatMax, 100)
+                    });
+                }
+
+                const labelTypeName = that.panel.bdLabelName;
+                if (shapeMap[labelTypeName]) {
+                    const labelArray = shapeMap[labelTypeName];
+                    labelArray.forEach((v) => {
+                        v.points.forEach((point) => {
+                            const labelText = that.getPoiContent(labelTypeName, v.poiData);
+                            const labelItem = new BMap.Label(labelText, {
+                                position: point,
+                                enableMassClear: true
+                            });
+                            that.map.addOverlay(labelItem);
+                            labelItem.setStyle(that.getPoiConfig(labelTypeName, v.poiData, that.panel.labelStyle, {}));
+                            labelItem.setTitle(that.getPoiConfig(labelTypeName, v.poiData, that.panel.labelTitle, ''));
+                            labelItem.addEventListener('click', that.getPoiInfoWindowHandler(labelTypeName, point, v.poiData));
+                            // that.addlabel(labelTypeName, label, BMap, v.poiData);
+                        });
+                    });
+                }
+                const markerTypeName = that.panel.bdMarkerName;
+                if (shapeMap[markerTypeName]) {
+                    const markerArray = shapeMap[markerTypeName];
+                    markerArray.forEach((v) => {
+                        v.points.forEach((point) => {
+                            that.addMarker(markerTypeName, point, BMap, v.poiData);
+                        });
+                    });
+                    if (that.panel.clusterPoint) {
+                        new BMapLib.MarkerClusterer(that.map, {
+                            markers: that.markers
+                        });
+                    }
+                }
+
+                [that.panel.bdRidingRouteName, that.panel.bdDrivingRouteName, that.panel.bdWalkingRouteName].forEach((poiType) => {
+                    if (poiType in shapeMap) {
+                        const poiTypeMap = {};
+                        poiTypeMap[that.panel.bdRidingRouteName] = 'RidingRoute';
+                        poiTypeMap[that.panel.bdDrivingRouteName] = 'DrivingRoute';
+                        poiTypeMap[that.panel.bdWalkingRouteName] = 'WalkingRoute';
+                        shapeMap[poiType].forEach((item) => {
+                            const points = item.points;
+                            for (let pointIndex = 0; pointIndex < points.length - 1; pointIndex++) {
+                                const driving = new BMap[poiTypeMap[poiType]](that.map, {
+                                    renderOptions: {
+                                        map: that.map,
+                                        autoViewport: false
+                                    }
+                                });
+                                driving.search(points[pointIndex], points[pointIndex + 1]);
+                            }
+                        });
+                    }
+                });
+                const lastCenterPoint = that.centerPoint;
+                let [centerPointCount, centerPointLngTotal, centerPointLatTotal] = [0, 0, 0];
+                [that.panel.centerName].forEach((poiType) => {
+                    if (poiType in shapeMap) {
+                        shapeMap[poiType].forEach((item) => {
+                            item.points.forEach((point) => {
+                                centerPointCount += 1;
+                                centerPointLngTotal += point.lng;
+                                centerPointLatTotal += point.lat;
+                            });
+                        });
+                    }
+                });
+                if (centerPointCount > 0) {
+                    that.centerPoint = new BMap.Point(
+                        centerPointLngTotal / centerPointCount,
+                        centerPointLatTotal / centerPointCount,
+                    );
+                } else {
+                    that.centerPoint = new BMap.Point(that.panel.lng, that.panel.lat);
+                }
+                if (that.panel.autoFocusCenterDistance >= 0
+                    && (!lastCenterPoint || that.map.getDistance(lastCenterPoint, that.centerPoint) > that.panel.autoFocusCenterDistance)) {
+                    that.panToCenterPoint();
+                }
+                [that.panel.bdPolylineName, that.panel.bdPolygonName, that.panel.bdCircleName].forEach((poiType) => {
+                    if (shapeMap[poiType]) {
+                        const poiTypeMap = {};
+                        poiTypeMap[that.panel.bdPolylineName] = 'Polyline';
+                        poiTypeMap[that.panel.bdPolygonName] = 'Polygon';
+                        poiTypeMap[that.panel.bdCircleName] = 'Circle';
+                        shapeMap[poiType].forEach((item) => {
+                            const poiOption = Object.assign(
+                                getDefaultPolyOption(),
+                                getFilterColor(that.getPoiOption(item.poiType, item.poiData))
+                            );
+                            const circleRadius = that.getPoiConfig(item.poiType, item.poiData, that.panel.circleRadius, 20);
+                            if (poiType === that.panel.bdCircleName) {
+                                item.points.forEach((point) => {
+                                    const shape = new BMap[poiTypeMap[poiType]](point, circleRadius, poiOption);
+                                    that.map.addOverlay(shape);
+                                    shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, point, item.poiData));
+                                });
+                            } else {
+                                const shape = new BMap[poiTypeMap[poiType]](item.points, poiOption);
+                                that.map.addOverlay(shape);
+                                shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, null, item.poiData));
+                            }
+                        });
+                    }
+                });
+                const labelPoiTypes = [that.panel.labelName];
+                const linePoiTypes = [that.panel.polygonName, that.panel.polylineName];
+                const dotPoiTypes = [that.panel.squareName, that.panel.circleName, that.panel.pointName];
+                const canvasTypes = [...labelPoiTypes, ...dotPoiTypes, ...linePoiTypes];
+
+                const canvasLayerUpdater = (canvasLayer) => {
+                    const ctx = canvasLayer.canvas.getContext('2d');
+                    if (!ctx) {
+                        return [];
+                    }
+                    const matchItems = [];
+                    ctx.save();
+                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                    if (that.panel.maskColor) {
+                        ctx.beginPath();
+                        ctx.fillStyle = that.panel.maskColor;
+                        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                        ctx.closePath();
+                    }
+                    ctx.restore();
+                    linePoiTypes.forEach((poiType) => {
+                        if (shapeMap[poiType]) {
+                            shapeMap[poiType].forEach((item) => {
+                                ctx.save();
+                                ctx.beginPath();
+                                const poiOption = that.getPoiOption(poiType, item.poiData);
+                                filterCtx(ctx, poiOption);
+                                const startPoint = that.map.pointToPixel(item.points[0]);
+                                ctx.moveTo(startPoint.x, startPoint.y);
+                                for (let pointIndex = 1; pointIndex < item.points.length; pointIndex++) {
+                                    const linePoint = that.map.pointToPixel(item.points[pointIndex]);
+                                    ctx.lineTo(linePoint.x, linePoint.y);
+                                }
+                                if (poiType === that.panel.polylineName) {
+                                    ctx.stroke();
+                                } else if (poiType === that.panel.polygonName) {
+                                    ctx.closePath();
+                                    if (that.getPoiConfig(poiType, item.poiData, that.panel.isStroke, true)) {
+                                        ctx.stroke();
+                                    }
+                                    if (poiOption.fillOpacity) {
+                                        ctx.globalAlpha = poiOption.fillOpacity;
+                                    }
+                                    if (that.getPoiConfig(poiType, item.poiData, that.panel.isFill, true)) {
+                                        ctx.fill();
+                                    }
+                                }
+                                ctx.restore();
+                            });
+                        }
+                    });
+                    dotPoiTypes.forEach((poiType) => {
+                        if (shapeMap[poiType]) {
+                            shapeMap[poiType].forEach((item) => {
+                                item.points.forEach((point) => {
+                                    ctx.save();
+                                    const isCircle = poiType === that.panel.circleName;
+                                    const isPoint = poiType === that.panel.pointName;
+                                    const layerItem = {
+                                        lng: point.lng,
+                                        lat: point.lat,
+                                        size: that.getPoiConfig(poiType, item.poiData, isCircle ? that.panel.circleRadius :
+                                            (isPoint ? that.panel.pointSize : that.panel.squareLength), isCircle ? 10 :
+                                            (isPoint ? 5 : 20)),
+                                    };
+                                    ctx.beginPath();
+                                    filterCtx(ctx, that.getPoiOption(poiType, item.poiData, isPoint ? {
+                                        'fillColor': getColor(that.getPoiConfig(poiType, item.poiData, that.panel.fillColor, 'blue'), 0.4)
+                                    } : {}));
+                                    const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
+                                        parseFloat(layerItem.lat), layerItem.size, !isCircle);
+                                    if (isPoint) {
+                                        ctx.arc(posRect.x, posRect.y, layerItem.size, 0, 2 * Math.PI);
+                                    } else if (isCircle) {
+                                        ctx.arc(posRect.x, posRect.y, posRect.w, 0, 2 * Math.PI);
+                                    } else {
+                                        ctx.rect(posRect.x, posRect.y, posRect.w, posRect.h);
+                                    }
+                                    ctx.closePath();
+                                    if (!isPoint) {
+                                        if (that.getPoiConfig(poiType, item.poiData, that.panel.isStroke, false)) {
+                                            ctx.stroke();
+                                        }
+                                    }
+                                    if (that.getPoiConfig(poiType, item.poiData, that.panel.isFill, true)) {
+                                        ctx.fill();
+                                    }
+                                    ctx.restore();
+                                });
+                            });
+                        }
+                    });
+                    labelPoiTypes.forEach((poiType) => {
+                        if (shapeMap[poiType]) {
+                            shapeMap[poiType].forEach((item) => {
+                                ctx.save();
+                                ctx.beginPath();
+                                const labelText = that.getPoiContent(poiType, item.poiData);
+                                const poiOption = that.getPoiOption(poiType, item.poiData);
+                                filterCtx(ctx, poiOption, false);
+                                for (let pointIndex = 0; pointIndex < item.points.length; pointIndex++) {
+                                    ctx.beginPath();
+                                    const labelPoint = that.map.pointToPixel(item.points[pointIndex]);
+                                    ctx.fillText(labelText, labelPoint.x, labelPoint.y);
+                                }
+                                ctx.restore();
+                            });
+                        }
+                    });
+                    return matchItems;
+                };
+
+                const canvasLayerPointChecker = (checkPoint) => {
+                    const checkPixel = that.map.pointToPixel(checkPoint);
+                    const matchItems = [];
+                    dotPoiTypes.reverse()
+                        .forEach((poiType) => {
+                            if (shapeMap[poiType]) {
+                                shapeMap[poiType].forEach((item) => {
+                                    item.points.forEach((point) => {
+                                        const isCircle = poiType === that.panel.circleName;
+                                        const isPoint = poiType === that.panel.pointName;
+                                        const layerItem = {
+                                            lng: point.lng,
+                                            lat: point.lat,
+                                            size: that.getPoiConfig(poiType, item.poiData, isCircle ? that.panel.circleRadius :
+                                                (isPoint ? that.panel.pointSize : that.panel.squareLength), isCircle ? 10 :
+                                                (isPoint ? 5 : 20)),
+                                        };
+                                        const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
+                                            parseFloat(layerItem.lat), layerItem.size, !isCircle);
+                                        if (isPoint) {
+                                            if (isPointInCircle(checkPixel, posRect, layerItem.size)) {
+                                                matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                            }
+                                        } else if (isCircle) {
+                                            if (isPointInCircle(checkPixel, posRect, posRect.w)) {
+                                                matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                            }
+                                        } else if (isPointInRect(checkPixel, posRect)) {
+                                            matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                        }
+                                    });
+                                });
+                            }
+                        });
+                    linePoiTypes.reverse()
+                        .forEach((poiType) => {
+                            if (shapeMap[poiType]) {
+                                shapeMap[poiType].forEach((item) => {
+                                    if (poiType === that.panel.polygonName
+                                        && isPointInPoly(checkPixel, item.points.map(p => that.map.pointToPixel(p)))
+                                    ) {
+                                        matchItems.push([checkPoint, poiType, item.poiData, item.points]);
+                                    }
+                                });
+                            }
+                        });
+                    return matchItems;
+                };
+
+                if (canvasTypes.some(canvasType => shapeMap[canvasType]) || that.panel.maskColor) {
+                    const canvasLayer = new BMap.CanvasLayer({
+                        paneName: 'mapPane',
+                        zIndex: -999,
+                        update: function () {
+                            canvasLayerUpdater(this);
+                        }
+                    });
+                    that.map.addOverlay(canvasLayer);
+                    that.clickHandler.push((event) => {
+                        let matchItems = canvasLayerPointChecker(event.point);
+                        matchItems = matchItems.filter(matchItem => that.getPoiContent(matchItem[1], matchItem[2]));
+                        if (matchItems.length > 0) {
+                            const matchItem = matchItems[0];
+                            that.getPoiInfoWindowHandler(matchItem[1], event.point, matchItem[2])(event);
+                        }
+                    });
+                }
+            }
+        }
+
+        function translateOne(poiIndex, gpsIndex, gps) {
+            rawLength += 1;
+            // 转换坐标
+            const sourceGpsId = that.getMapSourceId();
+            if (sourceGpsId > 3) {
+                let newGps = {};
+                if (sourceGpsId === 5) {
+                    newGps = {lng: gps.lng, lat: gps.lat};
+                } else if (sourceGpsId === 11) {
+                    newGps = gpsHelper.gpsToBaidu(gps.lat, gps.lng);
+                } else if (sourceGpsId === 13) {
+                    newGps = gpsHelper.chinaToBaidu(gps.lat, gps.lng);
+                }
+                setTimeout(function () {
+                    translateCallback(poiIndex, gpsIndex, gps, newGps);
+                }, 1);
+            } else {
+                const point = new BMap.Point(gps.lng, gps.lat);
+                sourcePointList.push(point);
+                callbackList.push(translateCallback.bind(this, poiIndex, gpsIndex, gps));
+            }
+        }
+
         console.log(poiList);
         if (poiList) {
-            const shapeMap = [];
-            const sourcePointList = [];
-            const callbackList = [];
-
-            let rawLength = 0;
-            const translatedItems = [];
-
             for (let i = 0; i < poiList.length; i++) {
                 const poiIndex = i;
                 if (poiList[poiIndex] && poiList[poiIndex][that.panel.lngName]
@@ -462,7 +872,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     for (let pointIndex = 0; pointIndex < groupSize && pointIndex + groupIndex < sourcePointList.length; pointIndex++) {
                         pointList.push(sourcePointList[groupIndex + pointIndex]);
                     }
-                    convertor.translate(pointList, getMapSourceId(), 5, (result) => {
+                    convertor.translate(pointList, that.getMapSourceId(), 5, (result) => {
                         if (result.status === 0) {
                             for (let index = 0; index < result.points.length; index++) {
                                 callbackList[groupIndex + index](result.points[index]);
@@ -471,414 +881,6 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             console.error('gps translate error', pointList);
                         }
                     });
-                }
-            }
-
-            function getMapSourceId() {
-                const sourceGps = that.panel.gpsType;
-                let sourceGpsId = 5;
-                if (sourceGps === 'WGS84') {
-                    sourceGpsId = 1;
-                } else if (sourceGps === 'GCJ02') {
-                    sourceGpsId = 3;
-                } else if (sourceGps === 'WGS84（离线计算）') {
-                    sourceGpsId = 11;
-                } else if (sourceGps === 'GCJ02（离线计算）') {
-                    sourceGpsId = 13;
-                }
-                return sourceGpsId;
-            }
-
-            function translateOne(poiIndex, gpsIndex, gps) {
-                rawLength += 1;
-                // 转换坐标
-                const sourceGpsId = getMapSourceId();
-                if (sourceGpsId > 3) {
-                    let newGps = {};
-                    if (sourceGpsId === 5) {
-                        newGps = {lng: gps.lng, lat: gps.lat};
-                    } else if (sourceGpsId === 11) {
-                        newGps = gpsHelper.gpsToBaidu(gps.lat, gps.lng);
-                    } else if (sourceGpsId === 13) {
-                        newGps = gpsHelper.chinaToBaidu(gps.lat, gps.lng);
-                    }
-                    setTimeout(function () {
-                        translateCallback(poiIndex, gpsIndex, gps, newGps);
-                    }, 1);
-                } else {
-                    const point = new BMap.Point(gps.lng, gps.lat);
-                    sourcePointList.push(point);
-                    callbackList.push(translateCallback.bind(this, poiIndex, gpsIndex, gps));
-                }
-            }
-
-            function translateCallback(myPoiIndex, myGpsIndex, myGps, translatedData) {
-                const {lng, lat} = translatedData;
-                translatedItems.push({
-                    poiIndex: myPoiIndex,
-                    gpsIndex: myGpsIndex,
-                    point: new BMap.Point(lng, lat),
-                    gps: myGps,
-                });
-
-                if (translatedItems.length === rawLength) {
-                    translatedItems.sort(function (a, b) {
-                        return ((a.poiIndex - b.poiIndex) * 1000000) + (a.gpsIndex - b.gpsIndex);
-                    });
-                    for (let translateIndex = 0; translateIndex < translatedItems.length; translateIndex++) {
-                        const pointTypeName = that.panel.pointName;
-
-                        const translatedItem = translatedItems[translateIndex];
-                        const poiType = translatedItem.gps[that.panel.typeName] || pointTypeName;
-
-                        const poiIndexKey = 'key_' + translatedItem.poiIndex;
-                        const pointItem = translatedItem.point;
-                        if (!(poiType in shapeMap)) {
-                            shapeMap[poiType] = [];
-                        }
-                        const shapeList = shapeMap[poiType];
-                        if (shapeList.length > 0 && shapeList[shapeList.length - 1].poiIndexKey === poiIndexKey) {
-                            shapeList[shapeList.length - 1].points.push(pointItem);
-                        } else {
-                            shapeList.push({
-                                poiIndexKey: poiIndexKey,
-                                poiType: poiType,
-                                poiData: translatedItem.gps,
-                                points: [pointItem]
-                            });
-                        }
-                    }
-                    console.log('shapeMap', shapeMap);
-
-                    const pointTypeName = 'Point';
-                    if (shapeMap[pointTypeName]) {
-                        const pointArray = shapeMap[pointTypeName];
-                        const points = [];
-                        pointArray.forEach((v) => {
-                            v.points.forEach((point) => {
-                                point.poiData = v.poiData;
-                                points.push(point);
-                            });
-                        });
-                        const pointCollection = new BMap.PointCollection(points, getFilterColor(that.getPoiTypeOption(pointTypeName)));
-                        pointCollection.addEventListener('click', (e) => {
-                            const poiData = e.point.poiData;
-                            delete e.point[poiData];
-                            that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)(e);
-                        });
-                        that.map.addOverlay(pointCollection);
-                    }
-
-                    const heatPoiType = that.panel.bdHeatRouteName;
-                    if (shapeMap[heatPoiType]) {
-                        const heatShapeList = shapeMap[heatPoiType];
-                        const heatmapOverlay = new BMapLib.HeatmapOverlay(
-                            Object.assign(
-                                {
-                                    radius: 20,
-                                },
-                                that.getPoiTypeOption(heatPoiType)
-                            ));
-                        that.map.addOverlay(heatmapOverlay);
-                        const dataList = [];
-                        heatShapeList.forEach((v) => {
-                            v.points.forEach((point) => {
-                                dataList.push(({
-                                    lng: point.lng,
-                                    lat: point.lat,
-                                    count: that.getPoiConfig(heatPoiType, v.poiData, that.panel.heatCount, 1)
-                                }));
-                            });
-                        });
-                        heatmapOverlay.setDataSet({
-                            data: dataList,
-                            max: that.getPoiTypeConfig(heatPoiType, that.panel.heatMax, 100)
-                        });
-                    }
-
-                    const labelTypeName = that.panel.bdLabelName;
-                    if (shapeMap[labelTypeName]) {
-                        const labelArray = shapeMap[labelTypeName];
-                        labelArray.forEach((v) => {
-                            v.points.forEach((point) => {
-                                const labelText = that.getPoiContent(labelTypeName, v.poiData);
-                                const labelItem = new BMap.Label(labelText, {
-                                    position: point,
-                                    enableMassClear: true
-                                });
-                                that.map.addOverlay(labelItem);
-                                labelItem.setStyle(that.getPoiConfig(labelTypeName, v.poiData, that.panel.labelStyle, {}));
-                                labelItem.setTitle(that.getPoiConfig(labelTypeName, v.poiData, that.panel.labelTitle, ''));
-                                labelItem.addEventListener('click', that.getPoiInfoWindowHandler(labelTypeName, point, v.poiData));
-                                // that.addlabel(labelTypeName, label, BMap, v.poiData);
-                            });
-                        });
-                    }
-                    const markerTypeName = that.panel.bdMarkerName;
-                    if (shapeMap[markerTypeName]) {
-                        const markerArray = shapeMap[markerTypeName];
-                        markerArray.forEach((v) => {
-                            v.points.forEach((point) => {
-                                that.addMarker(markerTypeName, point, BMap, v.poiData);
-                            });
-                        });
-                        if (that.panel.clusterPoint) {
-                            new BMapLib.MarkerClusterer(that.map, {
-                                markers: that.markers
-                            });
-                        }
-                    }
-
-                    [that.panel.bdRidingRouteName, that.panel.bdDrivingRouteName, that.panel.bdWalkingRouteName].forEach((poiType) => {
-                        if (poiType in shapeMap) {
-                            const poiTypeMap = {};
-                            poiTypeMap[that.panel.bdRidingRouteName] = 'RidingRoute';
-                            poiTypeMap[that.panel.bdDrivingRouteName] = 'DrivingRoute';
-                            poiTypeMap[that.panel.bdWalkingRouteName] = 'WalkingRoute';
-                            shapeMap[poiType].forEach((item) => {
-                                const points = item.points;
-                                for (let pointIndex = 0; pointIndex < points.length - 1; pointIndex++) {
-                                    const driving = new BMap[poiTypeMap[poiType]](that.map, {
-                                        renderOptions: {
-                                            map: that.map,
-                                            autoViewport: false
-                                        }
-                                    });
-                                    driving.search(points[pointIndex], points[pointIndex + 1]);
-                                }
-                            });
-                        }
-                    });
-                    const lastCenterPoint = that.centerPoint;
-                    let [centerPointCount, centerPointLngTotal, centerPointLatTotal] = [0, 0, 0];
-                    [that.panel.centerName].forEach((poiType) => {
-                        if (poiType in shapeMap) {
-                            shapeMap[poiType].forEach((item) => {
-                                item.points.forEach((point) => {
-                                    centerPointCount += 1;
-                                    centerPointLngTotal += point.lng;
-                                    centerPointLatTotal += point.lat;
-                                });
-                            });
-                        }
-                    });
-                    if (centerPointCount > 0) {
-                        that.centerPoint = new BMap.Point(
-                            centerPointLngTotal / centerPointCount,
-                            centerPointLatTotal / centerPointCount,
-                        );
-                    } else {
-                        that.centerPoint = new BMap.Point(that.panel.lng, that.panel.lat);
-                    }
-                    if (that.panel.autoFocusCenterDistance >= 0
-                        && (!lastCenterPoint || that.map.getDistance(lastCenterPoint, that.centerPoint) > that.panel.autoFocusCenterDistance)) {
-                        that.panToCenterPoint();
-                    }
-                    [that.panel.bdPolylineName, that.panel.bdPolygonName, that.panel.bdCircleName].forEach((poiType) => {
-                        if (shapeMap[poiType]) {
-                            const poiTypeMap = {};
-                            poiTypeMap[that.panel.bdPolylineName] = 'Polyline';
-                            poiTypeMap[that.panel.bdPolygonName] = 'Polygon';
-                            poiTypeMap[that.panel.bdCircleName] = 'Circle';
-                            shapeMap[poiType].forEach((item) => {
-                                const poiOption = Object.assign(
-                                    getDefaultPolyOption(),
-                                    getFilterColor(that.getPoiOption(item.poiType, item.poiData))
-                                );
-                                const circleRadius = that.getPoiConfig(item.poiType, item.poiData, that.panel.circleRadius, 20);
-                                if (poiType === that.panel.bdCircleName) {
-                                    item.points.forEach((point) => {
-                                        const shape = new BMap[poiTypeMap[poiType]](point, circleRadius, poiOption);
-                                        that.map.addOverlay(shape);
-                                        shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, point, item.poiData));
-                                    });
-                                } else {
-                                    const shape = new BMap[poiTypeMap[poiType]](item.points, poiOption);
-                                    that.map.addOverlay(shape);
-                                    shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, null, item.poiData));
-                                }
-                            });
-                        }
-                    });
-                    const labelPoiTypes = [that.panel.labelName];
-                    const linePoiTypes = [that.panel.polygonName, that.panel.polylineName];
-                    const dotPoiTypes = [that.panel.squareName, that.panel.circleName, that.panel.pointName];
-                    const canvasTypes = [...labelPoiTypes, ...dotPoiTypes, ...linePoiTypes];
-
-                    const canvasLayerUpdater = (canvasLayer) => {
-                        const ctx = canvasLayer.canvas.getContext('2d');
-                        if (!ctx) {
-                            return [];
-                        }
-                        const matchItems = [];
-                        ctx.save();
-                        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                        if (that.panel.maskColor) {
-                            ctx.beginPath();
-                            ctx.fillStyle = that.panel.maskColor;
-                            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                            ctx.closePath();
-                        }
-                        ctx.restore();
-                        linePoiTypes.forEach((poiType) => {
-                            if (shapeMap[poiType]) {
-                                shapeMap[poiType].forEach((item) => {
-                                    ctx.save();
-                                    ctx.beginPath();
-                                    const poiOption = that.getPoiOption(poiType, item.poiData);
-                                    filterCtx(ctx, poiOption);
-                                    const startPoint = that.map.pointToPixel(item.points[0]);
-                                    ctx.moveTo(startPoint.x, startPoint.y);
-                                    for (let pointIndex = 1; pointIndex < item.points.length; pointIndex++) {
-                                        const linePoint = that.map.pointToPixel(item.points[pointIndex]);
-                                        ctx.lineTo(linePoint.x, linePoint.y);
-                                    }
-                                    if (poiType === that.panel.polylineName) {
-                                        ctx.stroke();
-                                    } else if (poiType === that.panel.polygonName) {
-                                        ctx.closePath();
-                                        if (that.getPoiConfig(poiType, item.poiData, that.panel.isStroke, true)) {
-                                            ctx.stroke();
-                                        }
-                                        if (poiOption.fillOpacity) {
-                                            ctx.globalAlpha = poiOption.fillOpacity;
-                                        }
-                                        if (that.getPoiConfig(poiType, item.poiData, that.panel.isFill, true)) {
-                                            ctx.fill();
-                                        }
-                                    }
-                                    ctx.restore();
-                                });
-                            }
-                        });
-                        dotPoiTypes.forEach((poiType) => {
-                            if (shapeMap[poiType]) {
-                                shapeMap[poiType].forEach((item) => {
-                                    item.points.forEach((point) => {
-                                        ctx.save();
-                                        const isCircle = poiType === that.panel.circleName;
-                                        const isPoint = poiType === that.panel.pointName;
-                                        const layerItem = {
-                                            lng: point.lng,
-                                            lat: point.lat,
-                                            size: that.getPoiConfig(poiType, item.poiData, isCircle ? that.panel.circleRadius :
-                                                (isPoint ? that.panel.pointSize : that.panel.squareLength), isCircle ? 10 :
-                                                (isPoint ? 5 : 20)),
-                                        };
-                                        ctx.beginPath();
-                                        filterCtx(ctx, that.getPoiOption(poiType, item.poiData, isPoint ? {
-                                            'fillColor': getColor(that.getPoiConfig(poiType, item.poiData, that.panel.fillColor, 'blue'), 0.4)
-                                        } : {}));
-                                        const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
-                                            parseFloat(layerItem.lat), layerItem.size, !isCircle);
-                                        if (isPoint) {
-                                            ctx.arc(posRect.x, posRect.y, layerItem.size, 0, 2 * Math.PI);
-                                        } else if (isCircle) {
-                                            ctx.arc(posRect.x, posRect.y, posRect.w, 0, 2 * Math.PI);
-                                        } else {
-                                            ctx.rect(posRect.x, posRect.y, posRect.w, posRect.h);
-                                        }
-                                        ctx.closePath();
-                                        if (!isPoint) {
-                                            if (that.getPoiConfig(poiType, item.poiData, that.panel.isStroke, false)) {
-                                                ctx.stroke();
-                                            }
-                                        }
-                                        if (that.getPoiConfig(poiType, item.poiData, that.panel.isFill, true)) {
-                                            ctx.fill();
-                                        }
-                                        ctx.restore();
-                                    });
-                                });
-                            }
-                        });
-                        labelPoiTypes.forEach((poiType) => {
-                            if (shapeMap[poiType]) {
-                                shapeMap[poiType].forEach((item) => {
-                                    ctx.save();
-                                    ctx.beginPath();
-                                    const labelText = that.getPoiContent(poiType, item.poiData);
-                                    const poiOption = that.getPoiOption(poiType, item.poiData);
-                                    filterCtx(ctx, poiOption, false);
-                                    for (let pointIndex = 0; pointIndex < item.points.length; pointIndex++) {
-                                        ctx.beginPath();
-                                        const labelPoint = that.map.pointToPixel(item.points[pointIndex]);
-                                        ctx.fillText(labelText, labelPoint.x, labelPoint.y);
-                                    }
-                                    ctx.restore();
-                                });
-                            }
-                        });
-                        return matchItems;
-                    };
-
-                    const canvasLayerPointChecker = (checkPoint) => {
-                        const checkPixel = that.map.pointToPixel(checkPoint);
-                        const matchItems = [];
-                        dotPoiTypes.reverse()
-                            .forEach((poiType) => {
-                                if (shapeMap[poiType]) {
-                                    shapeMap[poiType].forEach((item) => {
-                                        item.points.forEach((point) => {
-                                            const isCircle = poiType === that.panel.circleName;
-                                            const isPoint = poiType === that.panel.pointName;
-                                            const layerItem = {
-                                                lng: point.lng,
-                                                lat: point.lat,
-                                                size: that.getPoiConfig(poiType, item.poiData, isCircle ? that.panel.circleRadius :
-                                                    (isPoint ? that.panel.pointSize : that.panel.squareLength), isCircle ? 10 :
-                                                    (isPoint ? 5 : 20)),
-                                            };
-                                            const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
-                                                parseFloat(layerItem.lat), layerItem.size, !isCircle);
-                                            if (isPoint) {
-                                                if (isPointInCircle(checkPixel, posRect, layerItem.size)) {
-                                                    matchItems.push([checkPoint, poiType, item.poiData, point]);
-                                                }
-                                            } else if (isCircle) {
-                                                if (isPointInCircle(checkPixel, posRect, posRect.w)) {
-                                                    matchItems.push([checkPoint, poiType, item.poiData, point]);
-                                                }
-                                            } else if (isPointInRect(checkPixel, posRect)) {
-                                                matchItems.push([checkPoint, poiType, item.poiData, point]);
-                                            }
-                                        });
-                                    });
-                                }
-                            });
-                        linePoiTypes.reverse()
-                            .forEach((poiType) => {
-                                if (shapeMap[poiType]) {
-                                    shapeMap[poiType].forEach((item) => {
-                                        if (poiType === that.panel.polygonName
-                                            && isPointInPoly(checkPixel, item.points.map(p => that.map.pointToPixel(p)))
-                                        ) {
-                                            matchItems.push([checkPoint, poiType, item.poiData, item.points]);
-                                        }
-                                    });
-                                }
-                            });
-                        return matchItems;
-                    };
-
-                    if (canvasTypes.some(canvasType => shapeMap[canvasType]) || that.panel.maskColor) {
-                        const canvasLayer = new BMap.CanvasLayer({
-                            paneName: 'mapPane',
-                            zIndex: -999,
-                            update: function () {
-                                canvasLayerUpdater(this);
-                            }
-                        });
-                        that.map.addOverlay(canvasLayer);
-                        that.clickHandler.push((event) => {
-                            let matchItems = canvasLayerPointChecker(event.point);
-                            matchItems = matchItems.filter(matchItem => that.getPoiContent(matchItem[1], matchItem[2]));
-                            if (matchItems.length > 0) {
-                                const matchItem = matchItems[0];
-                                that.getPoiInfoWindowHandler(matchItem[1], event.point, matchItem[2])(event);
-                            }
-                        });
-                    }
                 }
             }
         }

@@ -533,486 +533,480 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         });
                     }
                 }, {
+                    key: 'getMapSourceId',
+                    value: function getMapSourceId() {
+                        var sourceGps = this.panel.gpsType;
+                        var sourceGpsId = 5;
+                        if (sourceGps === 'WGS84') {
+                            sourceGpsId = 1;
+                        } else if (sourceGps === 'GCJ02') {
+                            sourceGpsId = 3;
+                        } else if (sourceGps === 'WGS84（离线计算）') {
+                            sourceGpsId = 11;
+                        } else if (sourceGps === 'GCJ02（离线计算）') {
+                            sourceGpsId = 13;
+                        }
+                        return sourceGpsId;
+                    }
+                }, {
                     key: 'addNode',
                     value: function addNode(BMap) {
                         var that = this;
                         var poiList = this.data;
                         this.map.clearOverlays();
                         this.clickHandler = [];
-                        console.log(poiList);
-                        if (poiList) {
-                            (function () {
-                                var getMapSourceId = function getMapSourceId() {
-                                    var sourceGps = that.panel.gpsType;
-                                    var sourceGpsId = 5;
-                                    if (sourceGps === 'WGS84') {
-                                        sourceGpsId = 1;
-                                    } else if (sourceGps === 'GCJ02') {
-                                        sourceGpsId = 3;
-                                    } else if (sourceGps === 'WGS84（离线计算）') {
-                                        sourceGpsId = 11;
-                                    } else if (sourceGps === 'GCJ02（离线计算）') {
-                                        sourceGpsId = 13;
-                                    }
-                                    return sourceGpsId;
-                                };
 
-                                var translateOne = function translateOne(poiIndex, gpsIndex, gps) {
-                                    rawLength += 1;
-                                    // 转换坐标
-                                    var sourceGpsId = getMapSourceId();
-                                    if (sourceGpsId > 3) {
-                                        var newGps = {};
-                                        if (sourceGpsId === 5) {
-                                            newGps = { lng: gps.lng, lat: gps.lat };
-                                        } else if (sourceGpsId === 11) {
-                                            newGps = gpsHelper.gpsToBaidu(gps.lat, gps.lng);
-                                        } else if (sourceGpsId === 13) {
-                                            newGps = gpsHelper.chinaToBaidu(gps.lat, gps.lng);
-                                        }
-                                        setTimeout(function () {
-                                            translateCallback(poiIndex, gpsIndex, gps, newGps);
-                                        }, 1);
+                        var shapeMap = [];
+                        var sourcePointList = [];
+                        var callbackList = [];
+
+                        var rawLength = 0;
+                        var translatedItems = [];
+
+                        function translateCallback(myPoiIndex, myGpsIndex, myGps, translatedData) {
+                            var lng = translatedData.lng,
+                                lat = translatedData.lat;
+
+                            translatedItems.push({
+                                poiIndex: myPoiIndex,
+                                gpsIndex: myGpsIndex,
+                                point: new BMap.Point(lng, lat),
+                                gps: myGps
+                            });
+
+                            if (translatedItems.length === rawLength) {
+                                translatedItems.sort(function (a, b) {
+                                    return (a.poiIndex - b.poiIndex) * 1000000 + (a.gpsIndex - b.gpsIndex);
+                                });
+                                for (var translateIndex = 0; translateIndex < translatedItems.length; translateIndex++) {
+                                    var _pointTypeName = that.panel.pointName;
+
+                                    var translatedItem = translatedItems[translateIndex];
+                                    var poiType = translatedItem.gps[that.panel.typeName] || _pointTypeName;
+
+                                    var poiIndexKey = 'key_' + translatedItem.poiIndex;
+                                    var pointItem = translatedItem.point;
+                                    if (!(poiType in shapeMap)) {
+                                        shapeMap[poiType] = [];
+                                    }
+                                    var shapeList = shapeMap[poiType];
+                                    if (shapeList.length > 0 && shapeList[shapeList.length - 1].poiIndexKey === poiIndexKey) {
+                                        shapeList[shapeList.length - 1].points.push(pointItem);
                                     } else {
-                                        var point = new BMap.Point(gps.lng, gps.lat);
-                                        sourcePointList.push(point);
-                                        callbackList.push(translateCallback.bind(this, poiIndex, gpsIndex, gps));
-                                    }
-                                };
-
-                                var translateCallback = function translateCallback(myPoiIndex, myGpsIndex, myGps, translatedData) {
-                                    var lng = translatedData.lng,
-                                        lat = translatedData.lat;
-
-                                    translatedItems.push({
-                                        poiIndex: myPoiIndex,
-                                        gpsIndex: myGpsIndex,
-                                        point: new BMap.Point(lng, lat),
-                                        gps: myGps
-                                    });
-
-                                    if (translatedItems.length === rawLength) {
-                                        translatedItems.sort(function (a, b) {
-                                            return (a.poiIndex - b.poiIndex) * 1000000 + (a.gpsIndex - b.gpsIndex);
+                                        shapeList.push({
+                                            poiIndexKey: poiIndexKey,
+                                            poiType: poiType,
+                                            poiData: translatedItem.gps,
+                                            points: [pointItem]
                                         });
-                                        for (var translateIndex = 0; translateIndex < translatedItems.length; translateIndex++) {
-                                            var _pointTypeName = that.panel.pointName;
+                                    }
+                                }
+                                console.log('shapeMap', shapeMap);
 
-                                            var translatedItem = translatedItems[translateIndex];
-                                            var poiType = translatedItem.gps[that.panel.typeName] || _pointTypeName;
+                                var pointTypeName = 'Point';
+                                if (shapeMap[pointTypeName]) {
+                                    var pointArray = shapeMap[pointTypeName];
+                                    var points = [];
+                                    pointArray.forEach(function (v) {
+                                        v.points.forEach(function (point) {
+                                            point.poiData = v.poiData;
+                                            points.push(point);
+                                        });
+                                    });
+                                    var pointCollection = new BMap.PointCollection(points, getFilterColor(that.getPoiTypeOption(pointTypeName)));
+                                    pointCollection.addEventListener('click', function (e) {
+                                        var poiData = e.point.poiData;
+                                        delete e.point[poiData];
+                                        that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)(e);
+                                    });
+                                    that.map.addOverlay(pointCollection);
+                                }
 
-                                            var poiIndexKey = 'key_' + translatedItem.poiIndex;
-                                            var pointItem = translatedItem.point;
-                                            if (!(poiType in shapeMap)) {
-                                                shapeMap[poiType] = [];
+                                var heatPoiType = that.panel.bdHeatRouteName;
+                                if (shapeMap[heatPoiType]) {
+                                    var heatShapeList = shapeMap[heatPoiType];
+                                    var heatmapOverlay = new BMapLib.HeatmapOverlay(Object.assign({
+                                        radius: 20
+                                    }, that.getPoiTypeOption(heatPoiType)));
+                                    that.map.addOverlay(heatmapOverlay);
+                                    var dataList = [];
+                                    heatShapeList.forEach(function (v) {
+                                        v.points.forEach(function (point) {
+                                            dataList.push({
+                                                lng: point.lng,
+                                                lat: point.lat,
+                                                count: that.getPoiConfig(heatPoiType, v.poiData, that.panel.heatCount, 1)
+                                            });
+                                        });
+                                    });
+                                    heatmapOverlay.setDataSet({
+                                        data: dataList,
+                                        max: that.getPoiTypeConfig(heatPoiType, that.panel.heatMax, 100)
+                                    });
+                                }
+
+                                var labelTypeName = that.panel.bdLabelName;
+                                if (shapeMap[labelTypeName]) {
+                                    var labelArray = shapeMap[labelTypeName];
+                                    labelArray.forEach(function (v) {
+                                        v.points.forEach(function (point) {
+                                            var labelText = that.getPoiContent(labelTypeName, v.poiData);
+                                            var labelItem = new BMap.Label(labelText, {
+                                                position: point,
+                                                enableMassClear: true
+                                            });
+                                            that.map.addOverlay(labelItem);
+                                            labelItem.setStyle(that.getPoiConfig(labelTypeName, v.poiData, that.panel.labelStyle, {}));
+                                            labelItem.setTitle(that.getPoiConfig(labelTypeName, v.poiData, that.panel.labelTitle, ''));
+                                            labelItem.addEventListener('click', that.getPoiInfoWindowHandler(labelTypeName, point, v.poiData));
+                                            // that.addlabel(labelTypeName, label, BMap, v.poiData);
+                                        });
+                                    });
+                                }
+                                var markerTypeName = that.panel.bdMarkerName;
+                                if (shapeMap[markerTypeName]) {
+                                    var markerArray = shapeMap[markerTypeName];
+                                    markerArray.forEach(function (v) {
+                                        v.points.forEach(function (point) {
+                                            that.addMarker(markerTypeName, point, BMap, v.poiData);
+                                        });
+                                    });
+                                    if (that.panel.clusterPoint) {
+                                        new BMapLib.MarkerClusterer(that.map, {
+                                            markers: that.markers
+                                        });
+                                    }
+                                }
+
+                                [that.panel.bdRidingRouteName, that.panel.bdDrivingRouteName, that.panel.bdWalkingRouteName].forEach(function (poiType) {
+                                    if (poiType in shapeMap) {
+                                        var poiTypeMap = {};
+                                        poiTypeMap[that.panel.bdRidingRouteName] = 'RidingRoute';
+                                        poiTypeMap[that.panel.bdDrivingRouteName] = 'DrivingRoute';
+                                        poiTypeMap[that.panel.bdWalkingRouteName] = 'WalkingRoute';
+                                        shapeMap[poiType].forEach(function (item) {
+                                            var points = item.points;
+                                            for (var pointIndex = 0; pointIndex < points.length - 1; pointIndex++) {
+                                                var driving = new BMap[poiTypeMap[poiType]](that.map, {
+                                                    renderOptions: {
+                                                        map: that.map,
+                                                        autoViewport: false
+                                                    }
+                                                });
+                                                driving.search(points[pointIndex], points[pointIndex + 1]);
                                             }
-                                            var shapeList = shapeMap[poiType];
-                                            if (shapeList.length > 0 && shapeList[shapeList.length - 1].poiIndexKey === poiIndexKey) {
-                                                shapeList[shapeList.length - 1].points.push(pointItem);
+                                        });
+                                    }
+                                });
+                                var lastCenterPoint = that.centerPoint;
+                                var centerPointCount = 0,
+                                    centerPointLngTotal = 0,
+                                    centerPointLatTotal = 0;
+
+                                [that.panel.centerName].forEach(function (poiType) {
+                                    if (poiType in shapeMap) {
+                                        shapeMap[poiType].forEach(function (item) {
+                                            item.points.forEach(function (point) {
+                                                centerPointCount += 1;
+                                                centerPointLngTotal += point.lng;
+                                                centerPointLatTotal += point.lat;
+                                            });
+                                        });
+                                    }
+                                });
+                                if (centerPointCount > 0) {
+                                    that.centerPoint = new BMap.Point(centerPointLngTotal / centerPointCount, centerPointLatTotal / centerPointCount);
+                                } else {
+                                    that.centerPoint = new BMap.Point(that.panel.lng, that.panel.lat);
+                                }
+                                if (that.panel.autoFocusCenterDistance >= 0 && (!lastCenterPoint || that.map.getDistance(lastCenterPoint, that.centerPoint) > that.panel.autoFocusCenterDistance)) {
+                                    that.panToCenterPoint();
+                                }
+                                [that.panel.bdPolylineName, that.panel.bdPolygonName, that.panel.bdCircleName].forEach(function (poiType) {
+                                    if (shapeMap[poiType]) {
+                                        var poiTypeMap = {};
+                                        poiTypeMap[that.panel.bdPolylineName] = 'Polyline';
+                                        poiTypeMap[that.panel.bdPolygonName] = 'Polygon';
+                                        poiTypeMap[that.panel.bdCircleName] = 'Circle';
+                                        shapeMap[poiType].forEach(function (item) {
+                                            var poiOption = Object.assign(getDefaultPolyOption(), getFilterColor(that.getPoiOption(item.poiType, item.poiData)));
+                                            var circleRadius = that.getPoiConfig(item.poiType, item.poiData, that.panel.circleRadius, 20);
+                                            if (poiType === that.panel.bdCircleName) {
+                                                item.points.forEach(function (point) {
+                                                    var shape = new BMap[poiTypeMap[poiType]](point, circleRadius, poiOption);
+                                                    that.map.addOverlay(shape);
+                                                    shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, point, item.poiData));
+                                                });
                                             } else {
-                                                shapeList.push({
-                                                    poiIndexKey: poiIndexKey,
-                                                    poiType: poiType,
-                                                    poiData: translatedItem.gps,
-                                                    points: [pointItem]
-                                                });
+                                                var shape = new BMap[poiTypeMap[poiType]](item.points, poiOption);
+                                                that.map.addOverlay(shape);
+                                                shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, null, item.poiData));
                                             }
-                                        }
-                                        console.log('shapeMap', shapeMap);
+                                        });
+                                    }
+                                });
+                                var labelPoiTypes = [that.panel.labelName];
+                                var linePoiTypes = [that.panel.polygonName, that.panel.polylineName];
+                                var dotPoiTypes = [that.panel.squareName, that.panel.circleName, that.panel.pointName];
+                                var canvasTypes = [].concat(labelPoiTypes, dotPoiTypes, linePoiTypes);
 
-                                        var pointTypeName = 'Point';
-                                        if (shapeMap[pointTypeName]) {
-                                            var pointArray = shapeMap[pointTypeName];
-                                            var points = [];
-                                            pointArray.forEach(function (v) {
-                                                v.points.forEach(function (point) {
-                                                    point.poiData = v.poiData;
-                                                    points.push(point);
-                                                });
+                                var canvasLayerUpdater = function canvasLayerUpdater(canvasLayer) {
+                                    var ctx = canvasLayer.canvas.getContext('2d');
+                                    if (!ctx) {
+                                        return [];
+                                    }
+                                    var matchItems = [];
+                                    ctx.save();
+                                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                                    if (that.panel.maskColor) {
+                                        ctx.beginPath();
+                                        ctx.fillStyle = that.panel.maskColor;
+                                        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                                        ctx.closePath();
+                                    }
+                                    ctx.restore();
+                                    linePoiTypes.forEach(function (poiType) {
+                                        if (shapeMap[poiType]) {
+                                            shapeMap[poiType].forEach(function (item) {
+                                                ctx.save();
+                                                ctx.beginPath();
+                                                var poiOption = that.getPoiOption(poiType, item.poiData);
+                                                filterCtx(ctx, poiOption);
+                                                var startPoint = that.map.pointToPixel(item.points[0]);
+                                                ctx.moveTo(startPoint.x, startPoint.y);
+                                                for (var pointIndex = 1; pointIndex < item.points.length; pointIndex++) {
+                                                    var linePoint = that.map.pointToPixel(item.points[pointIndex]);
+                                                    ctx.lineTo(linePoint.x, linePoint.y);
+                                                }
+                                                if (poiType === that.panel.polylineName) {
+                                                    ctx.stroke();
+                                                } else if (poiType === that.panel.polygonName) {
+                                                    ctx.closePath();
+                                                    if (that.getPoiConfig(poiType, item.poiData, that.panel.isStroke, true)) {
+                                                        ctx.stroke();
+                                                    }
+                                                    if (poiOption.fillOpacity) {
+                                                        ctx.globalAlpha = poiOption.fillOpacity;
+                                                    }
+                                                    if (that.getPoiConfig(poiType, item.poiData, that.panel.isFill, true)) {
+                                                        ctx.fill();
+                                                    }
+                                                }
+                                                ctx.restore();
                                             });
-                                            var pointCollection = new BMap.PointCollection(points, getFilterColor(that.getPoiTypeOption(pointTypeName)));
-                                            pointCollection.addEventListener('click', function (e) {
-                                                var poiData = e.point.poiData;
-                                                delete e.point[poiData];
-                                                that.getPoiInfoWindowHandler(pointTypeName, e.point, poiData)(e);
-                                            });
-                                            that.map.addOverlay(pointCollection);
                                         }
-
-                                        var heatPoiType = that.panel.bdHeatRouteName;
-                                        if (shapeMap[heatPoiType]) {
-                                            var heatShapeList = shapeMap[heatPoiType];
-                                            var heatmapOverlay = new BMapLib.HeatmapOverlay(Object.assign({
-                                                radius: 20
-                                            }, that.getPoiTypeOption(heatPoiType)));
-                                            that.map.addOverlay(heatmapOverlay);
-                                            var dataList = [];
-                                            heatShapeList.forEach(function (v) {
-                                                v.points.forEach(function (point) {
-                                                    dataList.push({
+                                    });
+                                    dotPoiTypes.forEach(function (poiType) {
+                                        if (shapeMap[poiType]) {
+                                            shapeMap[poiType].forEach(function (item) {
+                                                item.points.forEach(function (point) {
+                                                    ctx.save();
+                                                    var isCircle = poiType === that.panel.circleName;
+                                                    var isPoint = poiType === that.panel.pointName;
+                                                    var layerItem = {
                                                         lng: point.lng,
                                                         lat: point.lat,
-                                                        count: that.getPoiConfig(heatPoiType, v.poiData, that.panel.heatCount, 1)
-                                                    });
-                                                });
-                                            });
-                                            heatmapOverlay.setDataSet({
-                                                data: dataList,
-                                                max: that.getPoiTypeConfig(heatPoiType, that.panel.heatMax, 100)
-                                            });
-                                        }
-
-                                        var labelTypeName = that.panel.bdLabelName;
-                                        if (shapeMap[labelTypeName]) {
-                                            var labelArray = shapeMap[labelTypeName];
-                                            labelArray.forEach(function (v) {
-                                                v.points.forEach(function (point) {
-                                                    var labelText = that.getPoiContent(labelTypeName, v.poiData);
-                                                    var labelItem = new BMap.Label(labelText, {
-                                                        position: point,
-                                                        enableMassClear: true
-                                                    });
-                                                    that.map.addOverlay(labelItem);
-                                                    labelItem.setStyle(that.getPoiConfig(labelTypeName, v.poiData, that.panel.labelStyle, {}));
-                                                    labelItem.setTitle(that.getPoiConfig(labelTypeName, v.poiData, that.panel.labelTitle, ''));
-                                                    labelItem.addEventListener('click', that.getPoiInfoWindowHandler(labelTypeName, point, v.poiData));
-                                                    // that.addlabel(labelTypeName, label, BMap, v.poiData);
-                                                });
-                                            });
-                                        }
-                                        var markerTypeName = that.panel.bdMarkerName;
-                                        if (shapeMap[markerTypeName]) {
-                                            var markerArray = shapeMap[markerTypeName];
-                                            markerArray.forEach(function (v) {
-                                                v.points.forEach(function (point) {
-                                                    that.addMarker(markerTypeName, point, BMap, v.poiData);
-                                                });
-                                            });
-                                            if (that.panel.clusterPoint) {
-                                                new BMapLib.MarkerClusterer(that.map, {
-                                                    markers: that.markers
-                                                });
-                                            }
-                                        }
-
-                                        [that.panel.bdRidingRouteName, that.panel.bdDrivingRouteName, that.panel.bdWalkingRouteName].forEach(function (poiType) {
-                                            if (poiType in shapeMap) {
-                                                var poiTypeMap = {};
-                                                poiTypeMap[that.panel.bdRidingRouteName] = 'RidingRoute';
-                                                poiTypeMap[that.panel.bdDrivingRouteName] = 'DrivingRoute';
-                                                poiTypeMap[that.panel.bdWalkingRouteName] = 'WalkingRoute';
-                                                shapeMap[poiType].forEach(function (item) {
-                                                    var points = item.points;
-                                                    for (var pointIndex = 0; pointIndex < points.length - 1; pointIndex++) {
-                                                        var driving = new BMap[poiTypeMap[poiType]](that.map, {
-                                                            renderOptions: {
-                                                                map: that.map,
-                                                                autoViewport: false
-                                                            }
-                                                        });
-                                                        driving.search(points[pointIndex], points[pointIndex + 1]);
-                                                    }
-                                                });
-                                            }
-                                        });
-                                        var lastCenterPoint = that.centerPoint;
-                                        var centerPointCount = 0,
-                                            centerPointLngTotal = 0,
-                                            centerPointLatTotal = 0;
-
-                                        [that.panel.centerName].forEach(function (poiType) {
-                                            if (poiType in shapeMap) {
-                                                shapeMap[poiType].forEach(function (item) {
-                                                    item.points.forEach(function (point) {
-                                                        centerPointCount += 1;
-                                                        centerPointLngTotal += point.lng;
-                                                        centerPointLatTotal += point.lat;
-                                                    });
-                                                });
-                                            }
-                                        });
-                                        if (centerPointCount > 0) {
-                                            that.centerPoint = new BMap.Point(centerPointLngTotal / centerPointCount, centerPointLatTotal / centerPointCount);
-                                        } else {
-                                            that.centerPoint = new BMap.Point(that.panel.lng, that.panel.lat);
-                                        }
-                                        if (that.panel.autoFocusCenterDistance >= 0 && (!lastCenterPoint || that.map.getDistance(lastCenterPoint, that.centerPoint) > that.panel.autoFocusCenterDistance)) {
-                                            that.panToCenterPoint();
-                                        }
-                                        [that.panel.bdPolylineName, that.panel.bdPolygonName, that.panel.bdCircleName].forEach(function (poiType) {
-                                            if (shapeMap[poiType]) {
-                                                var poiTypeMap = {};
-                                                poiTypeMap[that.panel.bdPolylineName] = 'Polyline';
-                                                poiTypeMap[that.panel.bdPolygonName] = 'Polygon';
-                                                poiTypeMap[that.panel.bdCircleName] = 'Circle';
-                                                shapeMap[poiType].forEach(function (item) {
-                                                    var poiOption = Object.assign(getDefaultPolyOption(), getFilterColor(that.getPoiOption(item.poiType, item.poiData)));
-                                                    var circleRadius = that.getPoiConfig(item.poiType, item.poiData, that.panel.circleRadius, 20);
-                                                    if (poiType === that.panel.bdCircleName) {
-                                                        item.points.forEach(function (point) {
-                                                            var shape = new BMap[poiTypeMap[poiType]](point, circleRadius, poiOption);
-                                                            that.map.addOverlay(shape);
-                                                            shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, point, item.poiData));
-                                                        });
+                                                        size: that.getPoiConfig(poiType, item.poiData, isCircle ? that.panel.circleRadius : isPoint ? that.panel.pointSize : that.panel.squareLength, isCircle ? 10 : isPoint ? 5 : 20)
+                                                    };
+                                                    ctx.beginPath();
+                                                    filterCtx(ctx, that.getPoiOption(poiType, item.poiData, isPoint ? {
+                                                        'fillColor': getColor(that.getPoiConfig(poiType, item.poiData, that.panel.fillColor, 'blue'), 0.4)
+                                                    } : {}));
+                                                    var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isCircle);
+                                                    if (isPoint) {
+                                                        ctx.arc(posRect.x, posRect.y, layerItem.size, 0, 2 * Math.PI);
+                                                    } else if (isCircle) {
+                                                        ctx.arc(posRect.x, posRect.y, posRect.w, 0, 2 * Math.PI);
                                                     } else {
-                                                        var shape = new BMap[poiTypeMap[poiType]](item.points, poiOption);
-                                                        that.map.addOverlay(shape);
-                                                        shape.addEventListener('click', that.getPoiInfoWindowHandler(poiType, null, item.poiData));
+                                                        ctx.rect(posRect.x, posRect.y, posRect.w, posRect.h);
                                                     }
-                                                });
-                                            }
-                                        });
-                                        var labelPoiTypes = [that.panel.labelName];
-                                        var linePoiTypes = [that.panel.polygonName, that.panel.polylineName];
-                                        var dotPoiTypes = [that.panel.squareName, that.panel.circleName, that.panel.pointName];
-                                        var canvasTypes = [].concat(labelPoiTypes, dotPoiTypes, linePoiTypes);
-
-                                        var canvasLayerUpdater = function canvasLayerUpdater(canvasLayer) {
-                                            var ctx = canvasLayer.canvas.getContext('2d');
-                                            if (!ctx) {
-                                                return [];
-                                            }
-                                            var matchItems = [];
-                                            ctx.save();
-                                            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                                            if (that.panel.maskColor) {
-                                                ctx.beginPath();
-                                                ctx.fillStyle = that.panel.maskColor;
-                                                ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                                                ctx.closePath();
-                                            }
-                                            ctx.restore();
-                                            linePoiTypes.forEach(function (poiType) {
-                                                if (shapeMap[poiType]) {
-                                                    shapeMap[poiType].forEach(function (item) {
-                                                        ctx.save();
-                                                        ctx.beginPath();
-                                                        var poiOption = that.getPoiOption(poiType, item.poiData);
-                                                        filterCtx(ctx, poiOption);
-                                                        var startPoint = that.map.pointToPixel(item.points[0]);
-                                                        ctx.moveTo(startPoint.x, startPoint.y);
-                                                        for (var pointIndex = 1; pointIndex < item.points.length; pointIndex++) {
-                                                            var linePoint = that.map.pointToPixel(item.points[pointIndex]);
-                                                            ctx.lineTo(linePoint.x, linePoint.y);
-                                                        }
-                                                        if (poiType === that.panel.polylineName) {
+                                                    ctx.closePath();
+                                                    if (!isPoint) {
+                                                        if (that.getPoiConfig(poiType, item.poiData, that.panel.isStroke, false)) {
                                                             ctx.stroke();
-                                                        } else if (poiType === that.panel.polygonName) {
-                                                            ctx.closePath();
-                                                            if (that.getPoiConfig(poiType, item.poiData, that.panel.isStroke, true)) {
-                                                                ctx.stroke();
-                                                            }
-                                                            if (poiOption.fillOpacity) {
-                                                                ctx.globalAlpha = poiOption.fillOpacity;
-                                                            }
-                                                            if (that.getPoiConfig(poiType, item.poiData, that.panel.isFill, true)) {
-                                                                ctx.fill();
-                                                            }
                                                         }
-                                                        ctx.restore();
-                                                    });
-                                                }
-                                            });
-                                            dotPoiTypes.forEach(function (poiType) {
-                                                if (shapeMap[poiType]) {
-                                                    shapeMap[poiType].forEach(function (item) {
-                                                        item.points.forEach(function (point) {
-                                                            ctx.save();
-                                                            var isCircle = poiType === that.panel.circleName;
-                                                            var isPoint = poiType === that.panel.pointName;
-                                                            var layerItem = {
-                                                                lng: point.lng,
-                                                                lat: point.lat,
-                                                                size: that.getPoiConfig(poiType, item.poiData, isCircle ? that.panel.circleRadius : isPoint ? that.panel.pointSize : that.panel.squareLength, isCircle ? 10 : isPoint ? 5 : 20)
-                                                            };
-                                                            ctx.beginPath();
-                                                            filterCtx(ctx, that.getPoiOption(poiType, item.poiData, isPoint ? {
-                                                                'fillColor': getColor(that.getPoiConfig(poiType, item.poiData, that.panel.fillColor, 'blue'), 0.4)
-                                                            } : {}));
-                                                            var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isCircle);
-                                                            if (isPoint) {
-                                                                ctx.arc(posRect.x, posRect.y, layerItem.size, 0, 2 * Math.PI);
-                                                            } else if (isCircle) {
-                                                                ctx.arc(posRect.x, posRect.y, posRect.w, 0, 2 * Math.PI);
-                                                            } else {
-                                                                ctx.rect(posRect.x, posRect.y, posRect.w, posRect.h);
-                                                            }
-                                                            ctx.closePath();
-                                                            if (!isPoint) {
-                                                                if (that.getPoiConfig(poiType, item.poiData, that.panel.isStroke, false)) {
-                                                                    ctx.stroke();
-                                                                }
-                                                            }
-                                                            if (that.getPoiConfig(poiType, item.poiData, that.panel.isFill, true)) {
-                                                                ctx.fill();
-                                                            }
-                                                            ctx.restore();
-                                                        });
-                                                    });
-                                                }
-                                            });
-                                            labelPoiTypes.forEach(function (poiType) {
-                                                if (shapeMap[poiType]) {
-                                                    shapeMap[poiType].forEach(function (item) {
-                                                        ctx.save();
-                                                        ctx.beginPath();
-                                                        var labelText = that.getPoiContent(poiType, item.poiData);
-                                                        var poiOption = that.getPoiOption(poiType, item.poiData);
-                                                        filterCtx(ctx, poiOption, false);
-                                                        for (var pointIndex = 0; pointIndex < item.points.length; pointIndex++) {
-                                                            ctx.beginPath();
-                                                            var labelPoint = that.map.pointToPixel(item.points[pointIndex]);
-                                                            ctx.fillText(labelText, labelPoint.x, labelPoint.y);
-                                                        }
-                                                        ctx.restore();
-                                                    });
-                                                }
-                                            });
-                                            return matchItems;
-                                        };
-
-                                        var canvasLayerPointChecker = function canvasLayerPointChecker(checkPoint) {
-                                            var checkPixel = that.map.pointToPixel(checkPoint);
-                                            var matchItems = [];
-                                            dotPoiTypes.reverse().forEach(function (poiType) {
-                                                if (shapeMap[poiType]) {
-                                                    shapeMap[poiType].forEach(function (item) {
-                                                        item.points.forEach(function (point) {
-                                                            var isCircle = poiType === that.panel.circleName;
-                                                            var isPoint = poiType === that.panel.pointName;
-                                                            var layerItem = {
-                                                                lng: point.lng,
-                                                                lat: point.lat,
-                                                                size: that.getPoiConfig(poiType, item.poiData, isCircle ? that.panel.circleRadius : isPoint ? that.panel.pointSize : that.panel.squareLength, isCircle ? 10 : isPoint ? 5 : 20)
-                                                            };
-                                                            var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isCircle);
-                                                            if (isPoint) {
-                                                                if (isPointInCircle(checkPixel, posRect, layerItem.size)) {
-                                                                    matchItems.push([checkPoint, poiType, item.poiData, point]);
-                                                                }
-                                                            } else if (isCircle) {
-                                                                if (isPointInCircle(checkPixel, posRect, posRect.w)) {
-                                                                    matchItems.push([checkPoint, poiType, item.poiData, point]);
-                                                                }
-                                                            } else if (isPointInRect(checkPixel, posRect)) {
-                                                                matchItems.push([checkPoint, poiType, item.poiData, point]);
-                                                            }
-                                                        });
-                                                    });
-                                                }
-                                            });
-                                            linePoiTypes.reverse().forEach(function (poiType) {
-                                                if (shapeMap[poiType]) {
-                                                    shapeMap[poiType].forEach(function (item) {
-                                                        if (poiType === that.panel.polygonName && isPointInPoly(checkPixel, item.points.map(function (p) {
-                                                            return that.map.pointToPixel(p);
-                                                        }))) {
-                                                            matchItems.push([checkPoint, poiType, item.poiData, item.points]);
-                                                        }
-                                                    });
-                                                }
-                                            });
-                                            return matchItems;
-                                        };
-
-                                        if (canvasTypes.some(function (canvasType) {
-                                            return shapeMap[canvasType];
-                                        }) || that.panel.maskColor) {
-                                            var canvasLayer = new BMap.CanvasLayer({
-                                                paneName: 'mapPane',
-                                                zIndex: -999,
-                                                update: function update() {
-                                                    canvasLayerUpdater(this);
-                                                }
-                                            });
-                                            that.map.addOverlay(canvasLayer);
-                                            that.clickHandler.push(function (event) {
-                                                var matchItems = canvasLayerPointChecker(event.point);
-                                                matchItems = matchItems.filter(function (matchItem) {
-                                                    return that.getPoiContent(matchItem[1], matchItem[2]);
+                                                    }
+                                                    if (that.getPoiConfig(poiType, item.poiData, that.panel.isFill, true)) {
+                                                        ctx.fill();
+                                                    }
+                                                    ctx.restore();
                                                 });
-                                                if (matchItems.length > 0) {
-                                                    var matchItem = matchItems[0];
-                                                    that.getPoiInfoWindowHandler(matchItem[1], event.point, matchItem[2])(event);
-                                                }
                                             });
                                         }
-                                    }
+                                    });
+                                    labelPoiTypes.forEach(function (poiType) {
+                                        if (shapeMap[poiType]) {
+                                            shapeMap[poiType].forEach(function (item) {
+                                                ctx.save();
+                                                ctx.beginPath();
+                                                var labelText = that.getPoiContent(poiType, item.poiData);
+                                                var poiOption = that.getPoiOption(poiType, item.poiData);
+                                                filterCtx(ctx, poiOption, false);
+                                                for (var pointIndex = 0; pointIndex < item.points.length; pointIndex++) {
+                                                    ctx.beginPath();
+                                                    var labelPoint = that.map.pointToPixel(item.points[pointIndex]);
+                                                    ctx.fillText(labelText, labelPoint.x, labelPoint.y);
+                                                }
+                                                ctx.restore();
+                                            });
+                                        }
+                                    });
+                                    return matchItems;
                                 };
 
-                                var shapeMap = [];
-                                var sourcePointList = [];
-                                var callbackList = [];
-
-                                var rawLength = 0;
-                                var translatedItems = [];
-
-                                var _loop = function _loop(i) {
-                                    var poiIndex = i;
-                                    setTimeout(function () {
-                                        if (poiList[poiIndex] && poiList[poiIndex][that.panel.lngName] && poiList[poiIndex][that.panel.latName] && poiList[poiIndex][that.panel.lngName] > 0 && poiList[poiIndex][that.panel.latName] > 0) {
-                                            var gpsItem = Object.assign({}, poiList[poiIndex]);
-                                            gpsItem.lng = parseFloat(poiList[poiIndex][that.panel.lngName]);
-                                            gpsItem.lat = parseFloat(poiList[poiIndex][that.panel.latName]);
-                                            translateOne(poiIndex, 0, gpsItem, BMap);
-                                        } else if (poiList[poiIndex][that.panel.geohashName] && poiList[poiIndex][that.panel.geohashName].length > 0) {
-                                            var _decodeGeoHash = decodeGeoHash(poiList[poiIndex][that.panel.geohashName]),
-                                                lng = _decodeGeoHash.longitude,
-                                                lat = _decodeGeoHash.latitude;
-
-                                            var _gpsItem = Object.assign({}, poiList[poiIndex], { lng: lng, lat: lat });
-                                            translateOne(poiIndex, 0, _gpsItem, BMap);
-                                        } else if (poiList[poiIndex][that.panel.posName] && poiList[poiIndex][that.panel.posName].length > 0) {
-                                            var gpsList = poiList[poiIndex][that.panel.posName].split(';');
-                                            for (var gpsIndex = 0; gpsIndex < gpsList.length; gpsIndex++) {
-                                                var gpsStr = gpsList[gpsIndex];
-                                                var items = gpsStr.split('|');
-                                                if (items.length === 1) {
-                                                    items = gpsStr.split(',');
-                                                }
-
-                                                var _items = items,
-                                                    _items2 = _slicedToArray(_items, 2),
-                                                    _lng = _items2[0],
-                                                    _lat = _items2[1];
-
-                                                var _gpsItem2 = Object.assign({}, poiList[poiIndex]);
-                                                _gpsItem2.lng = parseFloat(_lng.trim());
-                                                _gpsItem2.lat = parseFloat(_lat.trim());
-                                                translateOne(poiIndex, gpsIndex, _gpsItem2, BMap);
-                                            }
-                                        }
-                                        if (sourcePointList.length > 0) {
-                                            var convertor = new BMap.Convertor();
-                                            var groupSize = 10;
-
-                                            var _loop2 = function _loop2(groupIndex) {
-                                                var pointList = [];
-                                                for (var pointIndex = 0; pointIndex < groupSize && pointIndex + groupIndex < sourcePointList.length; pointIndex++) {
-                                                    pointList.push(sourcePointList[groupIndex + pointIndex]);
-                                                }
-                                                convertor.translate(pointList, getMapSourceId(), 5, function (result) {
-                                                    if (result.status === 0) {
-                                                        for (var index = 0; index < result.points.length; index++) {
-                                                            callbackList[groupIndex + index](result.points[index]);
+                                var canvasLayerPointChecker = function canvasLayerPointChecker(checkPoint) {
+                                    var checkPixel = that.map.pointToPixel(checkPoint);
+                                    var matchItems = [];
+                                    dotPoiTypes.reverse().forEach(function (poiType) {
+                                        if (shapeMap[poiType]) {
+                                            shapeMap[poiType].forEach(function (item) {
+                                                item.points.forEach(function (point) {
+                                                    var isCircle = poiType === that.panel.circleName;
+                                                    var isPoint = poiType === that.panel.pointName;
+                                                    var layerItem = {
+                                                        lng: point.lng,
+                                                        lat: point.lat,
+                                                        size: that.getPoiConfig(poiType, item.poiData, isCircle ? that.panel.circleRadius : isPoint ? that.panel.pointSize : that.panel.squareLength, isCircle ? 10 : isPoint ? 5 : 20)
+                                                    };
+                                                    var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isCircle);
+                                                    if (isPoint) {
+                                                        if (isPointInCircle(checkPixel, posRect, layerItem.size)) {
+                                                            matchItems.push([checkPoint, poiType, item.poiData, point]);
                                                         }
-                                                    } else {
-                                                        console.error('gps translate error', pointList);
+                                                    } else if (isCircle) {
+                                                        if (isPointInCircle(checkPixel, posRect, posRect.w)) {
+                                                            matchItems.push([checkPoint, poiType, item.poiData, point]);
+                                                        }
+                                                    } else if (isPointInRect(checkPixel, posRect)) {
+                                                        matchItems.push([checkPoint, poiType, item.poiData, point]);
                                                     }
                                                 });
-                                            };
-
-                                            for (var groupIndex = 0; groupIndex < sourcePointList.length; groupIndex += groupSize) {
-                                                _loop2(groupIndex);
-                                            }
+                                            });
                                         }
-                                    }, 10);
+                                    });
+                                    linePoiTypes.reverse().forEach(function (poiType) {
+                                        if (shapeMap[poiType]) {
+                                            shapeMap[poiType].forEach(function (item) {
+                                                if (poiType === that.panel.polygonName && isPointInPoly(checkPixel, item.points.map(function (p) {
+                                                    return that.map.pointToPixel(p);
+                                                }))) {
+                                                    matchItems.push([checkPoint, poiType, item.poiData, item.points]);
+                                                }
+                                            });
+                                        }
+                                    });
+                                    return matchItems;
                                 };
 
-                                for (var i = 0; i < poiList.length; i++) {
-                                    _loop(i);
+                                if (canvasTypes.some(function (canvasType) {
+                                    return shapeMap[canvasType];
+                                }) || that.panel.maskColor) {
+                                    var canvasLayer = new BMap.CanvasLayer({
+                                        paneName: 'mapPane',
+                                        zIndex: -999,
+                                        update: function update() {
+                                            canvasLayerUpdater(this);
+                                        }
+                                    });
+                                    that.map.addOverlay(canvasLayer);
+                                    that.clickHandler.push(function (event) {
+                                        var matchItems = canvasLayerPointChecker(event.point);
+                                        matchItems = matchItems.filter(function (matchItem) {
+                                            return that.getPoiContent(matchItem[1], matchItem[2]);
+                                        });
+                                        if (matchItems.length > 0) {
+                                            var matchItem = matchItems[0];
+                                            that.getPoiInfoWindowHandler(matchItem[1], event.point, matchItem[2])(event);
+                                        }
+                                    });
                                 }
-                            })();
+                            }
+                        }
+
+                        function translateOne(poiIndex, gpsIndex, gps) {
+                            rawLength += 1;
+                            // 转换坐标
+                            var sourceGpsId = that.getMapSourceId();
+                            if (sourceGpsId > 3) {
+                                var newGps = {};
+                                if (sourceGpsId === 5) {
+                                    newGps = { lng: gps.lng, lat: gps.lat };
+                                } else if (sourceGpsId === 11) {
+                                    newGps = gpsHelper.gpsToBaidu(gps.lat, gps.lng);
+                                } else if (sourceGpsId === 13) {
+                                    newGps = gpsHelper.chinaToBaidu(gps.lat, gps.lng);
+                                }
+                                setTimeout(function () {
+                                    translateCallback(poiIndex, gpsIndex, gps, newGps);
+                                }, 1);
+                            } else {
+                                var point = new BMap.Point(gps.lng, gps.lat);
+                                sourcePointList.push(point);
+                                callbackList.push(translateCallback.bind(this, poiIndex, gpsIndex, gps));
+                            }
+                        }
+
+                        console.log(poiList);
+                        if (poiList) {
+                            for (var i = 0; i < poiList.length; i++) {
+                                var poiIndex = i;
+                                if (poiList[poiIndex] && poiList[poiIndex][that.panel.lngName] && poiList[poiIndex][that.panel.latName] && poiList[poiIndex][that.panel.lngName] > 0 && poiList[poiIndex][that.panel.latName] > 0) {
+                                    var gpsItem = Object.assign({}, poiList[poiIndex]);
+                                    gpsItem.lng = parseFloat(poiList[poiIndex][that.panel.lngName]);
+                                    gpsItem.lat = parseFloat(poiList[poiIndex][that.panel.latName]);
+                                    translateOne(poiIndex, 0, gpsItem, BMap);
+                                } else if (poiList[poiIndex][that.panel.geohashName] && poiList[poiIndex][that.panel.geohashName].length > 0) {
+                                    var _decodeGeoHash = decodeGeoHash(poiList[poiIndex][that.panel.geohashName]),
+                                        lng = _decodeGeoHash.longitude,
+                                        lat = _decodeGeoHash.latitude;
+
+                                    var _gpsItem = Object.assign({}, poiList[poiIndex], { lng: lng, lat: lat });
+                                    translateOne(poiIndex, 0, _gpsItem, BMap);
+                                } else if (poiList[poiIndex][that.panel.posName] && poiList[poiIndex][that.panel.posName].length > 0) {
+                                    var gpsList = poiList[poiIndex][that.panel.posName].split(';');
+                                    for (var gpsIndex = 0; gpsIndex < gpsList.length; gpsIndex++) {
+                                        var gpsStr = gpsList[gpsIndex];
+                                        var items = gpsStr.split('|');
+                                        if (items.length === 1) {
+                                            items = gpsStr.split(',');
+                                        }
+
+                                        var _items = items,
+                                            _items2 = _slicedToArray(_items, 2),
+                                            _lng = _items2[0],
+                                            _lat = _items2[1];
+
+                                        var _gpsItem2 = Object.assign({}, poiList[poiIndex]);
+                                        _gpsItem2.lng = parseFloat(_lng.trim());
+                                        _gpsItem2.lat = parseFloat(_lat.trim());
+                                        translateOne(poiIndex, gpsIndex, _gpsItem2, BMap);
+                                    }
+                                }
+                            }
+                            if (sourcePointList.length > 0) {
+                                var convertor = new BMap.Convertor();
+                                var groupSize = 10;
+
+                                var _loop = function _loop(groupIndex) {
+                                    var pointList = [];
+                                    for (var pointIndex = 0; pointIndex < groupSize && pointIndex + groupIndex < sourcePointList.length; pointIndex++) {
+                                        pointList.push(sourcePointList[groupIndex + pointIndex]);
+                                    }
+                                    convertor.translate(pointList, that.getMapSourceId(), 5, function (result) {
+                                        if (result.status === 0) {
+                                            for (var index = 0; index < result.points.length; index++) {
+                                                callbackList[groupIndex + index](result.points[index]);
+                                            }
+                                        } else {
+                                            console.error('gps translate error', pointList);
+                                        }
+                                    });
+                                };
+
+                                for (var groupIndex = 0; groupIndex < sourcePointList.length; groupIndex += groupSize) {
+                                    _loop(groupIndex);
+                                }
+                            }
                         }
                     }
                 }, {
