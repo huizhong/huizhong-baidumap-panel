@@ -3,6 +3,7 @@
 import {MetricsPanelCtrl} from 'app/plugins/sdk';
 import TimeSeries from 'app/core/time_series2';
 import kbn from 'app/core/utils/kbn';
+import {gpsToBaidu, chinaToBaidu} from './gps_helper';
 
 import _ from 'lodash';
 import mapRenderer from './map_renderer';
@@ -482,6 +483,10 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     sourceGpsId = 1;
                 } else if (sourceGps === 'GCJ02') {
                     sourceGpsId = 3;
+                } else if (sourceGps === 'WGS84（离线计算）') {
+                    sourceGpsId = 11;
+                } else if (sourceGps === 'GCJ02（离线计算）') {
+                    sourceGpsId = 13;
                 }
                 return sourceGpsId;
             }
@@ -490,9 +495,17 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 rawLength += 1;
                 // 转换坐标
                 const sourceGpsId = getMapSourceId();
-                if (sourceGpsId === 5) {
+                if (sourceGpsId > 3) {
+                    let newGps = {};
+                    if (sourceGpsId === 5) {
+                        newGps = {lng: gps.lng, lat: gps.lat};
+                    } else if (sourceGpsId === 11) {
+                        newGps = gpsToBaidu(gps.lat, gps.lng);
+                    } else if (sourceGpsId === 13) {
+                        newGps = chinaToBaidu(gps.lat, gps.lng);
+                    }
                     setTimeout(function () {
-                        translateCallback(poiIndex, gpsIndex, gps, {lng: gps.lng, lat: gps.lat});
+                        translateCallback(poiIndex, gpsIndex, gps, newGps);
                     }, 1);
                 } else {
                     const point = new BMap.Point(gps.lng, gps.lat);

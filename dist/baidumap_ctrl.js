@@ -1,9 +1,9 @@
 'use strict';
 
-System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn', 'lodash', './map_renderer', './data_formatter', './geohash'], function (_export, _context) {
+System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn', './gps_helper', 'lodash', './map_renderer', './data_formatter', './geohash'], function (_export, _context) {
     "use strict";
 
-    var MetricsPanelCtrl, TimeSeries, kbn, _, mapRenderer, DataFormatter, decodeGeoHash, _typeof, _createClass, _slicedToArray, panelDefaults, BaidumapCtrl;
+    var MetricsPanelCtrl, TimeSeries, kbn, gpsToBaidu, chinaToBaidu, _, mapRenderer, DataFormatter, decodeGeoHash, _typeof, _createClass, _slicedToArray, panelDefaults, BaidumapCtrl;
 
     function _classCallCheck(instance, Constructor) {
         if (!(instance instanceof Constructor)) {
@@ -169,6 +169,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
             TimeSeries = _appCoreTime_series.default;
         }, function (_appCoreUtilsKbn) {
             kbn = _appCoreUtilsKbn.default;
+        }, function (_gps_helper) {
+            gpsToBaidu = _gps_helper.gpsToBaidu;
+            chinaToBaidu = _gps_helper.chinaToBaidu;
         }, function (_lodash) {
             _ = _lodash.default;
         }, function (_map_renderer) {
@@ -547,6 +550,10 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                         sourceGpsId = 1;
                                     } else if (sourceGps === 'GCJ02') {
                                         sourceGpsId = 3;
+                                    } else if (sourceGps === 'WGS84（离线计算）') {
+                                        sourceGpsId = 11;
+                                    } else if (sourceGps === 'GCJ02（离线计算）') {
+                                        sourceGpsId = 13;
                                     }
                                     return sourceGpsId;
                                 };
@@ -555,9 +562,17 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                     rawLength += 1;
                                     // 转换坐标
                                     var sourceGpsId = getMapSourceId();
-                                    if (sourceGpsId === 5) {
+                                    if (sourceGpsId > 3) {
+                                        var newGps = {};
+                                        if (sourceGpsId === 5) {
+                                            newGps = { lng: gps.lng, lat: gps.lat };
+                                        } else if (sourceGpsId === 11) {
+                                            newGps = gpsToBaidu(gps.lat, gps.lng);
+                                        } else if (sourceGpsId === 13) {
+                                            newGps = chinaToBaidu(gps.lat, gps.lng);
+                                        }
                                         setTimeout(function () {
-                                            translateCallback(poiIndex, gpsIndex, gps, { lng: gps.lng, lat: gps.lat });
+                                            translateCallback(poiIndex, gpsIndex, gps, newGps);
                                         }, 1);
                                     } else {
                                         var point = new BMap.Point(gps.lng, gps.lat);

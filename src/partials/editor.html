@@ -122,7 +122,7 @@
             <label class="gf-form-label width-12">GPS坐标系</label>
             <div class="gf-form-select-wrapper max-width-10">
                 <select class="input-small gf-form-input" ng-model="ctrl.panel.gpsType"
-                        ng-options="t for t in ['百度坐标系', 'WGS84', 'GCJ02']"
+                        ng-options="t for t in ['百度坐标系', 'WGS84', 'GCJ02', 'WGS84（离线计算）', 'GCJ02（离线计算）']"
                         ng-change="ctrl.onDataReceived()"></select>
             </div>
         </div>
