@@ -13,7 +13,7 @@ import decodeGeoHash from './geohash';
 const panelDefaults = {
     ak: 'QKCqsdHBbGxBnNbvUwWdUEBjonk7jUj6',
     maxDataPoints: 1,
-    theme: 'normal',
+    theme: '',
     lat: 39.968539,
     lng: 116.497856,
     initialZoom: 14,

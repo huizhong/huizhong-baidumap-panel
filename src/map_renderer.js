@@ -29,7 +29,9 @@ export default function link(scope, elem, attrs, ctrl) {
                     });
                     ctrl.map.centerAndZoom(new BMap.Point(ctrl.panel.lng, ctrl.panel.lat), parseInt(ctrl.panel.initialZoom, 10));
                     ctrl.map.enableScrollWheelZoom();
-                    // ctrl.map.setMapStyle({style: ctrl.panel.theme});
+                    if (ctrl.panel.theme) {
+                        ctrl.map.setMapStyle({style: ctrl.panel.theme});
+                    }
 
                     ctrl.navigationSwitch = new BMap.NavigationControl();
                     ctrl.scaleSwitch = new BMap.ScaleControl();
