@@ -3,7 +3,7 @@
 System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn', './gps_helper', 'lodash', './map_renderer', './data_formatter', './geohash'], function (_export, _context) {
     "use strict";
 
-    var MetricsPanelCtrl, TimeSeries, kbn, gpsToBaidu, chinaToBaidu, _, mapRenderer, DataFormatter, decodeGeoHash, _typeof, _createClass, _slicedToArray, panelDefaults, BaidumapCtrl;
+    var MetricsPanelCtrl, TimeSeries, kbn, gpsHelper, _, mapRenderer, DataFormatter, decodeGeoHash, _typeof, _createClass, _slicedToArray, gpsToBaidu, chinaToBaidu, panelDefaults, BaidumapCtrl;
 
     function _classCallCheck(instance, Constructor) {
         if (!(instance instanceof Constructor)) {
@@ -170,8 +170,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
         }, function (_appCoreUtilsKbn) {
             kbn = _appCoreUtilsKbn.default;
         }, function (_gps_helper) {
-            gpsToBaidu = _gps_helper.gpsToBaidu;
-            chinaToBaidu = _gps_helper.chinaToBaidu;
+            gpsHelper = _gps_helper.default;
         }, function (_lodash) {
             _ = _lodash.default;
         }, function (_map_renderer) {
@@ -244,6 +243,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 };
             }();
 
+            gpsToBaidu = gpsHelper.gpsToBaidu;
+            chinaToBaidu = gpsHelper.chinaToBaidu;
             panelDefaults = {
                 ak: 'QKCqsdHBbGxBnNbvUwWdUEBjonk7jUj6',
                 maxDataPoints: 1,

@@ -3,7 +3,8 @@
 import {MetricsPanelCtrl} from 'app/plugins/sdk';
 import TimeSeries from 'app/core/time_series2';
 import kbn from 'app/core/utils/kbn';
-import {gpsToBaidu, chinaToBaidu} from './gps_helper';
+import gpsHelper from './gps_helper';
+const {gpsToBaidu, chinaToBaidu} = gpsHelper;
 
 import _ from 'lodash';
 import mapRenderer from './map_renderer';
