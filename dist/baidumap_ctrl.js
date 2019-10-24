@@ -253,7 +253,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 autoFocusCenterDistance: 10000,
                 valueName: 'current',
                 locationData: 'json result',
-                gpsType: '百度坐标系',
+                gpsType: 'BD09',
                 esMetric: 'Count',
                 decimals: 0,
                 navigation: true,
@@ -274,6 +274,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 geohashName: 'geohash',
                 configName: 'config',
                 contentName: 'content',
+                gpsTypeName: 'gpsType',
 
                 circleName: 'circle',
                 squareName: 'square',
@@ -534,19 +535,26 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                     }
                 }, {
                     key: 'getMapSourceId',
-                    value: function getMapSourceId() {
-                        var sourceGps = this.panel.gpsType;
+                    value: function getMapSourceId(poiData) {
+                        var poiType = this.getPoiType(poiData);
+                        var sourceGps = this.getPoiConfig(poiType, poiData, this.panel.gpsTypeName, this.panel.gpsType);
                         var sourceGpsId = 5;
                         if (sourceGps === 'WGS84') {
                             sourceGpsId = 1;
                         } else if (sourceGps === 'GCJ02') {
                             sourceGpsId = 3;
-                        } else if (sourceGps === 'WGS84（离线计算）') {
+                        } else if (sourceGps === 'WGS84OFFLINE') {
                             sourceGpsId = 11;
-                        } else if (sourceGps === 'GCJ02（离线计算）') {
+                        } else if (sourceGps === 'GCJ02OFFLINE') {
                             sourceGpsId = 13;
                         }
                         return sourceGpsId;
+                    }
+                }, {
+                    key: 'getPoiType',
+                    value: function getPoiType(poiData) {
+                        var pointTypeName = this.panel.pointName;
+                        return poiData[this.panel.typeName] || pointTypeName;
                     }
                 }, {
                     key: 'addNode',
@@ -557,7 +565,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         this.clickHandler = [];
 
                         var shapeMap = [];
-                        var sourcePointList = [];
+                        var translatePointListMap = new Map();
                         var callbackList = [];
 
                         var rawLength = 0;
@@ -579,10 +587,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                     return (a.poiIndex - b.poiIndex) * 1000000 + (a.gpsIndex - b.gpsIndex);
                                 });
                                 for (var translateIndex = 0; translateIndex < translatedItems.length; translateIndex++) {
-                                    var _pointTypeName = that.panel.pointName;
-
                                     var translatedItem = translatedItems[translateIndex];
-                                    var poiType = translatedItem.gps[that.panel.typeName] || _pointTypeName;
+                                    var poiType = that.getPoiType(translatedItem.gps);
 
                                     var poiIndexKey = 'key_' + translatedItem.poiIndex;
                                     var pointItem = translatedItem.point;
@@ -926,7 +932,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         function translateOne(poiIndex, gpsIndex, gps) {
                             rawLength += 1;
                             // 转换坐标
-                            var sourceGpsId = that.getMapSourceId();
+                            var sourceGpsId = that.getMapSourceId(gps);
                             if (sourceGpsId > 3) {
                                 var newGps = {};
                                 if (sourceGpsId === 5) {
@@ -941,7 +947,10 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                 }, 1);
                             } else {
                                 var point = new BMap.Point(gps.lng, gps.lat);
-                                sourcePointList.push(point);
+                                if (!translatePointListMap.has(sourceGpsId)) {
+                                    translatePointListMap.set(sourceGpsId, []);
+                                }
+                                translatePointListMap.get(sourceGpsId).push(point);
                                 callbackList.push(translateCallback.bind(this, poiIndex, gpsIndex, gps));
                             }
                         }
@@ -983,28 +992,52 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                     }
                                 }
                             }
-                            if (sourcePointList.length > 0) {
-                                var convertor = new BMap.Convertor();
-                                var groupSize = 10;
+                            var _iteratorNormalCompletion = true;
+                            var _didIteratorError = false;
+                            var _iteratorError = undefined;
 
-                                var _loop = function _loop(groupIndex) {
-                                    var pointList = [];
-                                    for (var pointIndex = 0; pointIndex < groupSize && pointIndex + groupIndex < sourcePointList.length; pointIndex++) {
-                                        pointList.push(sourcePointList[groupIndex + pointIndex]);
-                                    }
-                                    convertor.translate(pointList, that.getMapSourceId(), 5, function (result) {
-                                        if (result.status === 0) {
-                                            for (var index = 0; index < result.points.length; index++) {
-                                                callbackList[groupIndex + index](result.points[index]);
+                            try {
+                                for (var _iterator = translatePointListMap.keys()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                                    var sourceMapId = _step.value;
+
+                                    var sourcePointList = translatePointListMap.get(sourceMapId);
+                                    if (sourcePointList.length > 0) {
+                                        var convertor = new BMap.Convertor();
+                                        var groupSize = 10;
+
+                                        var _loop = function _loop(groupIndex) {
+                                            var pointList = [];
+                                            for (var pointIndex = 0; pointIndex < groupSize && pointIndex + groupIndex < sourcePointList.length; pointIndex++) {
+                                                pointList.push(sourcePointList[groupIndex + pointIndex]);
                                             }
-                                        } else {
-                                            console.error('gps translate error', pointList);
-                                        }
-                                    });
-                                };
+                                            convertor.translate(pointList, sourceMapId, 5, function (result) {
+                                                if (result.status === 0) {
+                                                    for (var index = 0; index < result.points.length; index++) {
+                                                        callbackList[groupIndex + index](result.points[index]);
+                                                    }
+                                                } else {
+                                                    console.error('gps translate error', pointList);
+                                                }
+                                            });
+                                        };
 
-                                for (var groupIndex = 0; groupIndex < sourcePointList.length; groupIndex += groupSize) {
-                                    _loop(groupIndex);
+                                        for (var groupIndex = 0; groupIndex < sourcePointList.length; groupIndex += groupSize) {
+                                            _loop(groupIndex);
+                                        }
+                                    }
+                                }
+                            } catch (err) {
+                                _didIteratorError = true;
+                                _iteratorError = err;
+                            } finally {
+                                try {
+                                    if (!_iteratorNormalCompletion && _iterator.return) {
+                                        _iterator.return();
+                                    }
+                                } finally {
+                                    if (_didIteratorError) {
+                                        throw _iteratorError;
+                                    }
                                 }
                             }
                         }

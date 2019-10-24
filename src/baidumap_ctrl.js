@@ -21,7 +21,7 @@ const panelDefaults = {
     autoFocusCenterDistance: 10000,
     valueName: 'current',
     locationData: 'json result',
-    gpsType: '百度坐标系',
+    gpsType: 'BD09',
     esMetric: 'Count',
     decimals: 0,
     navigation: true,
@@ -42,6 +42,7 @@ const panelDefaults = {
     geohashName: 'geohash',
     configName: 'config',
     contentName: 'content',
+    gpsTypeName: 'gpsType',
 
     circleName: 'circle',
     squareName: 'square',
@@ -410,19 +411,25 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
     }
 
 
-    getMapSourceId() {
-        const sourceGps = this.panel.gpsType;
+    getMapSourceId(poiData) {
+        const poiType = this.getPoiType(poiData);
+        const sourceGps = this.getPoiConfig(poiType, poiData, this.panel.gpsTypeName, this.panel.gpsType);
         let sourceGpsId = 5;
         if (sourceGps === 'WGS84') {
             sourceGpsId = 1;
         } else if (sourceGps === 'GCJ02') {
             sourceGpsId = 3;
-        } else if (sourceGps === 'WGS84（离线计算）') {
+        } else if (sourceGps === 'WGS84OFFLINE') {
             sourceGpsId = 11;
-        } else if (sourceGps === 'GCJ02（离线计算）') {
+        } else if (sourceGps === 'GCJ02OFFLINE') {
             sourceGpsId = 13;
         }
         return sourceGpsId;
+    }
+
+    getPoiType(poiData) {
+        const pointTypeName = this.panel.pointName;
+        return poiData[this.panel.typeName] || pointTypeName;
     }
 
     addNode(BMap) {
@@ -432,7 +439,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         this.clickHandler = [];
 
         const shapeMap = [];
-        const sourcePointList = [];
+        const translatePointListMap = new Map();
         const callbackList = [];
 
         let rawLength = 0;
@@ -452,10 +459,8 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     return ((a.poiIndex - b.poiIndex) * 1000000) + (a.gpsIndex - b.gpsIndex);
                 });
                 for (let translateIndex = 0; translateIndex < translatedItems.length; translateIndex++) {
-                    const pointTypeName = that.panel.pointName;
-
                     const translatedItem = translatedItems[translateIndex];
-                    const poiType = translatedItem.gps[that.panel.typeName] || pointTypeName;
+                    const poiType = that.getPoiType(translatedItem.gps);
 
                     const poiIndexKey = 'key_' + translatedItem.poiIndex;
                     const pointItem = translatedItem.point;
@@ -811,7 +816,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         function translateOne(poiIndex, gpsIndex, gps) {
             rawLength += 1;
             // 转换坐标
-            const sourceGpsId = that.getMapSourceId();
+            const sourceGpsId = that.getMapSourceId(gps);
             if (sourceGpsId > 3) {
                 let newGps = {};
                 if (sourceGpsId === 5) {
@@ -826,7 +831,11 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 }, 1);
             } else {
                 const point = new BMap.Point(gps.lng, gps.lat);
-                sourcePointList.push(point);
+                if (!translatePointListMap.has(sourceGpsId)) {
+                    translatePointListMap.set(sourceGpsId, []);
+                }
+                translatePointListMap.get(sourceGpsId)
+                    .push(point);
                 callbackList.push(translateCallback.bind(this, poiIndex, gpsIndex, gps));
             }
         }
@@ -864,23 +873,26 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                     }
                 }
             }
-            if (sourcePointList.length > 0) {
-                const convertor = new BMap.Convertor();
-                const groupSize = 10;
-                for (let groupIndex = 0; groupIndex < sourcePointList.length; groupIndex += groupSize) {
-                    const pointList = [];
-                    for (let pointIndex = 0; pointIndex < groupSize && pointIndex + groupIndex < sourcePointList.length; pointIndex++) {
-                        pointList.push(sourcePointList[groupIndex + pointIndex]);
-                    }
-                    convertor.translate(pointList, that.getMapSourceId(), 5, (result) => {
-                        if (result.status === 0) {
-                            for (let index = 0; index < result.points.length; index++) {
-                                callbackList[groupIndex + index](result.points[index]);
-                            }
-                        } else {
-                            console.error('gps translate error', pointList);
+            for (const sourceMapId of translatePointListMap.keys()) {
+                const sourcePointList = translatePointListMap.get(sourceMapId);
+                if (sourcePointList.length > 0) {
+                    const convertor = new BMap.Convertor();
+                    const groupSize = 10;
+                    for (let groupIndex = 0; groupIndex < sourcePointList.length; groupIndex += groupSize) {
+                        const pointList = [];
+                        for (let pointIndex = 0; pointIndex < groupSize && pointIndex + groupIndex < sourcePointList.length; pointIndex++) {
+                            pointList.push(sourcePointList[groupIndex + pointIndex]);
                         }
-                    });
+                        convertor.translate(pointList, sourceMapId, 5, (result) => {
+                            if (result.status === 0) {
+                                for (let index = 0; index < result.points.length; index++) {
+                                    callbackList[groupIndex + index](result.points[index]);
+                                }
+                            } else {
+                                console.error('gps translate error', pointList);
+                            }
+                        });
+                    }
                 }
             }
         }

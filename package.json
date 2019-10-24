@@ -1,6 +1,6 @@
 {
   "name": "baidumap-panel",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Baidumap Panel Plugin for Grafana",
   "main": "src/module.js",
   "scripts": {
