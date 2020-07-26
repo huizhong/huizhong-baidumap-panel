@@ -724,7 +724,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                     );
                                     filterCtx(ctx, poiOption);
                                     const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
-                                        parseFloat(layerItem.lat), layerItem.size, !isCircle);
+                                        parseFloat(layerItem.lat), layerItem.size, !isCircle && !isPoint);
                                     if (isPoint) {
                                         ctx.arc(posRect.x, posRect.y, layerItem.size, 0, 2 * Math.PI);
                                     } else if (isCircle) {
