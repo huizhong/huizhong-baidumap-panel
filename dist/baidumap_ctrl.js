@@ -371,7 +371,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         var _this2 = this;
 
                         var poiOption = {};
-                        var ctxFields = ['strokeWeight', 'fillColor', 'strokeColor', 'strokeOpacity'];
+                        var ctxFields = ['strokeWeight', 'fillColor', 'strokeColor', 'strokeOpacity', 'fillOpacity', 'font'];
                         ctxFields.forEach(function (ctxField) {
                             var ctxValue = _this2.getPoiConfig(poiType, poiItem, ctxField, '');
                             if (ctxValue != '') {
@@ -922,7 +922,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             });
                                         }
                                     });
-                                    console.log('matchItems:', matchItems);
+                                    console.log('matchItems count:', matchItems.length);
                                     return matchItems;
                                 };
 
