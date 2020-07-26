@@ -756,9 +756,10 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                         const layerItem = {
                                             lng: point.lng,
                                             lat: point.lat,
-                                            size: that.getPoiConfig(poiType, item.poiData, isCircle ? that.panel.circleRadius :
+                                            size: that.getPoiConfig(poiType, item.poiData, that.panel.pointSize, // 优先使用字段size
+                                                that.getPoiConfig(poiType, item.poiData, isCircle ? that.panel.circleRadius :
                                                 (isPoint ? that.panel.pointSize : that.panel.squareLength), isCircle ? 10 :
-                                                (isPoint ? 5 : 20)),
+                                                (isPoint ? 5 : 20))),
                                         };
                                         const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
                                             parseFloat(layerItem.lat), layerItem.size, !isCircle);
