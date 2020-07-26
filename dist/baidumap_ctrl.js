@@ -309,7 +309,9 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 markerIcon: 'markerIcon',
                 markerLabel: 'markerLabel',
                 markerEnableDragging: 'markerEnableDragging',
-                markerAnimation: 'markerAnimation'
+                markerAnimation: 'markerAnimation',
+
+                pickLocation: 'pickLocation'
             };
 
             BaidumapCtrl = function (_MetricsPanelCtrl) {
@@ -362,6 +364,21 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
 
                         var contentName = this.panel.contentName;
                         return this.getPoiConfig(poiType, poiItem, contentName, defaultValue);
+                    }
+                }, {
+                    key: 'getCtxFields',
+                    value: function getCtxFields(poiType, poiItem) {
+                        var _this2 = this;
+
+                        poiOption = {};
+                        ctxFields = ['strokeWeight', 'fillColor', 'strokeColor', 'strokeOpacity'];
+                        ctxFields.forEach(function (ctxField) {
+                            ctxValue = _this2.getPoiConfig(poiType, poiItem, ctxField, defaultValue = '');
+                            if (ctxValue != '') {
+                                poiOption[ctxField] = ctxValue;
+                            }
+                        });
+                        return poiOption;
                     }
                 }, {
                     key: 'getPoiConfig',
@@ -501,7 +518,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         var markerOption = this.getPoiOption(poiType, data);
                         var iconUrl = this.getPoiConfig(poiType, data, this.panel.markerIcon, '');
                         if (Number.isInteger(iconUrl)) {
-                            markerOption.icon = new BMap.Icon('http://api.map.baidu.com/img/markers.png', new BMap.Size(23, 25), {
+                            markerOption.icon = new BMap.Icon('https://api.map.baidu.com/img/markers.png', new BMap.Size(23, 25), {
                                 offset: new BMap.Size(10, 25), // 指定定位位置
                                 imageOffset: new BMap.Size(0, 25 * (10 - iconUrl % 10) - 10 * 25) // 设置图片偏移
                             });
@@ -776,7 +793,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             shapeMap[poiType].forEach(function (item) {
                                                 ctx.save();
                                                 ctx.beginPath();
-                                                var poiOption = that.getPoiOption(poiType, item.poiData);
+                                                var poiOption = Object.assign({}, that.getPoiOption(poiType, item.poiData), that.getCtxFields(poiType, item.poiData));
                                                 filterCtx(ctx, poiOption);
                                                 var startPoint = that.map.pointToPixel(item.points[0]);
                                                 ctx.moveTo(startPoint.x, startPoint.y);
@@ -812,12 +829,14 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     var layerItem = {
                                                         lng: point.lng,
                                                         lat: point.lat,
-                                                        size: that.getPoiConfig(poiType, item.poiData, isCircle ? that.panel.circleRadius : isPoint ? that.panel.pointSize : that.panel.squareLength, isCircle ? 10 : isPoint ? 5 : 20)
+                                                        size: that.getPoiConfig(poiType, item.poiData, that.panel.pointSize, // 优先使用字段size
+                                                        that.getPoiConfig(poiType, item.poiData, isCircle ? that.panel.circleRadius : isPoint ? that.panel.pointSize : that.panel.squareLength, isCircle ? 10 : isPoint ? 5 : 20))
                                                     };
                                                     ctx.beginPath();
-                                                    filterCtx(ctx, that.getPoiOption(poiType, item.poiData, isPoint ? {
+                                                    var poiOption = Object.assign({}, {
                                                         'fillColor': getColor(that.getPoiConfig(poiType, item.poiData, that.panel.fillColor, 'blue'), 0.4)
-                                                    } : {}));
+                                                    }, that.getPoiOption(poiType, item.poiData), that.getCtxFields(poiType, item.poiData));
+                                                    filterCtx(ctx, poiOption);
                                                     var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isCircle);
                                                     if (isPoint) {
                                                         ctx.arc(posRect.x, posRect.y, layerItem.size, 0, 2 * Math.PI);
@@ -846,7 +865,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                 ctx.save();
                                                 ctx.beginPath();
                                                 var labelText = that.getPoiContent(poiType, item.poiData);
-                                                var poiOption = that.getPoiOption(poiType, item.poiData);
+                                                var poiOption = Object.assign({}, that.getPoiOption(poiType, item.poiData), that.getCtxFields(poiType, item.poiData));
                                                 filterCtx(ctx, poiOption, false);
                                                 for (var pointIndex = 0; pointIndex < item.points.length; pointIndex++) {
                                                     ctx.beginPath();
@@ -861,6 +880,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                 };
 
                                 var canvasLayerPointChecker = function canvasLayerPointChecker(checkPoint) {
+                                    console.log('check pos: ', checkPoint);
                                     var checkPixel = that.map.pointToPixel(checkPoint);
                                     var matchItems = [];
                                     dotPoiTypes.reverse().forEach(function (poiType) {
@@ -902,6 +922,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                             });
                                         }
                                     });
+                                    console.log('matchItems:', matchItems);
                                     return matchItems;
                                 };
 
@@ -1053,10 +1074,10 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 }, {
                     key: 'filterEmptyAndZeroValues',
                     value: function filterEmptyAndZeroValues(data) {
-                        var _this2 = this;
+                        var _this3 = this;
 
                         return _.filter(data, function (o) {
-                            return !(_this2.panel.hideEmpty && _.isNil(o.value)) && !(_this2.panel.hideZero && o.value === 0);
+                            return !(_this3.panel.hideEmpty && _.isNil(o.value)) && !(_this3.panel.hideZero && o.value === 0);
                         });
                     }
                 }, {
