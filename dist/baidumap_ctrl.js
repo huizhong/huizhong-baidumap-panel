@@ -309,9 +309,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 markerIcon: 'markerIcon',
                 markerLabel: 'markerLabel',
                 markerEnableDragging: 'markerEnableDragging',
-                markerAnimation: 'markerAnimation',
-
-                pickLocation: 'pickLocation'
+                markerAnimation: 'markerAnimation'
             };
 
             BaidumapCtrl = function (_MetricsPanelCtrl) {
