@@ -254,7 +254,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         const poiOption = {};
         const ctxFields = ['strokeWeight', 'fillColor', 'strokeColor', 'strokeOpacity'];
         ctxFields.forEach((ctxField)=>{
-            const ctxValue = this.getPoiConfig(poiType, poiItem, ctxField, defaultValue = '');
+            const ctxValue = this.getPoiConfig(poiType, poiItem, ctxField, '');
             if(ctxValue!=''){
                 poiOption[ctxField] = ctxValue;
             }

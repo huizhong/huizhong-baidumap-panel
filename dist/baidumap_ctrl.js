@@ -370,10 +370,10 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                     value: function getCtxFields(poiType, poiItem) {
                         var _this2 = this;
 
-                        poiOption = {};
-                        ctxFields = ['strokeWeight', 'fillColor', 'strokeColor', 'strokeOpacity'];
+                        var poiOption = {};
+                        var ctxFields = ['strokeWeight', 'fillColor', 'strokeColor', 'strokeOpacity'];
                         ctxFields.forEach(function (ctxField) {
-                            ctxValue = _this2.getPoiConfig(poiType, poiItem, ctxField, defaultValue = '');
+                            var ctxValue = _this2.getPoiConfig(poiType, poiItem, ctxField, '');
                             if (ctxValue != '') {
                                 poiOption[ctxField] = ctxValue;
                             }
@@ -837,7 +837,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                         'fillColor': getColor(that.getPoiConfig(poiType, item.poiData, that.panel.fillColor, 'blue'), 0.4)
                                                     }, that.getPoiOption(poiType, item.poiData), that.getCtxFields(poiType, item.poiData));
                                                     filterCtx(ctx, poiOption);
-                                                    var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isCircle);
+                                                    var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isCircle && !isPoint);
                                                     if (isPoint) {
                                                         ctx.arc(posRect.x, posRect.y, layerItem.size, 0, 2 * Math.PI);
                                                     } else if (isCircle) {
