@@ -872,7 +872,8 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                                                     var layerItem = {
                                                         lng: point.lng,
                                                         lat: point.lat,
-                                                        size: that.getPoiConfig(poiType, item.poiData, isCircle ? that.panel.circleRadius : isPoint ? that.panel.pointSize : that.panel.squareLength, isCircle ? 10 : isPoint ? 5 : 20)
+                                                        size: that.getPoiConfig(poiType, item.poiData, that.panel.pointSize, // 优先使用字段size
+                                                        that.getPoiConfig(poiType, item.poiData, isCircle ? that.panel.circleRadius : isPoint ? that.panel.pointSize : that.panel.squareLength, isCircle ? 10 : isPoint ? 5 : 20))
                                                     };
                                                     var posRect = getDotRect(that.map, parseFloat(layerItem.lng), parseFloat(layerItem.lat), layerItem.size, !isCircle);
                                                     if (isPoint) {
