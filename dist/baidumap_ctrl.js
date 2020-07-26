@@ -373,7 +373,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                         var poiOption = {};
                         var ctxFields = ['strokeWeight', 'fillColor', 'strokeColor', 'strokeOpacity'];
                         ctxFields.forEach(function (ctxField) {
-                            var ctxValue = _this2.getPoiConfig(poiType, poiItem, ctxField, defaultValue = '');
+                            var ctxValue = _this2.getPoiConfig(poiType, poiItem, ctxField, '');
                             if (ctxValue != '') {
                                 poiOption[ctxField] = ctxValue;
                             }
