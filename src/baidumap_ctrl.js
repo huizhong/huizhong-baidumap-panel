@@ -77,9 +77,7 @@ const panelDefaults = {
     markerIcon: 'markerIcon',
     markerLabel: 'markerLabel',
     markerEnableDragging: 'markerEnableDragging',
-    markerAnimation: 'markerAnimation',
-
-    pickLocation:'pickLocation'
+    markerAnimation: 'markerAnimation'
 };
 
 
