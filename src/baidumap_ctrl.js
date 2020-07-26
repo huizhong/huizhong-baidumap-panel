@@ -78,6 +78,8 @@ const panelDefaults = {
     markerLabel: 'markerLabel',
     markerEnableDragging: 'markerEnableDragging',
     markerAnimation: 'markerAnimation',
+
+    pickLocation:'pickLocation'
 };
 
 
@@ -132,7 +134,7 @@ function filterCtx(ctx, originOption, usePolyOption = true) {
         ['strokeWeight', 'lineWidth'],
         ['fillColor', 'fillStyle'],
         ['strokeColor', 'strokeStyle'],
-        ['strokeOpacity', 'globalAlpha'],
+        ['strokeOpacity', 'globalAlpha']
     ].forEach((keyMap) => {
         const [sourceName, targetName] = keyMap;
         const keyValue = styleOption[sourceName];
@@ -155,7 +157,7 @@ function getDotRect(mp, lng, lat, squareSize = 20, isCenterPoint = true) {
         x: pixel.x,
         y: pixel.y,
         w: pixel2.x - pixel.x,
-        h: pixel2.y - pixel.y,
+        h: pixel2.y - pixel.y
     };
 }
 
@@ -246,6 +248,18 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
     getPoiContent(poiType, poiItem, defaultValue = '') {
         const contentName = this.panel.contentName;
         return this.getPoiConfig(poiType, poiItem, contentName, defaultValue);
+    }
+
+    getCtxFields(poiType, poiItem){
+        poiOption = {};
+        ctxFields = ['strokeWeight', 'fillColor', 'strokeColor', 'strokeOpacity'];
+        ctxFields.forEach((ctxField)=>{
+            ctxValue = this.getPoiConfig(poiType, poiItem, ctxField, defaultValue = '');
+            if(ctxValue!=''){
+                poiOption[ctxField] = ctxValue;
+            }
+        });
+        return poiOption;
     }
 
     getPoiConfig(poiType, poiItem, configKey, defaultValue = '') {
@@ -377,7 +391,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
         const markerOption = this.getPoiOption(poiType, data);
         const iconUrl = this.getPoiConfig(poiType, data, this.panel.markerIcon, '');
         if (Number.isInteger(iconUrl)) {
-            markerOption.icon = new BMap.Icon('http://api.map.baidu.com/img/markers.png', new BMap.Size(23, 25), {
+            markerOption.icon = new BMap.Icon('https://api.map.baidu.com/img/markers.png', new BMap.Size(23, 25), {
                 offset: new BMap.Size(10, 25), // 指定定位位置
                 imageOffset: new BMap.Size(0, 25 * (10 - (iconUrl % 10)) - 10 * 25) // 设置图片偏移
             });
@@ -656,7 +670,10 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                             shapeMap[poiType].forEach((item) => {
                                 ctx.save();
                                 ctx.beginPath();
-                                const poiOption = that.getPoiOption(poiType, item.poiData);
+                                const poiOption = Object.assign({},
+                                    that.getPoiOption(poiType, item.poiData),
+                                    that.getCtxFields(poiType, item.poiData)
+                                );
                                 filterCtx(ctx, poiOption);
                                 const startPoint = that.map.pointToPixel(item.points[0]);
                                 ctx.moveTo(startPoint.x, startPoint.y);
@@ -692,14 +709,20 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                     const layerItem = {
                                         lng: point.lng,
                                         lat: point.lat,
-                                        size: that.getPoiConfig(poiType, item.poiData, isCircle ? that.panel.circleRadius :
+                                        size: that.getPoiConfig(poiType, item.poiData, that.panel.pointSize, // 优先使用字段size
+                                            that.getPoiConfig(poiType, item.poiData, isCircle ? that.panel.circleRadius :
                                             (isPoint ? that.panel.pointSize : that.panel.squareLength), isCircle ? 10 :
-                                            (isPoint ? 5 : 20)),
+                                            (isPoint ? 5 : 20)))
                                     };
                                     ctx.beginPath();
-                                    filterCtx(ctx, that.getPoiOption(poiType, item.poiData, isPoint ? {
-                                        'fillColor': getColor(that.getPoiConfig(poiType, item.poiData, that.panel.fillColor, 'blue'), 0.4)
-                                    } : {}));
+                                    const poiOption = Object.assign({},
+                                        {
+                                            'fillColor': getColor(that.getPoiConfig(poiType, item.poiData, that.panel.fillColor, 'blue'), 0.4)
+                                        },
+                                        that.getPoiOption(poiType, item.poiData),
+                                        that.getCtxFields(poiType, item.poiData)
+                                    );
+                                    filterCtx(ctx, poiOption);
                                     const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
                                         parseFloat(layerItem.lat), layerItem.size, !isCircle);
                                     if (isPoint) {
@@ -729,7 +752,10 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 ctx.save();
                                 ctx.beginPath();
                                 const labelText = that.getPoiContent(poiType, item.poiData);
-                                const poiOption = that.getPoiOption(poiType, item.poiData);
+                                const poiOption = Object.assign({},
+                                    that.getPoiOption(poiType, item.poiData),
+                                    that.getCtxFields(poiType, item.poiData)
+                                );
                                 filterCtx(ctx, poiOption, false);
                                 for (let pointIndex = 0; pointIndex < item.points.length; pointIndex++) {
                                     ctx.beginPath();
@@ -744,6 +770,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                 };
 
                 const canvasLayerPointChecker = (checkPoint) => {
+                    console.log('check pos: ', checkPoint);
                     const checkPixel = that.map.pointToPixel(checkPoint);
                     const matchItems = [];
                     dotPoiTypes.reverse()
@@ -759,7 +786,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                             size: that.getPoiConfig(poiType, item.poiData, that.panel.pointSize, // 优先使用字段size
                                                 that.getPoiConfig(poiType, item.poiData, isCircle ? that.panel.circleRadius :
                                                 (isPoint ? that.panel.pointSize : that.panel.squareLength), isCircle ? 10 :
-                                                (isPoint ? 5 : 20))),
+                                                (isPoint ? 5 : 20)))
                                         };
                                         const posRect = getDotRect(that.map, parseFloat(layerItem.lng),
                                             parseFloat(layerItem.lat), layerItem.size, !isCircle);
@@ -790,6 +817,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 });
                             }
                         });
+                    console.log('matchItems:', matchItems);
                     return matchItems;
                 };
 
