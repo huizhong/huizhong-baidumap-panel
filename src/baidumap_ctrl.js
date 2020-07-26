@@ -252,7 +252,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
 
     getCtxFields(poiType, poiItem){
         const poiOption = {};
-        const ctxFields = ['strokeWeight', 'fillColor', 'strokeColor', 'strokeOpacity'];
+        const ctxFields = ['strokeWeight', 'fillColor', 'strokeColor', 'strokeOpacity', 'fillOpacity', 'font'];
         ctxFields.forEach((ctxField)=>{
             const ctxValue = this.getPoiConfig(poiType, poiItem, ctxField, '');
             if(ctxValue!=''){
@@ -817,7 +817,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
                                 });
                             }
                         });
-                    console.log('matchItems:', matchItems);
+                    console.log('matchItems count:', matchItems.length);
                     return matchItems;
                 };
 
