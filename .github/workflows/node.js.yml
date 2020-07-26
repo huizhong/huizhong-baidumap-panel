@@ -12,11 +12,12 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x]
+        node-version: [10.x]
+        os: [ubuntu-latest]
 
     steps:
     - uses: actions/checkout@v2
@@ -24,8 +25,19 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm install
-    - run: grunt
+    - name: Install Dependencies
+      run: npm install
+    - name: Build
+      run: grunt
+    - name: Create report file
+      run: date +%s > report.txt
+    - name: Commit build result
+      run: |
+        git config --global user.name 'auto.builder'
+        git config --global user.email 'noreply@auto.builder'
+        git commit -am "auto.builder"
+        git push
+          
 #    - run: npm ci
 #    - run: npm run build --if-present
 #    - run: npm test
