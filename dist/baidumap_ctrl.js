@@ -512,7 +512,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                     key: 'addMarker',
                     value: function addMarker(poiType, point, BMap, data) {
 
-                        // public/plugins/grafana-baidumap-panel/images/bike.png
+                        // public/plugins/huizhong-baidumap-panel/images/bike.png
                         var markerOption = this.getPoiOption(poiType, data);
                         var iconUrl = this.getPoiConfig(poiType, data, this.panel.markerIcon, '');
                         if (Number.isInteger(iconUrl)) {

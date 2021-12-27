@@ -385,7 +385,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
 
     addMarker(poiType, point, BMap, data) {
 
-        // public/plugins/grafana-baidumap-panel/images/bike.png
+        // public/plugins/huizhong-baidumap-panel/images/bike.png
         const markerOption = this.getPoiOption(poiType, data);
         const iconUrl = this.getPoiConfig(poiType, data, this.panel.markerIcon, '');
         if (Number.isInteger(iconUrl)) {
