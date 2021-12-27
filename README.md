@@ -98,7 +98,7 @@ select
 now() as time, 
 'Marker' as type,
  '116.490502,39.988408' as pos,
-'{"content":"设备编号xxx","markerIcon":"public/plugins/grafana-baidumap-panel/images/bike.png","markerAnimation":true}' as config
+'{"content":"设备编号xxx","markerIcon":"public/plugins/huizhong-baidumap-panel/images/bike.png","markerAnimation":true}' as config
 
 ```
 

@@ -451,7 +451,7 @@ System.register(['app/plugins/sdk', 'app/core/time_series2', 'app/core/utils/kbn
                 }, {
                     key: 'onInitEditMode',
                     value: function onInitEditMode() {
-                        this.addEditorTab('Baidumap', 'public/plugins/grafana-baidumap-panel/partials/editor.html', 2);
+                        this.addEditorTab('Baidumap', 'public/plugins/huizhong-baidumap-panel/partials/editor.html', 2);
                     }
                 }, {
                     key: 'onDataReceived',

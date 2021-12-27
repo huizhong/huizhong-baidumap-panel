@@ -327,7 +327,7 @@ export default class BaidumapCtrl extends MetricsPanelCtrl {
     }
 
     onInitEditMode() {
-        this.addEditorTab('Baidumap', 'public/plugins/grafana-baidumap-panel/partials/editor.html', 2);
+        this.addEditorTab('Baidumap', 'public/plugins/huizhong-baidumap-panel/partials/editor.html', 2);
     }
 
     onDataReceived(dataList) {

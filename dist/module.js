@@ -13,8 +13,8 @@ System.register(["./baidumap_ctrl", "app/plugins/sdk"], function (_export, _cont
     execute: function () {
       /* eslint import/no-extraneous-dependencies: 0 */
       loadPluginCss({
-        dark: "plugins/grafana-baidumap-panel/css/baidumap.dark.css",
-        light: "plugins/grafana-baidumap-panel/css/baidumap.light.css"
+        dark: "plugins/huizhong-baidumap-panel/css/baidumap.dark.css",
+        light: "plugins/huizhong-baidumap-panel/css/baidumap.light.css"
       });
 
       /* eslint import/prefer-default-export: 0 */
