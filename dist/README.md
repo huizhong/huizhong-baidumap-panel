@@ -3,12 +3,12 @@
 Grafana的百度地图插件，基于WorldMap修改。主要的可视化功能有：更换AK.添加/删除控件.更换主题.更改地图级别，测距工具、实时交通流量图等。
 支持十多种形式的数据图形标注。
 
-![Baidumap](https://raw.githubusercontent.com/huizhong/grafana-baidumap-panel/master/src/images/demo.png)
+![Baidumap](https://raw.githubusercontent.com/huizhong/huizhong-baidumap-panel/master/src/images/demo.png)
 
 ## Run
 ### Development
 ```bush
-git clone https://github.com/huizhong/grafana-baidumap-panel.git
+git clone https://github.com/huizhong/huizhong-baidumap-panel.git
 npm install
 ```
 ### Production(Build)
