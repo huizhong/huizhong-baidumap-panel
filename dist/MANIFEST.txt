@@ -1,0 +1,96 @@
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+{
+  "manifestVersion": "2.0.0",
+  "signatureType": "private",
+  "signedByOrg": "huizhong",
+  "signedByOrgName": "huizhong",
+  "rootUrls": [
+    "http://s.eeeya.com:3000/"
+  ],
+  "plugin": "huizhong-baidumap-panel",
+  "version": "v0.0.1",
+  "time": 1640609558163,
+  "keyId": "7e4d0c6a708866e7",
+  "files": {
+    "data_formatter.js": "5824182edea2fb174ef6cf06df6934d115bfb1b72ca950125e60f0c042030177",
+    "gps_helper.js.map": "252a978c71fbbd7e5eab90faeafa320fd413551b1ce5ad842698b88bc49b2b14",
+    "CHANGELOG.md": "6730b58a29edd3496aca5ae0e719be22f235d17978f04de0f3c5fba4f9a50640",
+    "css/baidumap.dark.css": "bf25d4e36a1ac38b0588c081d7f7b20a374d9f1cb15fc842540b1597f6548605",
+    "css/baidumap-panel.css": "e350d932c511499bb2bea8ea1dca18a16034f3efdb56c4f228301286e1c5ffdc",
+    "css/leaflet.css": "733cb6364a6d035d896765bc281dc490541eae417556762d3c0e5309ae17f7a7",
+    "css/baidumap.light.css": "af12d24a2f64a6264b7847ff52ab1d5379a340a75903b4144d3f4bea611de1e3",
+    "baidumap.js.map": "38d1207bfac5faaee601fbbc5f92ccd1f959f0d06ec3b1f3372a43aaf4d73ebf",
+    "images/geomagnetism-poi-press.png": "cf669f119ffae3ea9be423f8e62edc09ea3333488ce2facf5f54c21d5f1f151f",
+    "images/layers.png": "0908aa2a72a082fb2563a2427a5e4fb247571862b448b80fb6f720af1109923e",
+    "images/pins6-poi-press.png": "f22158bda8d25726dcf014514c34f50f82b6be7a1757489b4c07521c025d37ef",
+    "images/marker-icon.png": "915e83a6fc798c599e5c9e3f759d6bc065d65151019acd0410d1f4731bcaaf72",
+    "images/baidumap_logo.png": "1cd44a1e7901ed6b91bc71a5cbcd305451474eac207ce48f9068ff466f8bcbc8",
+    "images/temperature-poi.png": "a18a3f7668de86a504c01fb298e31dbdffd4fdae4410614d76bd23e701b4e44c",
+    "images/smoke-poi-press.png": "261aedf55ed299edc4ba1e5459c3dd4b4272fe27df8db3100d92cc055decf761",
+    "images/marker-icon-2x.png": "454dc479e82b487529b6b93d6a9b29ac69ca7b4f5a9d5fdf8e01871f6d216113",
+    "images/aigua-poi-press.png": "85642ac9b2f7f5a2d61f315ec0955626adba11c131fe57bc101741830f1c9d08",
+    "images/smoke-poi.png": "78095640e293a1f3c2272323367cf1e630c0c385e9e82e5cfdc7b52eec534a04",
+    "images/aigua-poi.png": "8bd2a7588089e7cdbc15305af7e232629ad4999fc5f01e09cf2bb926b1940603",
+    "images/bike.png": "695a05f938ea0bc8436c43e9887f3b8fb5d9cd7d201c69f92ef80de3d6c8cdf1",
+    "images/geomagnetism.png": "6ebc43d602e8edf665e9f70280862e08d796e1dfdf85b045bb3dc74dc1f13732",
+    "images/baidumap_logo.svg": "87169330224b7e05027a0c52d66b6686088722547680ceb0ee407fcfcb9bd716",
+    "images/demo.png": "5c3e6a51916766d500db85c6e0b01a0c3583ef6ad8f37885daffac49f9539f05",
+    "images/manhole_cover-poi.png": "fa3351cbbccb22423a9f95d52f534ce3ce22a5cd99371bd99bae7d565272e165",
+    "images/temperature.png": "b9a820c5f3a974e991f9e2557e08d11d6b50f211840e832fed58aa94af35a64a",
+    "images/geomagnetism-poi.png": "cd496bfafe14b6f1c7a291141c3f7723709936d01d83a077e4bf8dcea9154860",
+    "images/node.png": "b2948e7c6feafa0356d1d4ebe3606a0698c522bbcc8ec83abc82490ce51ed17f",
+    "images/pm2.5-poi.png": "956c15e45f384245c146b4e6f69cc476fc6f4eaad9a40da28c0def19cde73da6",
+    "images/marker-shadow.png": "4f340d2d61746333dffe056e074ce1704ae4e47fec5a7de98322fbdbcfcb2b6d",
+    "images/pm2.5-poi-press.png": "2dcca11b79d63da2d7487a1bfb266d790d7eda9da1844a2fedb7809ad6278434",
+    "images/camions-poi.png": "10ea9117c297d378be4f8cbc2108e01566639274fd10b47e963db3c36f1ff726",
+    "images/pm2.5.png": "241ec38a28a2c1937495d1806295da3af5728c699f39b40cd01e1629fecda54c",
+    "images/manhole_cover.png": "d72742d4ef99910367080d2b38d6fc3bbf75a57190d486cfad2a4554bdae8ae9",
+    "images/bike_large.png": "695a05f938ea0bc8436c43e9887f3b8fb5d9cd7d201c69f92ef80de3d6c8cdf1",
+    "images/smoke.png": "75c41d14e36da71be77339c7531ba5dc0114ee39aef2d9eb162c70bb98ed4f2a",
+    "images/camions-poi-press.png": "5b06f4dc1a2237deb73249c267d4cddd1df95fb965d7aca8a4ca1deb0504bf74",
+    "images/baidumap.png": "85a25e6a0e09b7bfa55b9c0262dfca4ce9bd79279559125b3ea8906361c1ea60",
+    "images/gateway.png": "f1908fb4ca31bd123cd26b194df2b06f9c2a34580675d122bd1c196b66b723e5",
+    "images/pins6.png": "b2948e7c6feafa0356d1d4ebe3606a0698c522bbcc8ec83abc82490ce51ed17f",
+    "images/aigua.png": "f1908fb4ca31bd123cd26b194df2b06f9c2a34580675d122bd1c196b66b723e5",
+    "images/layers-2x.png": "0c02a2388f637d21f86e6d4b314ec9a968e7b05ad4c3a005280a3f76c0fd3cb8",
+    "images/pins6-poi.png": "ef92009628ec644898dd8bc5153f5be8d50458a1063b2a8d433f74ccd20d6fd8",
+    "images/camions.png": "e14f1835f591efedc0ace40c017457532e103cadeb75ac0877343dc06e116dad",
+    "images/temperature-poi-press.png": "572240465f1270663dce9ad1bbe3ff28205cb3292896c3162fda90ef71d740e4",
+    "module.html": "198e5df70ae837f1c4793f2e1a71da84b238a9b0f1530b8d08229bf7ad4bd6fb",
+    "map_renderer.js.map": "fc6d20413c635354bbde7c85f70a3fcbb5d0bda1f635b4346d901ae3e9c74451",
+    "module.js.map": "2076bd9b170afc611f790bcd2106c187f774d8e287c139cfe1b7f5809454f6dd",
+    "baidumap_ctrl.js.map": "afacc2ce2fccf7cf42cdb24f1c7b425b23fb5c09a832bc4fe2a1595123a49be6",
+    "plugin.json": "fad0ef9aa419b237a971e7fe28be66d5cf3827185cdf98f74ee92f546ee3582c",
+    "libs/leaflet.js": "0e40ec9f887ac863adb5e24e8f715f06acf5cc78535fd7ed02441bd19a9331a4",
+    "libs/baidumap.js.map": "d5f6fca2efe18ab51d767b1eca3b72989cfb20e49d3ba7388bf35d614703eaa0",
+    "libs/leaflet.js.map": "fb648f184f057d9fd5bffdec6804be31cd316c725034c9fb9cfdeb59b9395998",
+    "libs/baidumap.js": "3ee26c93d619758263b23749f92c8cda890ccbaae5758dce6dd3521e35536aa5",
+    "README.md": "85330f56e17b34b2b3a8028d3f6c0934aa26337287d5dae03944e94b3d08147a",
+    "baidumap.js": "af7c10cb7e62c2b7ef7ec0db75714fa17c84fe772d5be93057c9468fdb68a696",
+    "data_formatter.js.map": "c61c51945c3eb864fc39c565ebdeb5d0cdf233365df7d8215972fedbf23f6f79",
+    "module.js": "8828278d7a2879bc6c6ae9a884f3eea16c018bfaed32249bbc5da10a1cf2527d",
+    "gps_helper.js": "4bab0fcfd6cacf7a34df8d48b55e2d3ada9af471c72c6e89486dda7fd13240f7",
+    "geohash.js.map": "084ed85e13f89856a92cf91edd8db532dce0a97501fd0ed96764e46cd097005a",
+    "map_renderer.js": "fb5bc911a80107b51636edf7471c46349dd12191bea6d80a38e5094061b702af",
+    "data/countries_3letter.json": "cd87072b672087dfe8ab304b649109e42bb2d28a68860385fabeb083299177da",
+    "data/states.json": "460de2fa8bc1b6cca6f76ab72b172f37a54ffa03a2dbc0e5da7d42336884a4d9",
+    "data/probes.json": "105af94868db132e430499a43db868a13148506306234f9b0ba514e7df5ee9a2",
+    "data/countries.json": "3cc16444bc2120d1800d24ab552c8d5f42ea0cd7a8699a915f979586f7c4cb50",
+    "geohash.js": "acbfce702726b77b0184895f474f76ad764b33cd8a7de1f7add86030a3e39dbf",
+    "partials/editor.html": "9edeebec5c9c99befa4bc64fba06d2be8d455fad8a5f9e7b76ce92d8381d52d7",
+    "baidumap_ctrl.js": "0d216a4d1537f3de45cae1246ef7276d6fdc7b1486e6a046a7d663f64a9fd58b"
+  }
+}
+-----BEGIN PGP SIGNATURE-----
+Version: OpenPGP.js v4.10.1
+Comment: https://openpgpjs.org
+
+wqEEARMKAAYFAmHJtxYACgkQfk0ManCIZueTXAIIidX5QoHKAHMCf77EK5F1
+7E38943icrCKq9FukL6Uin4B9y6L42g1KCdv6KpZ7U9CaAMJy3L9h5xhVLR/
+chmQQW4CCQFDOHW/Kjgp/QMrGwAmEII/JSQxdggMh1j5JH1IWzc0B1KOtMCf
+VtxD5COMOH6kNuv6PFPkgLvJ8u1sfh4hRqilog==
+=onsQ
+-----END PGP SIGNATURE-----
