@@ -8,11 +8,11 @@ Hash: SHA512
   "signedByOrg": "huizhong",
   "signedByOrgName": "huizhong",
   "rootUrls": [
-    "http://s.eeeya.com:3000/"
+    "http://localhost:3000/"
   ],
   "plugin": "huizhong-baidumap-panel",
   "version": "v0.0.1",
-  "time": 1640609558163,
+  "time": 1640610478621,
   "keyId": "7e4d0c6a708866e7",
   "files": {
     "data_formatter.js": "5824182edea2fb174ef6cf06df6934d115bfb1b72ca950125e60f0c042030177",
@@ -88,9 +88,9 @@ Hash: SHA512
 Version: OpenPGP.js v4.10.1
 Comment: https://openpgpjs.org
 
-wqEEARMKAAYFAmHJtxYACgkQfk0ManCIZueTXAIIidX5QoHKAHMCf77EK5F1
-7E38943icrCKq9FukL6Uin4B9y6L42g1KCdv6KpZ7U9CaAMJy3L9h5xhVLR/
-chmQQW4CCQFDOHW/Kjgp/QMrGwAmEII/JSQxdggMh1j5JH1IWzc0B1KOtMCf
-VtxD5COMOH6kNuv6PFPkgLvJ8u1sfh4hRqilog==
-=onsQ
+wqEEARMKAAYFAmHJuq4ACgkQfk0ManCIZuf/DgIJAVYGWAd2Vd+GnCDgJk6k
+29iuCsdTC2GYWJ/44cPwyGBXbo+PqGxQAL7p97KdFwv7nJcbHrgt1OpNK3cj
+cRE13uKRAgig6x3Urp3XyLWkzmSkp+tpkg3kuhT7guorl0BrI1obgEOJ1WIX
+PYgyVSE/2o3vKPAxsHC3lR5DCBVms/iwHGkzag==
+=77TW
 -----END PGP SIGNATURE-----
