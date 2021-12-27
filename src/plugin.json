@@ -4,7 +4,7 @@
   "id": "huizhong-baidumap-panel",
 
   "info": {
-    "description": "Baidu Map panel for grafana. Displays time series data or geohash data from Elasticsearch overlaid on a Baidu Map.",
+    "description": "Baidu Map panel for grafana. Displays time series data or geohash data from any datasource on a Baidu Map.",
     "author": {
       "name": "Hui Zhong",
       "url": "https://github.com/huizhong/"
@@ -15,8 +15,8 @@
       "large": "images/baidumap_logo.png"
     },
     "links": [
-      {"name": "Project site", "url": "https://github.com/huizhong/grafana-baidumap-panel"},
-      {"name": "MIT License", "url": "https://github.com/huizhong/grafana-baidumap-panel/blob/master/LICENSE"}
+      {"name": "Project site", "url": "https://github.com/huizhong/huizhong-baidumap-panel"},
+      {"name": "MIT License", "url": "https://github.com/huizhong/huizhong-baidumap-panel/blob/master/LICENSE"}
     ],
     "version": "1.0.1",
     "updated": "2021-12-27"
