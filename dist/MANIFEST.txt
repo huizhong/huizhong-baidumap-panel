@@ -12,7 +12,7 @@ Hash: SHA512
   ],
   "plugin": "huizhong-baidumap-panel",
   "version": "1.0.1",
-  "time": 1640615563699,
+  "time": 1640616056669,
   "keyId": "7e4d0c6a708866e7",
   "files": {
     "data_formatter.js": "5824182edea2fb174ef6cf06df6934d115bfb1b72ca950125e60f0c042030177",
@@ -88,9 +88,9 @@ Hash: SHA512
 Version: OpenPGP.js v4.10.1
 Comment: https://openpgpjs.org
 
-wqIEARMKAAYFAmHJzosACgkQfk0ManCIZucoEQIJAeHdiAeTQkDsLHAMyfKZ
-A+5A3i4zIz7/Mt/5fCx8DPD9+rIP9JO/4mEORQeDFno9fC0a65tG7KPDxcty
-KgqVFHNyAgkBv3aTk7XTeyNzfjsgEHXOgow/qCuijVo5rMK2vNl7CF5IujLR
-dPsIATb+igfUQXSL3ZvTpp7NdPKdOOw8xmY3nnw=
-=O3YK
+wqIEARMKAAYFAmHJ0HgACgkQfk0ManCIZucoDQIJAYAr6i/ADOEoa6to6FWu
+g9McSqGRDaxJ0boVOPPWxrYMjVUqxQyS9kVp52q/2YIz3IieKlWJlWye79vP
+2Ab0sQVkAgkBw7GLyP3yPqBmqInAT+t28LBl0VMp0GHlPWE3CggemjdGH5v/
+E8vCmlro4N9CvuNkR4r6hGqYfyzs0xrReaLzVxA=
+=XSKx
 -----END PGP SIGNATURE-----
