@@ -12,7 +12,7 @@ Hash: SHA512
   ],
   "plugin": "huizhong-baidumap-panel",
   "version": "1.0.1",
-  "time": 1640615563699,
+  "time": 1640619186830,
   "keyId": "7e4d0c6a708866e7",
   "files": {
     "data_formatter.js": "5824182edea2fb174ef6cf06df6934d115bfb1b72ca950125e60f0c042030177",
@@ -61,17 +61,17 @@ Hash: SHA512
     "images/temperature-poi-press.png": "572240465f1270663dce9ad1bbe3ff28205cb3292896c3162fda90ef71d740e4",
     "module.html": "198e5df70ae837f1c4793f2e1a71da84b238a9b0f1530b8d08229bf7ad4bd6fb",
     "map_renderer.js.map": "fc6d20413c635354bbde7c85f70a3fcbb5d0bda1f635b4346d901ae3e9c74451",
-    "module.js.map": "2076bd9b170afc611f790bcd2106c187f774d8e287c139cfe1b7f5809454f6dd",
-    "baidumap_ctrl.js.map": "afacc2ce2fccf7cf42cdb24f1c7b425b23fb5c09a832bc4fe2a1595123a49be6",
+    "module.js.map": "a3fef7c4b57a8faac8ec319b10f61b03c0f5dcfca910dad7888efb385b2d4fa7",
+    "baidumap_ctrl.js.map": "24957f706049e86bab9e8bfe0fe48f710db41b47a56adec0e702ea6f628af21b",
     "plugin.json": "bc1ebe02f1979e14c6d9202c3dadbbc9c6ecd6f69148195d47a9b6f687e2e243",
     "libs/leaflet.js": "0e40ec9f887ac863adb5e24e8f715f06acf5cc78535fd7ed02441bd19a9331a4",
     "libs/baidumap.js.map": "d5f6fca2efe18ab51d767b1eca3b72989cfb20e49d3ba7388bf35d614703eaa0",
     "libs/leaflet.js.map": "fb648f184f057d9fd5bffdec6804be31cd316c725034c9fb9cfdeb59b9395998",
     "libs/baidumap.js": "3ee26c93d619758263b23749f92c8cda890ccbaae5758dce6dd3521e35536aa5",
-    "README.md": "85330f56e17b34b2b3a8028d3f6c0934aa26337287d5dae03944e94b3d08147a",
+    "README.md": "c919497399a0b3ee2ca2d61195f65fe2ecc41cfe28ec671947738571b5fb121c",
     "baidumap.js": "af7c10cb7e62c2b7ef7ec0db75714fa17c84fe772d5be93057c9468fdb68a696",
     "data_formatter.js.map": "c61c51945c3eb864fc39c565ebdeb5d0cdf233365df7d8215972fedbf23f6f79",
-    "module.js": "8828278d7a2879bc6c6ae9a884f3eea16c018bfaed32249bbc5da10a1cf2527d",
+    "module.js": "e004df8232157e33755d3752cc12b52c4d89290fcd7054fec301ca04a05e2c2f",
     "gps_helper.js": "4bab0fcfd6cacf7a34df8d48b55e2d3ada9af471c72c6e89486dda7fd13240f7",
     "geohash.js.map": "084ed85e13f89856a92cf91edd8db532dce0a97501fd0ed96764e46cd097005a",
     "map_renderer.js": "fb5bc911a80107b51636edf7471c46349dd12191bea6d80a38e5094061b702af",
@@ -81,16 +81,16 @@ Hash: SHA512
     "data/countries.json": "3cc16444bc2120d1800d24ab552c8d5f42ea0cd7a8699a915f979586f7c4cb50",
     "geohash.js": "acbfce702726b77b0184895f474f76ad764b33cd8a7de1f7add86030a3e39dbf",
     "partials/editor.html": "9edeebec5c9c99befa4bc64fba06d2be8d455fad8a5f9e7b76ce92d8381d52d7",
-    "baidumap_ctrl.js": "0d216a4d1537f3de45cae1246ef7276d6fdc7b1486e6a046a7d663f64a9fd58b"
+    "baidumap_ctrl.js": "09b1727d2eece8472903ad60e59e5c2925051bc95cffb5b0346a2a7bb3e1d7c3"
   }
 }
 -----BEGIN PGP SIGNATURE-----
 Version: OpenPGP.js v4.10.1
 Comment: https://openpgpjs.org
 
-wqIEARMKAAYFAmHJzosACgkQfk0ManCIZucoEQIJAeHdiAeTQkDsLHAMyfKZ
-A+5A3i4zIz7/Mt/5fCx8DPD9+rIP9JO/4mEORQeDFno9fC0a65tG7KPDxcty
-KgqVFHNyAgkBv3aTk7XTeyNzfjsgEHXOgow/qCuijVo5rMK2vNl7CF5IujLR
-dPsIATb+igfUQXSL3ZvTpp7NdPKdOOw8xmY3nnw=
-=O3YK
+wqEEARMKAAYFAmHJ3LIACgkQfk0ManCIZufEZwII8aSS78BtWeiPLAi8P0JW
+q40jiHiDCtxz2cyuSbFbaGi0wRz/u3q+V6gXpntWQOW4lt3wTZ3gu0YrrLLC
+OJeQZSYCCQFzmuKZB3CEo82Qsxg9PF00NfNri5bXYHPNf3jQb8aas/5iduHA
+abVW07Oc9Jylf336SOY7+Sv4yD0QqbEU+Tvg9g==
+=n15/
 -----END PGP SIGNATURE-----

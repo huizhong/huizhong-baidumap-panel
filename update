@@ -1,4 +1,5 @@
 grunt
+npx @grafana/toolkit plugin:sign --rootUrls http://localhost:3000/
 rm -r huizhong-baidumap-panel
 mkdir huizhong-baidumap-panel
 cp -r dist/* huizhong-baidumap-panel
