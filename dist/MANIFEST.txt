@@ -12,7 +12,7 @@ Hash: SHA512
   ],
   "plugin": "huizhong-baidumap-panel",
   "version": "1.0.1",
-  "time": 1640611418499,
+  "time": 1640615563699,
   "keyId": "7e4d0c6a708866e7",
   "files": {
     "data_formatter.js": "5824182edea2fb174ef6cf06df6934d115bfb1b72ca950125e60f0c042030177",
@@ -63,7 +63,7 @@ Hash: SHA512
     "map_renderer.js.map": "fc6d20413c635354bbde7c85f70a3fcbb5d0bda1f635b4346d901ae3e9c74451",
     "module.js.map": "2076bd9b170afc611f790bcd2106c187f774d8e287c139cfe1b7f5809454f6dd",
     "baidumap_ctrl.js.map": "afacc2ce2fccf7cf42cdb24f1c7b425b23fb5c09a832bc4fe2a1595123a49be6",
-    "plugin.json": "b314f99609f1792c26853136c3fa70f4e21e6142bd68b4b766949efc6bc6ac70",
+    "plugin.json": "bc1ebe02f1979e14c6d9202c3dadbbc9c6ecd6f69148195d47a9b6f687e2e243",
     "libs/leaflet.js": "0e40ec9f887ac863adb5e24e8f715f06acf5cc78535fd7ed02441bd19a9331a4",
     "libs/baidumap.js.map": "d5f6fca2efe18ab51d767b1eca3b72989cfb20e49d3ba7388bf35d614703eaa0",
     "libs/leaflet.js.map": "fb648f184f057d9fd5bffdec6804be31cd316c725034c9fb9cfdeb59b9395998",
@@ -88,9 +88,9 @@ Hash: SHA512
 Version: OpenPGP.js v4.10.1
 Comment: https://openpgpjs.org
 
-wqEEARMKAAYFAmHJvloACgkQfk0ManCIZudgtAIIjUElgcc1C0kgkpZ3qL09
-hEfvd58WXUbctT6zyqfJM3WRrmiO50Bnwgc/y76kEXAkZWJVE2AYze9ii/B9
-v3ZzZZACCQG5ICO+mcOAlbYKWYLP6glp/tR0XCb1EVrelf7mpZoZdjgNlltj
-34gTnWgKCwvjbQ10CYJ7xTmgad+QALS1v6cNHg==
-=8+Aq
+wqIEARMKAAYFAmHJzosACgkQfk0ManCIZucoEQIJAeHdiAeTQkDsLHAMyfKZ
+A+5A3i4zIz7/Mt/5fCx8DPD9+rIP9JO/4mEORQeDFno9fC0a65tG7KPDxcty
+KgqVFHNyAgkBv3aTk7XTeyNzfjsgEHXOgow/qCuijVo5rMK2vNl7CF5IujLR
+dPsIATb+igfUQXSL3ZvTpp7NdPKdOOw8xmY3nnw=
+=O3YK
 -----END PGP SIGNATURE-----
