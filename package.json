@@ -51,6 +51,7 @@
     "systemjs": "^0.19.24"
   },
   "dependencies": {
+    "@grafana/toolkit": "^8.3.2",
     "es6-module-loader": "^0.17.11",
     "grafana-sdk-test": "^1.0.0",
     "jquery": "^3.3.1",
