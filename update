@@ -1,4 +1,9 @@
 grunt
+rm -r huizhong-baidumap-panel
+mkdir huizhong-baidumap-panel
+cp -r dist/* huizhong-baidumap-panel
+zip huizhong-baidumap-panel.zip huizhong-baidumap-panel -r
+rm -r huizhong-baidumap-panel
 git add -A
 git commit -m 'update'
 git push
